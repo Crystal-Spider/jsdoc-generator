@@ -24,19 +24,35 @@ export function activate(context: vscode.ExtensionContext) {
    * Now provide the implementation of the command with registerCommand
    * The commandId parameter must match the command field in package.json
    */
-  const disposable = vscode.commands.registerCommand('jsdoc-generator.helloWorld', () => {
-    /*
-     * The code you place here will be executed every time your command is executed
-     * Display a message box to the user
-     */
-    vscode.window.showInformationMessage('Hello World from JSDoc Generator!');
+  const activateCommand = vscode.commands.registerCommand('jsdoc-generator.activate', () => {
+    vscode.window.showWarningMessage('Activating JSDoc Generator...');
+    vscode.window.showInformationMessage('JSDoc Generator activated successfully');
   });
 
-  context.subscriptions.push(disposable);
+  /**
+   * Generates JSDoc for the element currently selected, if suitable, and if the file is a .js or a .ts file.
+   */
+  const generateJsdocSelection = vscode.commands.registerCommand('jsdoc-generator.generateJsdocSelection', () => {
+    vscode.window.showInformationMessage('Generating JSDoc for the current element');
+  });
+  /**
+   * Generates JSDoc for every suitable element in the file currently opened, if the file is a .js or a .ts file.
+   */
+  const generateJsdocFile = vscode.commands.registerCommand('jsdoc-generator.generateJsdocFile', () => {
+    vscode.window.showInformationMessage('Generating JSDoc for the current file');
+  });
+  /**
+   * Generates JSDoc for every suitable element in every suitable file.
+   */
+  const generateJsdocFiles = vscode.commands.registerCommand('jsdoc-generator.generateJsdocFiles', () => {
+    vscode.window.showInformationMessage('Generating JSDoc for every file');
+  });
+
+  context.subscriptions.push(activateCommand, generateJsdocSelection, generateJsdocFile, generateJsdocFiles);
 }
 
 /**
- * This method is called when your extension is deactivated
+ * This method is called when the extension is deactivated
  *
  * @export
  */
