@@ -291,6 +291,7 @@ module.exports = {
     'jsdoc/check-param-names': 'error',
     'jsdoc/check-types': 'error',
     'jsdoc/newline-after-description': 'warn',
+    // TODO: Make it work for class methods and class attributes
     'jsdoc/require-description': [
       'warn', {
         contexts: ['any'],
@@ -306,8 +307,7 @@ module.exports = {
         },
         checkSetters: true,
         checkGetters: true,
-        // TODO: set false and create custom vsc extension to generate JSDoc.
-        enableFixer: true
+        enableFixer: false
       }
     ],
     'jsdoc/require-param-name': ['error', {contexts: ['any']}],

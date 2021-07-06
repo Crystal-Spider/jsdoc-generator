@@ -10,32 +10,23 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:jsdoc-generator.activate"
+		"onLanguage:typescript",
+		"onLanguage:javascript"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "jsdoc-generator.activate",
-				"title": "Activate JSDoc Generator"
+				"command": "jsdoc-generator.generateJsdocFiles",
+				"title": "Generate JSDoc for all JavaScript and TypeScript files."
 			},
-			{
-				"command": "jsdoc-generator.generateJsdocSelection",
-				"title": "Generate JSDoc for the current selection"
-			}
-		],
-		"keybindings": [
 			{
 				"command": "jsdoc-generator.generateJsdocFile",
-				"key": "ctrl+d",
-				"mac": "cmd+d",
-				"when": "editorTextFocus"
+				"title": "Generate JSDoc for the current files."
 			},
 			{
-				"command": "jsdoc-generator.generateJsdocFiles",
-				"key": "ctrl+shift+d",
-				"mac": "cmd+shift+d",
-				"when": "editorTextFocus"
+				"command": "jsdoc-generator.generateJsdoc",
+				"title": "Generate JSDoc"
 			}
 		]
 	},
