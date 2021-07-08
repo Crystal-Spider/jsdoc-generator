@@ -65,7 +65,6 @@ function lazyInstantiateJsdocGenerator() {
  * @param {ExtensionContext} context
  */
 export function activate(context: ExtensionContext) {
-  lazyInstantiateJsdocGenerator();
   // Generates JSDoc with auto completion.
   const generateJsdocAutocompletion = vscode.languages.registerCompletionItemProvider(
     [
@@ -93,15 +92,18 @@ export function activate(context: ExtensionContext) {
   );
   // Generates JSDoc for the current selection.
   const generateJsdoc = vscode.commands.registerCommand('jsdoc-generator.generateJsdoc', () => {
+    lazyInstantiateJsdocGenerator();
     jsdocGenerator.generateJsdoc(vscode.window.activeTextEditor);
   });
   // Generates JSDoc for every suitable element in the current file.
   const generateJsdocFile = vscode.commands.registerCommand('jsdoc-generator.generateJsdocFile', () => {
+    lazyInstantiateJsdocGenerator();
     // TODO: implement
     vscode.window.showInformationMessage('Generating JSDoc for this file...');
   });
   // Generates JSDoc for every suitable element in every ts or js file.
   const generateJsdocFiles = vscode.commands.registerCommand('jsdoc-generator.generateJsdocFiles', () => {
+    lazyInstantiateJsdocGenerator();
     // TODO: implement
     vscode.window.showInformationMessage('Generating JSDoc for every file...');
   });
