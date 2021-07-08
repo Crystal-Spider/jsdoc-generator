@@ -12,7 +12,12 @@ module.exports = {
     'import'
   ],
   rules: {
-    '@typescript-eslint/naming-convention': 'warn',
+    '@typescript-eslint/naming-convention': [
+      'warn', {
+        selector: 'enumMember',
+        format: ['UPPER_CASE']
+      }
+    ],
     'comma-dangle': ['warn', 'never'],
     'no-cond-assign': ['error', 'always'],
     'no-console': 'warn',
@@ -275,7 +280,6 @@ module.exports = {
     'no-empty-function': ['warn', {allow: ['arrowFunctions', 'constructors']}],
     'no-useless-escape': 'warn',
     'no-useless-return': 'error',
-    'no-undefined': 'error',
     'func-call-spacing': ['error', 'never'],
     'lines-between-class-members': ['warn', 'always'],
     'max-statements-per-line': ['warn', {max: 2}],
@@ -291,7 +295,6 @@ module.exports = {
     'jsdoc/check-param-names': 'error',
     'jsdoc/check-types': 'error',
     'jsdoc/newline-after-description': 'warn',
-    // TODO: Make it work for class methods and class attributes
     'jsdoc/require-description': [
       'warn', {
         contexts: ['any'],
@@ -307,7 +310,16 @@ module.exports = {
         },
         checkSetters: true,
         checkGetters: true,
-        enableFixer: false
+        enableFixer: false,
+        contexts: [
+          'ClassProperty',
+          'Interface',
+          'TSPropertySignature',
+          'TSMethodSignature',
+          'TSTypeAliasDeclaration',
+          'TSInterfaceDeclaration',
+          'TSEnumDeclaration'
+        ]
       }
     ],
     'jsdoc/require-param-name': ['error', {contexts: ['any']}],
@@ -359,10 +371,7 @@ module.exports = {
       tagNamePreference: {
         augments: 'extends',
         class: 'constructor'
-      },
-      overrideReplacesDocs: true,
-      augmentsExtendsReplacesDocs: true,
-      implementsReplacesDocs: true
+      }
     },
     'import/extensions': ['.js', '.ts']
   },
