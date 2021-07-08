@@ -2,6 +2,11 @@ import * as vscode from 'vscode';
 // eslint-disable-next-line max-len
 import {CompletionItem, TextDocument, Position, CancellationToken, ExtensionContext, Range, CompletionItemKind} from 'vscode';
 
+import {JsdocGenerator} from './JsdocGenerator';
+
+// JsdocGenerator object.
+let jsdocGenerator: JsdocGenerator;
+
 /**
  * JSDoc Autocompletion item.
  *
@@ -43,14 +48,24 @@ class GenerateJsdocCompletionItem extends CompletionItem {
 }
 
 /**
- * Called when the extension is activated, subscribes the autocompletion item and the commands in the context.
+ * Lazy instantiates the JsdocGenerator object.
+ */
+function lazyInstantiateJsdocGenerator() {
+  if(!jsdocGenerator) {
+    jsdocGenerator = new JsdocGenerator();
+  }
+}
+
+/**
+ * Called when the extension is activated.
+ * Subscribes the autocompletion item and the commands in the context.
+ * Lazy initializes the JsdocGenerator object.
  *
  * @export
  * @param {ExtensionContext} context
  */
 export function activate(context: ExtensionContext) {
-  // eslint-disable-next-line no-console
-  console.log('Extension "jsdoc-generator" is now active!');
+  lazyInstantiateJsdocGenerator();
   // Generates JSDoc with auto completion.
   const generateJsdocAutocompletion = vscode.languages.registerCompletionItemProvider(
     [
@@ -78,8 +93,7 @@ export function activate(context: ExtensionContext) {
   );
   // Generates JSDoc for the current selection.
   const generateJsdoc = vscode.commands.registerCommand('jsdoc-generator.generateJsdoc', () => {
-    // TODO: implement
-    vscode.window.showInformationMessage('JSDoc generated!');
+    jsdocGenerator.generateJsdoc(vscode.window.activeTextEditor);
   });
   // Generates JSDoc for every suitable element in the current file.
   const generateJsdocFile = vscode.commands.registerCommand('jsdoc-generator.generateJsdocFile', () => {
