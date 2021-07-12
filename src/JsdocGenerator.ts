@@ -1,7 +1,8 @@
 import * as path from 'path';
 import * as ts from 'typescript';
-import {TextDocument, TextEditor} from 'vscode';
+import {TextDocument, TextEditor, window, SnippetString} from 'vscode';
 
+import {JsdocBuilder} from './JsdocBuilder';
 import {LanguageServiceHost} from './LanguageServiceHost';
 
 /**
@@ -10,14 +11,41 @@ import {LanguageServiceHost} from './LanguageServiceHost';
  * @typedef {JsdocGenerator}
  */
 export class JsdocGenerator {
-  /**
-   * Supported languages
-   *
-   * @private
-   * @readonly
-   * @type {string[]}
-   */
+	/**
+	 * Supported languages.
+	 *
+	 * @private
+	 * @readonly
+	 * @type {string[]}
+	 */
 	private readonly languages: string[] = ['typescript', 'javascript'];
+
+	/**
+	 * TS Nodes that can have a JSDoc.
+	 *
+	 * @private
+	 * @readonly
+	 * @type {ts.SyntaxKind[]}
+	 */
+	private readonly supportedNodes: ts.SyntaxKind[] = [
+	  ts.SyntaxKind.PropertySignature,
+	  ts.SyntaxKind.PropertyDeclaration,
+	  ts.SyntaxKind.MethodSignature,
+	  ts.SyntaxKind.MethodDeclaration,
+	  ts.SyntaxKind.Constructor,
+	  ts.SyntaxKind.GetAccessor,
+	  ts.SyntaxKind.SetAccessor,
+	  ts.SyntaxKind.CallSignature,
+	  ts.SyntaxKind.FunctionExpression,
+	  ts.SyntaxKind.ArrowFunction,
+	  ts.SyntaxKind.VariableDeclaration,
+	  ts.SyntaxKind.VariableDeclarationList,
+	  ts.SyntaxKind.FunctionDeclaration,
+	  ts.SyntaxKind.ClassDeclaration,
+	  ts.SyntaxKind.InterfaceDeclaration,
+	  ts.SyntaxKind.EnumDeclaration,
+	  ts.SyntaxKind.EnumMember
+	];
 
 	/**
 	 * Handles all interactions between the Language Service and the external world.
@@ -28,7 +56,7 @@ export class JsdocGenerator {
 	private languageServiceHost: LanguageServiceHost;
 
 	/**
-	 * Language Service
+	 * Language Service.
 	 *
 	 * @private
 	 * @type {ts.LanguageService}
@@ -50,15 +78,30 @@ export class JsdocGenerator {
 	 * @param {TextEditor | undefined} textEditor
 	 */
 	public generateJsdoc(textEditor: TextEditor | undefined) {
-	  if(!!textEditor && this.isLanguageSupported(textEditor.document)) {
-	    const sourceFile = this.getSourceFile(textEditor.document);
+	  if(textEditor && this.isLanguageSupported(textEditor.document)) {
+	    const sourceFile = this.retrieveSourceFile(textEditor.document);
 	    if(sourceFile) {
-	      const {selection} = textEditor;
-	      const caret = selection.start;
-	      const position = ts.getPositionOfLineAndCharacter(sourceFile, caret.line, caret.character);
+	      const caret = textEditor.selection.start;
+	      const {line} = caret;
+	      const {character} = caret;
+	      const position = ts.getPositionOfLineAndCharacter(sourceFile, line, character);
 	      const node = this.findNode(sourceFile, position);
-	      console.log(node);
+	      const supportedNode = this.retrieveSupportedNode(node);
+	      if(supportedNode) {
+	        const jsdocLocation = this.getJsdocLocation(sourceFile, supportedNode);
+	        const jsdoc = this.createJsdoc(supportedNode, jsdocLocation);
+	        console.log(jsdoc.value);
+	        // Insert JSDoc
+	      } else {
+	        window.showErrorMessage('Unable to generate JSDoc at the position (Ln ' + line + ', Col ' + character + ').');
+	      }
+	    } else {
+	      // Add more info to error message
+	      window.showErrorMessage('Unable to generate JSDoc.');
 	    }
+	  } else {
+	    // Add more info to error message
+	    window.showErrorMessage('Unable to generate JSDoc.');
 	  }
 	}
 
@@ -82,7 +125,7 @@ export class JsdocGenerator {
 	 * @param {TextDocument} document
 	 * @returns {ts.SourceFile | undefined}
 	 */
-	private getSourceFile(document: TextDocument): ts.SourceFile | undefined {
+	private retrieveSourceFile(document: TextDocument): ts.SourceFile | undefined {
 	  const fileText = document.getText();
 	  const fileName = this.getDocumentFileName(document);
 	  this.languageServiceHost.updateFile(fileName, fileText);
@@ -139,5 +182,84 @@ export class JsdocGenerator {
 	  }
 	  source.forEachChild((child) => { node = this.findNode(child, position, node); });
 	  return node;
+	}
+
+	/**
+	 * Retrieves the first (deepest) supported parent node of the node passed as parameter.
+	 * If property kind of such parent node equals {@link ts.SyntaxKind.VariableDeclarationList},
+	 * also retrieves the VariableDeclaration child node from it.
+	 *
+	 * @private
+	 * @param {ts.Node} node
+	 * @returns {ts.Node | null}
+	 */
+	private retrieveSupportedNode(node: ts.Node): ts.Node | null {
+	  let parent = node;
+	  while(parent) {
+	    if(this.supportedNodes.includes(parent.kind)) {
+	      if(parent.kind === ts.SyntaxKind.VariableDeclarationList) {
+	        return (<ts.VariableDeclarationList> parent).declarations[0];
+	      }
+	      return parent;
+	    }
+	    ({parent} = parent);
+	  }
+	  return null;
+	}
+
+	/**
+	 * Returns the {@link ts.LineAndCharacter} where to insert the JSDoc.
+	 *
+	 * @private
+	 * @param {ts.SourceFile} sourceFile
+	 * @param {ts.Node} node
+	 * @returns {ts.LineAndCharacter}
+	 */
+	private getJsdocLocation(sourceFile: ts.SourceFile, node: ts.Node): ts.LineAndCharacter {
+	  return ts.getLineAndCharacterOfPosition(sourceFile, node.getStart());
+	}
+
+	private createJsdoc(node: ts.Node, location: ts.LineAndCharacter): SnippetString {
+	  const jsdocBuilder = new JsdocBuilder();
+
+	  switch(node.kind) {
+	    case ts.SyntaxKind.ClassDeclaration:
+	      return jsdocBuilder.getClassDeclarationJsdoc(<ts.ClassDeclaration>node, location);
+	    /*
+	     * Case ts.SyntaxKind.PropertyDeclaration:
+	     * case ts.SyntaxKind.PropertySignature:
+	     * case ts.SyntaxKind.GetAccessor:
+	     * case ts.SyntaxKind.SetAccessor:
+	     *   // This._emitPropertyDeclaration(sb, <ts.AccessorDeclaration>node);
+	     *   break;
+	     * case ts.SyntaxKind.InterfaceDeclaration:
+	     *   // This._emitInterfaceDeclaration(sb, <ts.InterfaceDeclaration>node);
+	     *   break;
+	     * case ts.SyntaxKind.EnumDeclaration:
+	     *   // This._emitEnumDeclaration(sb, <ts.EnumDeclaration>node);
+	     *   break;
+	     * case ts.SyntaxKind.EnumMember:
+	     *   // Sb.appendLine();
+	     *   break;
+	     * case ts.SyntaxKind.CallSignature:
+	     * case ts.SyntaxKind.FunctionDeclaration:
+	     * case ts.SyntaxKind.MethodDeclaration:
+	     * case ts.SyntaxKind.MethodSignature:
+	     *   // This._emitMethodDeclaration(sb, <ts.MethodDeclaration>node);
+	     *   break;
+	     * case ts.SyntaxKind.Constructor:
+	     *   // This._emitConstructorDeclaration(sb, <ts.ConstructorDeclaration>node);
+	     *   break;
+	     * case ts.SyntaxKind.FunctionExpression:
+	     * case ts.SyntaxKind.ArrowFunction:
+	     *   return '';
+	     *   // This._emitFunctionExpression(sb, <ts.FunctionExpression>node, sourceFile);
+	     * case ts.SyntaxKind.VariableDeclaration:
+	     *   return '';
+	     *   // This._emitVariableDeclaration(sb, <ts.VariableDeclaration>node, sourceFile);
+	     */
+	    default:
+	      return jsdocBuilder.emptyJsdoc;
+	  }
 	}
 }
