@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as ts from 'typescript';
-import {TextDocument, TextEditor, window, SnippetString} from 'vscode';
+import {TextDocument, TextEditor, window, SnippetString, Position} from 'vscode';
 
 import {JsdocBuilder} from './JsdocBuilder';
 import {LanguageServiceHost} from './LanguageServiceHost';
@@ -77,8 +77,8 @@ export class JsdocGenerator {
 	 * @public
 	 * @param {TextEditor | undefined} textEditor
 	 */
-	public generateJsdoc(textEditor: TextEditor | undefined) {
-	  if(textEditor && this.isLanguageSupported(textEditor.document)) {
+	public generateJsdoc(textEditor: TextEditor) {
+	  if(this.isLanguageSupported(textEditor.document)) {
 	    const sourceFile = this.retrieveSourceFile(textEditor.document);
 	    if(sourceFile) {
 	      const caret = textEditor.selection.start;
@@ -89,19 +89,16 @@ export class JsdocGenerator {
 	      const supportedNode = this.retrieveSupportedNode(node);
 	      if(supportedNode) {
 	        const jsdocLocation = this.getJsdocLocation(sourceFile, supportedNode);
-	        const jsdoc = this.createJsdoc(supportedNode, jsdocLocation);
-	        console.log(jsdoc.value);
-	        // Insert JSDoc
+	        const jsdoc = this.buildJsdoc(supportedNode);
+	        this.insertJsdoc(jsdoc, jsdocLocation, textEditor);
 	      } else {
 	        window.showErrorMessage('Unable to generate JSDoc at the position (Ln ' + line + ', Col ' + character + ').');
 	      }
 	    } else {
-	      // Add more info to error message
-	      window.showErrorMessage('Unable to generate JSDoc.');
+	      window.showErrorMessage('Unable to generate JSDoc for ' + textEditor.document.fileName);
 	    }
 	  } else {
-	    // Add more info to error message
-	    window.showErrorMessage('Unable to generate JSDoc.');
+	    window.showErrorMessage('Unable to generate JSDoc: ' + textEditor.document.languageId + ' is not supported.');
 	  }
 	}
 
@@ -219,12 +216,20 @@ export class JsdocGenerator {
 	  return ts.getLineAndCharacterOfPosition(sourceFile, node.getStart());
 	}
 
-	private createJsdoc(node: ts.Node, location: ts.LineAndCharacter): SnippetString {
+	/**
+	 * Instantiates a {@link JsdocBuilder} object. Then, depending on the node kind,
+	 * calls the appropriate JSDoc building method.
+	 *
+	 * @private
+	 * @param {ts.Node} node
+	 * @returns {SnippetString}
+	 */
+	private buildJsdoc(node: ts.Node): SnippetString {
 	  const jsdocBuilder = new JsdocBuilder();
 
 	  switch(node.kind) {
 	    case ts.SyntaxKind.ClassDeclaration:
-	      return jsdocBuilder.getClassDeclarationJsdoc(<ts.ClassDeclaration>node, location);
+	      return jsdocBuilder.getClassDeclarationJsdoc(<ts.ClassDeclaration>node);
 	    /*
 	     * Case ts.SyntaxKind.PropertyDeclaration:
 	     * case ts.SyntaxKind.PropertySignature:
@@ -261,5 +266,18 @@ export class JsdocGenerator {
 	    default:
 	      return jsdocBuilder.emptyJsdoc;
 	  }
+	}
+
+	/**
+	 * Inserts the JSDoc snipper at the given location for the given textEditor.
+	 *
+	 * @private
+	 * @param {SnippetString} jsdoc
+	 * @param {ts.LineAndCharacter} location
+	 * @param {TextEditor} textEditor
+	 * @returns {Thenable<boolean>}
+	 */
+	private insertJsdoc(jsdoc: SnippetString, location: ts.LineAndCharacter, textEditor: TextEditor): Thenable<boolean> {
+	  return textEditor.insertSnippet(jsdoc, new Position(location.line, location.character));
 	}
 }

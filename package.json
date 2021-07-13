@@ -29,7 +29,37 @@
 				"command": "jsdoc-generator.generateJsdoc",
 				"title": "Generate JSDoc"
 			}
-		]
+		],
+		"configuration": {
+			"title": "JSDoc Generator configuration",
+			"properties": {
+				"jsdoc-generator.includeDescriptionPlaceholder": {
+					"type": "boolean",
+					"default": "true",
+					"description": "When enabled, will include a description placeholder. The placeholder text can be specified with jsdoc-generator.descriptionPlaceholder"
+				},
+				"jsdoc-generator.descriptionPlaceholder": {
+					"type": "string",
+					"default": "Description placeholder",
+					"description": "Set the description placeholder that will be included when jsdoc-generator.includeDescriptionPlaceholder is enabled."
+				},
+				"jsdoc-generator.includeAuthor": {
+					"type": "boolean",
+					"default": "false",
+					"description": "When enabled, will include the author tag."
+				},
+				"jsdoc-generator.author": {
+					"type": "string",
+					"default": "Insert author",
+					"description": "Set the value for the author tag that will be included when jsdoc-generator.includeAuthor is enabled."
+				},
+				"jsdoc-generator.includeDate": {
+					"type": "boolean",
+					"default": "false",
+					"description": "When enabled, will include the date tag."
+				}
+			}
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
