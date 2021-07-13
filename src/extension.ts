@@ -10,8 +10,8 @@ let jsdocGenerator: JsdocGenerator;
 /**
  * JSDoc Autocompletion item.
  *
- * @extends {CompletionItem}
  * @typedef {GenerateJsdocCompletionItem}
+ * @extends {CompletionItem}
  */
 class GenerateJsdocCompletionItem extends CompletionItem {
   /**
@@ -93,7 +93,11 @@ export function activate(context: ExtensionContext) {
   // Generates JSDoc for the current selection.
   const generateJsdoc = vscode.commands.registerCommand('jsdoc-generator.generateJsdoc', () => {
     lazyInstantiateJsdocGenerator();
-    jsdocGenerator.generateJsdoc(vscode.window.activeTextEditor);
+    if(vscode.window.activeTextEditor) {
+      jsdocGenerator.generateJsdoc(vscode.window.activeTextEditor);
+    } else {
+      vscode.window.showErrorMessage('Unable to generate JSDoc: no editor has been selected.');
+    }
   });
   // Generates JSDoc for every suitable element in the current file.
   const generateJsdocFile = vscode.commands.registerCommand('jsdoc-generator.generateJsdocFile', () => {
