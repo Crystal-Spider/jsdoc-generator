@@ -65,8 +65,7 @@
 		"vscode:prepublish": "npm run compile",
 		"compile": "tsc -p ./",
 		"watch": "tsc -watch -p ./",
-		"pretest": "npm run compile && npm run lint",
-		"lint": "eslint src --ext ts",
+		"pretest": "npm run compile && npm run eslint:fix",
 		"test": "node ./out/test/runTest.js",
 		"eslint:show": "npx eslint . --ext .js,.ts",
 		"eslint:fix": "npx eslint . --ext .js,.ts --fix"
