@@ -58,6 +58,11 @@
 					"default": "false",
 					"description": "When enabled, will include the date tag."
 				},
+				"jsdoc-generator.includeTime": {
+					"type": "boolean",
+					"default": "false",
+					"description": "When both this and jsdoc-generator.includeDate are enabled, will include the current local time in the date tag."
+				},
 				"jsdoc-generator.includeParenthesisForMultipleTypes": {
 					"type": "boolean",
 					"default": "true",

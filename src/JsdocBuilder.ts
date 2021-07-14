@@ -31,18 +31,27 @@ export class JsdocBuilder {
   	this.buildJsdocHeader();
   	this.buildJsdocModifiers(node);
   	if(node.name) {
-	    this.buildJsdocLine(node.kind === SyntaxKind.InterfaceDeclaration ? 'interface' : 'class');
+	    this.buildJsdocLine(node.kind === SyntaxKind.InterfaceDeclaration ? 'interface' : 'class', node.name.getText(), '');
   		this.buildJsdocLine('typedef', node.name.getText());
 	  } else {
 	    this.buildJsdocLine(node.kind === SyntaxKind.InterfaceDeclaration ? 'interface' : 'class');
 	  }
   	this.buildJsdocHeritage(node);
- 	  this.buildJsdocTemplateTag(node);
+	  if(node.typeParameters) {
+	    this.buildJsdocLines('template', node.typeParameters.map((typeParameter) => typeParameter.getText()), '');
+	  }
   	this.buildJsdocEnd();
   	return this.jsdoc;
  	}
 
- 	public getPropertyDeclarationJsdoc(node: ts.PropertyDeclaration): SnippetString {
+	/**
+	 * Builds and returns the JSDoc for property declarations.
+	 *
+	 * @public
+	 * @param {ts.PropertyDeclaration} node
+	 * @returns {SnippetString}
+	 */
+	public getPropertyDeclarationJsdoc(node: ts.PropertyDeclaration): SnippetString {
  	  this.buildJsdocHeader();
  	  this.buildJsdocModifiers(node);
 	  this.buildType(node);
@@ -78,7 +87,7 @@ export class JsdocBuilder {
  	 */
  	private buildDescription() {
   	this.jsdoc.appendText(' * ');
- 	  if(workspace.getConfiguration().get('jsdoc-generator.includeDescriptionPlaceholder', false)) {
+ 	  if(workspace.getConfiguration().get('jsdoc-generator.includeDescriptionPlaceholder', true)) {
  	    this.jsdoc.appendPlaceholder(
  	      workspace.getConfiguration().get('jsdoc-generator.descriptionPlaceholder', 'Description placeholder')
  	    );
@@ -98,14 +107,18 @@ export class JsdocBuilder {
  	}
 
  	/**
- 	 * If configured to do so, builds a line with the date tag and value.
+ 	 * If configured to do so, builds a line with the date tag and configured value.
  	 *
  	 * @private
  	 */
  	private buildDate() {
  	  if(workspace.getConfiguration().get('jsdoc-generator.includeDate', false)) {
  	    const date = new Date();
- 	  	this.buildJsdocLine('date', date.toLocaleDateString() + ' - ' + date.toLocaleTimeString(), '');
+	    let tagValue = date.toLocaleDateString();
+	    if(workspace.getConfiguration().get('jsdoc-generator.includeTime', false)) {
+	      tagValue += ' - ' + date.toLocaleTimeString();
+	    }
+ 	  	this.buildJsdocLine('date', tagValue, '');
  	  }
  	}
 
@@ -215,10 +228,6 @@ export class JsdocBuilder {
 
  	private getTypeArguments(typeArguments: NodeArray<TypeNode> | undefined): string {
  	  return typeArguments ? '<' + typeArguments.map((typeArgument) => typeArgument.getText()).join(', ') + '>' : '';
- 	}
-
- 	private buildJsdocTemplateTag(node: ts.ClassDeclaration | ts.InterfaceDeclaration) {
- 	  this.buildJsdocLines('template', node.typeParameters?.map((typeParameter) => typeParameter.getText()), '');
  	}
 
  	/**
