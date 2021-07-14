@@ -222,7 +222,7 @@ export class JsdocGenerator {
 	 *
 	 * @private
 	 * @param {ts.Node} node
-	 * @returns {SnippetString}
+	 * @returns {SnippetString} JSDoc built.
 	 */
 	private buildJsdoc(node: ts.Node): SnippetString {
 	  const jsdocBuilder = new JsdocBuilder();
