@@ -61,7 +61,7 @@
 				"jsdoc-generator.includeParenthesisForMultipleTypes": {
 					"type": "boolean",
 					"default": "true",
-					"description": "When enabled, will include round brackets around union and intersection types."
+					"description": "When enabled, will put round brackets around union and intersection types. Note that round brackets will still be used for union and intersection types if they are also optional or mandatory."
 				}
 			}
 		}
