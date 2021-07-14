@@ -232,17 +232,14 @@ export class JsdocGenerator {
 	      return jsdocBuilder.getClassLikeDeclarationJsdoc(<ts.ClassDeclaration>node);
 	    case ts.SyntaxKind.InterfaceDeclaration:
 	      return jsdocBuilder.getClassLikeDeclarationJsdoc(<ts.InterfaceDeclaration>node);
+	    case ts.SyntaxKind.PropertyDeclaration:
+	    case ts.SyntaxKind.PropertySignature:
+	      return jsdocBuilder.getPropertyDeclarationJsdoc(<ts.PropertyDeclaration>node);
+	    case ts.SyntaxKind.GetAccessor:
+	    case ts.SyntaxKind.SetAccessor:
+	      return jsdocBuilder.getAccessorDeclarationJsdoc(<ts.AccessorDeclaration>node);
 	    /*
-	     * Case ts.SyntaxKind.PropertyDeclaration:
-	     * case ts.SyntaxKind.PropertySignature:
-	     * case ts.SyntaxKind.GetAccessor:
-	     * case ts.SyntaxKind.SetAccessor:
-	     *   // This._emitPropertyDeclaration(sb, <ts.AccessorDeclaration>node);
-	     *   break;
-	     * case ts.SyntaxKind.InterfaceDeclaration:
-	     *   // This._emitInterfaceDeclaration(sb, <ts.InterfaceDeclaration>node);
-	     *   break;
-	     * case ts.SyntaxKind.EnumDeclaration:
+	     * Case ts.SyntaxKind.EnumDeclaration:
 	     *   // This._emitEnumDeclaration(sb, <ts.EnumDeclaration>node);
 	     *   break;
 	     * case ts.SyntaxKind.EnumMember:
