@@ -57,6 +57,11 @@
 					"type": "boolean",
 					"default": "false",
 					"description": "When enabled, will include the date tag."
+				},
+				"jsdoc-generator.includeParenthesisForMultipleTypes": {
+					"type": "boolean",
+					"default": "true",
+					"description": "When enabled, will include round brackets around union and intersection types."
 				}
 			}
 		}
