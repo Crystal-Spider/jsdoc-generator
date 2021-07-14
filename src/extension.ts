@@ -4,12 +4,17 @@ import {CompletionItem, TextDocument, Position, CancellationToken, ExtensionCont
 
 import {JsdocGenerator} from './JsdocGenerator';
 
-// JsdocGenerator object.
+/**
+ * JsdocGenerator object.
+ *
+ * @type {JsdocGenerator}
+ */
 let jsdocGenerator: JsdocGenerator;
 
 /**
  * JSDoc Autocompletion item.
  *
+ * @class
  * @typedef {GenerateJsdocCompletionItem}
  * @extends {CompletionItem}
  */

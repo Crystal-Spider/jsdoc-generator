@@ -20,16 +20,17 @@ export class JsdocBuilder {
  	private readonly jsdoc: SnippetString = new SnippetString();
 
  	/**
- 	 * Builds and returns the JSDoc for a Class Declaration ({@link ts.ClassDeclaration})
+ 	 * Builds and returns the JSDoc for classes and interfaces.
  	 *
  	 * @public
- 	 * @param {ts.ClassDeclaration} node {@link ts.Node} representing a {@link ts.ClassDeclaration}
+ 	 * @param {ts.ClassDeclaration | ts.InterfaceDeclaration} node {@link ts.Node} representing a
+ 	 * {@link ts.ClassDeclaration} or a {@link ts.InterfaceDeclaration}.
  	 * @returns {SnippetString} the jsdoc
  	 */
- 	public getClassDeclarationJsdoc(node: ts.ClassDeclaration): SnippetString {
+ 	public getClassLikeDeclarationJsdoc(node: ts.ClassDeclaration | ts.InterfaceDeclaration): SnippetString {
   	this.buildJsdocHeader();
   	this.buildJsdocModifiers(node);
-  	this.buildJsdocLine('class');
+  	this.buildJsdocLine(node.kind === ts.SyntaxKind.InterfaceDeclaration ? 'interface' : 'class');
   	if(node.name) {
   		this.buildJsdocLine('typedef', node.name.getText());
   	}

@@ -229,7 +229,9 @@ export class JsdocGenerator {
 
 	  switch(node.kind) {
 	    case ts.SyntaxKind.ClassDeclaration:
-	      return jsdocBuilder.getClassDeclarationJsdoc(<ts.ClassDeclaration>node);
+	      return jsdocBuilder.getClassLikeDeclarationJsdoc(<ts.ClassDeclaration>node);
+	    case ts.SyntaxKind.InterfaceDeclaration:
+	      return jsdocBuilder.getClassLikeDeclarationJsdoc(<ts.InterfaceDeclaration>node);
 	    /*
 	     * Case ts.SyntaxKind.PropertyDeclaration:
 	     * case ts.SyntaxKind.PropertySignature:
