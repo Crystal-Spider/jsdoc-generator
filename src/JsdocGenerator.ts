@@ -4,6 +4,7 @@ import {TextDocument, TextEditor, window, SnippetString, Position} from 'vscode'
 
 import {JsdocBuilder} from './JsdocBuilder';
 import {LanguageServiceHost} from './LanguageServiceHost';
+import {TsFile} from './TsFile';
 
 /**
  * JSDoc Generator
@@ -19,33 +20,6 @@ export class JsdocGenerator {
 	 * @type {string[]}
 	 */
 	private readonly languages: string[] = ['typescript', 'javascript'];
-
-	/**
-	 * TS Nodes that can have a JSDoc.
-	 *
-	 * @private
-	 * @readonly
-	 * @type {ts.SyntaxKind[]}
-	 */
-	private readonly supportedNodes: ts.SyntaxKind[] = [
-	  ts.SyntaxKind.PropertySignature,
-	  ts.SyntaxKind.PropertyDeclaration,
-	  ts.SyntaxKind.MethodSignature,
-	  ts.SyntaxKind.MethodDeclaration,
-	  ts.SyntaxKind.Constructor,
-	  ts.SyntaxKind.GetAccessor,
-	  ts.SyntaxKind.SetAccessor,
-	  ts.SyntaxKind.CallSignature,
-	  ts.SyntaxKind.FunctionExpression,
-	  ts.SyntaxKind.ArrowFunction,
-	  ts.SyntaxKind.VariableDeclaration,
-	  ts.SyntaxKind.VariableDeclarationList,
-	  ts.SyntaxKind.FunctionDeclaration,
-	  ts.SyntaxKind.ClassDeclaration,
-	  ts.SyntaxKind.InterfaceDeclaration,
-	  ts.SyntaxKind.EnumDeclaration,
-	  ts.SyntaxKind.EnumMember
-	];
 
 	/**
 	 * Handles all interactions between the Language Service and the external world.
@@ -72,30 +46,25 @@ export class JsdocGenerator {
 	}
 
 	/**
-	 * Placeholder
+	 * Generate and insert JSDoc for the given textEditor.
+	 * Displays error messages in case of failure in generating the JSDoc.
 	 *
 	 * @public
-	 * @param {TextEditor | undefined} textEditor
+	 * @param {TextEditor} textEditor
 	 */
 	public generateJsdoc(textEditor: TextEditor) {
 	  if(this.isLanguageSupported(textEditor.document)) {
-	    const sourceFile = this.retrieveSourceFile(textEditor.document);
-	    if(sourceFile) {
-	      const caret = textEditor.selection.start;
-	      const {line} = caret;
-	      const {character} = caret;
-	      const position = ts.getPositionOfLineAndCharacter(sourceFile, line, character);
-	      const node = this.findNode(sourceFile, position);
-	      const supportedNode = this.retrieveSupportedNode(node);
-	      if(supportedNode) {
-	        const jsdocLocation = this.getJsdocLocation(sourceFile, supportedNode);
-	        const jsdoc = this.buildJsdoc(supportedNode);
-	        this.insertJsdoc(jsdoc, jsdocLocation, textEditor);
-	      } else {
-	        window.showErrorMessage('Unable to generate JSDoc at the position (Ln ' + line + ', Col ' + character + ').');
-	      }
+	    const caret = textEditor.selection.start;
+	    const tsFile = this.retrieveTsFile(textEditor.document, caret);
+	    const {supportedNode} = tsFile;
+	    if(supportedNode) {
+	      const jsdocLocation = this.getJsdocLocation(<ts.SourceFile>tsFile.sourceFile, supportedNode);
+	      const jsdoc = this.buildJsdoc(supportedNode, tsFile);
+	      this.insertJsdoc(jsdoc, jsdocLocation, textEditor);
 	    } else {
-	      window.showErrorMessage('Unable to generate JSDoc for ' + textEditor.document.fileName);
+	      window.showErrorMessage(
+	        'Unable to generate JSDoc at position (Ln ' + caret.line + ', Col ' + caret.character + ').'
+	      );
 	    }
 	  } else {
 	    window.showErrorMessage('Unable to generate JSDoc: ' + textEditor.document.languageId + ' is not supported.');
@@ -120,29 +89,16 @@ export class JsdocGenerator {
 	 *
 	 * @private
 	 * @param {TextDocument} document
-	 * @returns {ts.SourceFile | undefined}
+	 * @param {Position} caret
+	 * @returns {TsFile}
 	 */
-	private retrieveSourceFile(document: TextDocument): ts.SourceFile | undefined {
+	private retrieveTsFile(document: TextDocument, caret: Position): TsFile {
 	  const fileText = document.getText();
 	  const fileName = this.getDocumentFileName(document);
 	  this.languageServiceHost.updateFile(fileName, fileText);
 	  this.languageServices.getSyntacticDiagnostics(fileName);
-	  const Program = this.languageServices.getProgram();
-	  if(Program) {
-	    const sourceFile = Program.getSourceFile(fileName);
-	    const newText = document.getText();
-	    if(sourceFile) {
-	      sourceFile.update(newText, <ts.TextChangeRange>{
-	        newLength: newText.length,
-	        span: <ts.TextSpan>{
-	          start: 0,
-	          length: newText.length
-	        }
-	      });
-	      return sourceFile;
-	    }
-	  }
-	  return undefined;
+	  const program = this.languageServices.getProgram();
+	  return new TsFile(program, fileName, document.getText(), caret);
 	}
 
 	/**
@@ -164,47 +120,6 @@ export class JsdocGenerator {
 	}
 
 	/**
-	 * Finds the deepest node that contains the position.
-	 *
-	 * @private
-	 * @param {ts.Node} source initial node in which to search
-	 * @param {number} position
-	 * @param {ts.Node} parent needed for recursive calls, defaults to source
-	 * @returns {ts.Node}
-	 */
-	private findNode(source: ts.Node, position: number, parent: ts.Node = source): ts.Node {
-	  let node: ts.Node = parent;
-	  if(source.getFullStart() <= position && source.getEnd() >= position) {
-	    node = source;
-	  }
-	  source.forEachChild((child) => { node = this.findNode(child, position, node); });
-	  return node;
-	}
-
-	/**
-	 * Retrieves the first (deepest) supported parent node of the node passed as parameter.
-	 * If property kind of such parent node equals {@link ts.SyntaxKind.VariableDeclarationList},
-	 * also retrieves the VariableDeclaration child node from it.
-	 *
-	 * @private
-	 * @param {ts.Node} node
-	 * @returns {ts.Node | null}
-	 */
-	private retrieveSupportedNode(node: ts.Node): ts.Node | null {
-	  let parent = node;
-	  while(parent) {
-	    if(this.supportedNodes.includes(parent.kind)) {
-	      if(parent.kind === ts.SyntaxKind.VariableDeclarationList) {
-	        return (<ts.VariableDeclarationList> parent).declarations[0];
-	      }
-	      return parent;
-	    }
-	    ({parent} = parent);
-	  }
-	  return null;
-	}
-
-	/**
 	 * Returns the {@link ts.LineAndCharacter} where to insert the JSDoc.
 	 *
 	 * @private
@@ -222,10 +137,11 @@ export class JsdocGenerator {
 	 *
 	 * @private
 	 * @param {ts.Node} node
+	 * @param {TsFile} tsFile
 	 * @returns {SnippetString} JSDoc built.
 	 */
-	private buildJsdoc(node: ts.Node): SnippetString {
-	  const jsdocBuilder = new JsdocBuilder();
+	private buildJsdoc(node: ts.Node, tsFile: TsFile): SnippetString {
+	  const jsdocBuilder = new JsdocBuilder(tsFile);
 
 	  switch(node.kind) {
 	    case ts.SyntaxKind.ClassDeclaration:
