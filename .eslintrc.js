@@ -19,6 +19,7 @@ module.exports = {
         format: ['UPPER_CASE']
       }
     ],
+    '@typescript-eslint/no-inferrable-types': 'warn',
     'comma-dangle': ['warn', 'never'],
     'no-cond-assign': ['error', 'always'],
     'no-console': 'warn',
@@ -265,7 +266,7 @@ module.exports = {
         },
         ObjectPattern: {multiline: true},
         // Replace 'never' with option for newline after each property if more than 3 (not available yet)
-        ImportDeclaration: 'never',
+        ImportDeclaration: {minProperties: 7},
         ExportDeclaration: 'never'
       }
     ],
