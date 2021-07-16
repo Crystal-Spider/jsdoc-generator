@@ -8,7 +8,6 @@ import {
   TextSpan,
   VariableDeclarationList
 } from 'typescript';
-import ts = require('typescript');
 import {Position} from 'vscode';
 
 import {UndefTemplate} from './UndefTemplate';
@@ -37,13 +36,11 @@ export class TsFile {
 	  SyntaxKind.GetAccessor,
 	  SyntaxKind.SetAccessor,
 	  SyntaxKind.CallSignature,
-	  SyntaxKind.FunctionExpression,
-	  SyntaxKind.ArrowFunction,
-	  SyntaxKind.VariableDeclaration,
 	  SyntaxKind.VariableDeclarationList,
 	  SyntaxKind.FunctionDeclaration,
 	  SyntaxKind.ClassDeclaration,
 	  SyntaxKind.InterfaceDeclaration,
+	  SyntaxKind.TypeAliasDeclaration,
 	  SyntaxKind.EnumDeclaration,
 	  SyntaxKind.EnumMember
 	];
@@ -154,7 +151,13 @@ export class TsFile {
 	  return undefined;
 	}
 
-	public inferType(node: Node) {
+	/**
+	 * Uses the TypeScript API to infer the node type. Returns '' when the type cannot be inferred;
+	 *
+	 * @param {Node} node
+	 * @returns {string}
+	 */
+	public inferType(node: Node): string {
 	  if(this.program) {
 	    const type = this.program.getTypeChecker().getTypeAtLocation(node);
 	    return this.program.getTypeChecker().typeToString(type);

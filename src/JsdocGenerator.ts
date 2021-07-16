@@ -161,15 +161,6 @@ export class JsdocGenerator {
 	      return jsdocBuilder.getMethodDeclarationJsdoc(<ts.MethodDeclaration>node);
 	    case ts.SyntaxKind.Constructor:
 	    	return jsdocBuilder.getConstructorJsdoc(<ts.ConstructorDeclaration>node);
-	    /*
-	     * Case ts.SyntaxKind.FunctionExpression:
-	     * case ts.SyntaxKind.ArrowFunction:
-	     *   return '';
-	     *   // This._emitFunctionExpression(sb, <ts.FunctionExpression>node, sourceFile);
-	     * case ts.SyntaxKind.VariableDeclaration:
-	     *   return '';
-	     *   // This._emitVariableDeclaration(sb, <ts.VariableDeclaration>node, sourceFile);
-	     */
 	    case ts.SyntaxKind.EnumMember:
 	    default:
 	      return jsdocBuilder.emptyJsdoc;
