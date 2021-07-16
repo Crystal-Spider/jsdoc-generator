@@ -32,25 +32,15 @@
 		"configuration": {
 			"title": "JSDoc Generator configuration",
 			"properties": {
-				"jsdoc-generator.includeDescriptionPlaceholder": {
-					"type": "boolean",
-					"default": "true",
-					"description": "When enabled, will include a description placeholder. The placeholder text can be specified with jsdoc-generator.descriptionPlaceholder"
-				},
 				"jsdoc-generator.descriptionPlaceholder": {
 					"type": "string",
 					"default": "Description placeholder",
-					"description": "Set the description placeholder that will be included when jsdoc-generator.includeDescriptionPlaceholder is enabled."
-				},
-				"jsdoc-generator.includeAuthor": {
-					"type": "boolean",
-					"default": "false",
-					"description": "When enabled, will include the author tag."
+					"description": "Set the description placeholder. Empty to disable."
 				},
 				"jsdoc-generator.author": {
 					"type": "string",
-					"default": "Insert author",
-					"description": "Set the value for the author tag that will be included when jsdoc-generator.includeAuthor is enabled."
+					"default": "",
+					"description": "Set the value for the author tag. Empty to disable, \"author\" to insert \"author\" as placeholder."
 				},
 				"jsdoc-generator.includeDate": {
 					"type": "boolean",
@@ -59,7 +49,7 @@
 				},
 				"jsdoc-generator.includeTime": {
 					"type": "boolean",
-					"default": "false",
+					"default": "true",
 					"description": "When both this and jsdoc-generator.includeDate are enabled, will include the current local time in the date tag."
 				},
 				"jsdoc-generator.includeParenthesisForMultipleTypes": {
@@ -67,15 +57,10 @@
 					"default": "true",
 					"description": "When enabled, will include round brackets around union and intersection types.\nNote that round brackets will still be used if manually put in the type or for union and intersection types which are also optional or mandatory."
 				},
-				"jsdoc-generator.includeDescriptionForConstructors": {
-					"type": "boolean",
-					"default": "false",
-					"description": "When enabled, will include a description for constructors."
-				},
 				"jsdoc-generator.descriptionForConstructors": {
 					"type": "string",
 					"default": "Creates an instance of {Object}.",
-					"description": "When jsdoc-generator.includeDescriptionForConstructors is enabled, will include a description for constructors.\n\"{Object}\" will be replaced with the class name.\nFor default exported classes, \"{Object}\" will be set as a placeholder.\nIf this value is empty, but jsdoc-generator.includeDescriptionForConstructors is enabled, jsdoc-generator.descriptionPlaceholder will be used instead."
+					"description": "\"{Object}\" will be replaced with the class name.\nFor default exported classes without a name, \"{Object}\" will be set as a placeholder.\nEmpty to disable."
 				}
 			}
 		}

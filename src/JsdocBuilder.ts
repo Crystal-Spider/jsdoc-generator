@@ -147,6 +147,35 @@ export class JsdocBuilder {
 	  return this.jsdoc;
 	}
 
+	/**
+	 * Builds and returns the JSDoc for constructor declarations.
+	 *
+	 * @param {ts.ConstructorDeclaration} node
+	 * @returns {SnippetString}
+	 */
+	public getConstructorJsdoc(node: ts.ConstructorDeclaration): SnippetString {
+  	this.jsdoc.appendText('/**\n');
+	  const constructorDescription = getConfig<string>('jsdoc-generator.descriptionForConstructors', '');
+	  const className = node.parent.name;
+	  if(constructorDescription) {
+	    if(className) {
+	      this.buildDescription(constructorDescription.replace('{Object}', className.getText()));
+	    } else {
+	      constructorDescription.replace('{Object}', '');
+	      this.jsdoc.appendText(' * ' + constructorDescription);
+	      this.jsdoc.appendPlaceholder('{Object}');
+	      this.jsdoc.appendText('\n');
+	    }
+	  }
+	  this.buildDate();
+	  this.buildAuthor();
+	  this.buildJsdocLine();
+	  this.buildJsdocModifiers(node);
+	  this.buildJsdocParameters(node);
+	  this.buildJsdocEnd();
+	  return this.jsdoc;
+	}
+
  	/**
  	 * Builds a new JSDoc line for each modifier applied on the node.
  	 *
@@ -296,12 +325,11 @@ export class JsdocBuilder {
  	 */
 	private buildDescription(description: string = '') {
   	this.jsdoc.appendText(' * ');
+	  const placeholder = getConfig<string>('jsdoc-generator.descriptionPlaceholder', '');
 	  if(description) {
 	    this.jsdoc.appendText(description);
-	  } else if(getConfig<boolean>('jsdoc-generator.includeDescriptionPlaceholder', true)) {
- 	    this.jsdoc.appendPlaceholder(
-	      getConfig<string>('jsdoc-generator.descriptionPlaceholder', 'Description placeholder')
- 	    );
+	  } else if(placeholder) {
+ 	    this.jsdoc.appendPlaceholder(placeholder);
  	  }
   	this.jsdoc.appendText('\n');
  	}
@@ -312,8 +340,15 @@ export class JsdocBuilder {
  	 * @private
  	 */
  	private buildAuthor() {
- 	  if(getConfig<boolean>('jsdoc-generator.includeAuthor', false)) {
- 	    this.buildJsdocLine('author', getConfig<string>('jsdoc-generator.author', 'Insert author'), '');
+	  const author = getConfig<string>('jsdoc-generator.author', '');
+ 	  if(author) {
+	    if(author === 'author') {
+	      this.jsdoc.appendText(' * @author ');
+	      this.jsdoc.appendPlaceholder(author);
+	      this.jsdoc.appendText('\n');
+	    } else {
+	      this.buildJsdocLine('author', author, '');
+	    }
  	  }
  	}
 
@@ -326,7 +361,7 @@ export class JsdocBuilder {
  	  if(getConfig<boolean>('jsdoc-generator.includeDate', false)) {
  	    const date = new Date();
 	    let tagValue = date.toLocaleDateString();
-	    if(getConfig<boolean>('jsdoc-generator.includeTime', false)) {
+	    if(getConfig<boolean>('jsdoc-generator.includeTime', true)) {
 	      tagValue += ' - ' + date.toLocaleTimeString();
 	    }
  	  	this.buildJsdocLine('date', tagValue, '');

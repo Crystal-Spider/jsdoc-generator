@@ -141,9 +141,9 @@ export function deactivate() {
  *
  * @export
  * @template T
- * @param {string} configurationName
- * @param {T} defaultValue
- * @returns {T}
+ * @param {string} configurationName - Configuration name, supports dotted names.
+ * @param {T} defaultValue - A value should be returned when no value could be found.
+ * @returns {T} The value from the configuration or the default.
  */
 export function getConfig<T>(configurationName: string, defaultValue: T): T {
   return vscode.workspace.getConfiguration().get(configurationName, defaultValue);

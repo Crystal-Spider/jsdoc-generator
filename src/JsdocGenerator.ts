@@ -159,10 +159,8 @@ export class JsdocGenerator {
 	    case ts.SyntaxKind.MethodDeclaration:
 	    case ts.SyntaxKind.MethodSignature:
 	      return jsdocBuilder.getMethodDeclarationJsdoc(<ts.MethodDeclaration>node);
-	    /*
-	     * Case ts.SyntaxKind.Constructor:
-	     *   return jsdocBuilder.getMethodDeclarationJsdoc(<ts.ConstructorDeclaration>node);
-	     */
+	    case ts.SyntaxKind.Constructor:
+	    	return jsdocBuilder.getConstructorJsdoc(<ts.ConstructorDeclaration>node);
 	    /*
 	     * Case ts.SyntaxKind.FunctionExpression:
 	     * case ts.SyntaxKind.ArrowFunction:
