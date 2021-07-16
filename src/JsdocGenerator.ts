@@ -19,7 +19,7 @@ export class JsdocGenerator {
 	 * @readonly
 	 * @type {string[]}
 	 */
-	private readonly languages: string[] = ['typescript', 'javascript'];
+	private readonly languages: string[] = ['typescript'];
 
 	/**
 	 * Handles all interactions between the Language Service and the external world.
@@ -102,10 +102,8 @@ export class JsdocGenerator {
 	}
 
 	/**
-	 * If it's a TypeScript document, returns the fileName as is with forced '/' as directory separator.
-	 * If it's a JavaScript document, returns the fileName with a forced .js extension and '/' as directory separator.
-	 * The .js extension for JavaScript documents is forcefully added because TypeScript's file resolution for allowJs
-	 * seems to ignore JavaScript documents if they're missing the extension.
+	 * If it's a TypeScript document, returns the fileName with forced '/' as directory separator
+	 * and, if missing, a forced .ts extension.
 	 *
 	 * @private
 	 * @param {TextDocument} document
@@ -113,8 +111,8 @@ export class JsdocGenerator {
 	 */
 	private getDocumentFileName(document: TextDocument): string {
 	  let fileName = document.fileName.replace(/\\/g, '/');
-	  if(!(document.languageId === 'typescript') && path.extname(fileName) !== 'js') {
-	    fileName += '.js';
+	  if(document.languageId === 'typescript' && path.extname(fileName) !== 'ts') {
+	    fileName += '.ts';
 	  }
 	  return ts.sys.useCaseSensitiveFileNames ? fileName.toLowerCase() : fileName;
 	}
@@ -154,23 +152,19 @@ export class JsdocGenerator {
 	    case ts.SyntaxKind.GetAccessor:
 	    case ts.SyntaxKind.SetAccessor:
 	      return jsdocBuilder.getAccessorDeclarationJsdoc(<ts.AccessorDeclaration>node);
+	    case ts.SyntaxKind.EnumDeclaration:
+	      return jsdocBuilder.getEnumDeclarationJsdoc(<ts.EnumDeclaration>node);
+	    case ts.SyntaxKind.CallSignature:
+	    case ts.SyntaxKind.FunctionDeclaration:
+	    case ts.SyntaxKind.MethodDeclaration:
+	    case ts.SyntaxKind.MethodSignature:
+	      return jsdocBuilder.getMethodDeclarationJsdoc(<ts.MethodDeclaration>node);
 	    /*
-	     * Case ts.SyntaxKind.EnumDeclaration:
-	     *   // This._emitEnumDeclaration(sb, <ts.EnumDeclaration>node);
-	     *   break;
-	     * case ts.SyntaxKind.EnumMember:
-	     *   // Sb.appendLine();
-	     *   break;
-	     * case ts.SyntaxKind.CallSignature:
-	     * case ts.SyntaxKind.FunctionDeclaration:
-	     * case ts.SyntaxKind.MethodDeclaration:
-	     * case ts.SyntaxKind.MethodSignature:
-	     *   // This._emitMethodDeclaration(sb, <ts.MethodDeclaration>node);
-	     *   break;
-	     * case ts.SyntaxKind.Constructor:
-	     *   // This._emitConstructorDeclaration(sb, <ts.ConstructorDeclaration>node);
-	     *   break;
-	     * case ts.SyntaxKind.FunctionExpression:
+	     * Case ts.SyntaxKind.Constructor:
+	     *   return jsdocBuilder.getMethodDeclarationJsdoc(<ts.ConstructorDeclaration>node);
+	     */
+	    /*
+	     * Case ts.SyntaxKind.FunctionExpression:
 	     * case ts.SyntaxKind.ArrowFunction:
 	     *   return '';
 	     *   // This._emitFunctionExpression(sb, <ts.FunctionExpression>node, sourceFile);
@@ -178,6 +172,7 @@ export class JsdocGenerator {
 	     *   return '';
 	     *   // This._emitVariableDeclaration(sb, <ts.VariableDeclaration>node, sourceFile);
 	     */
+	    case ts.SyntaxKind.EnumMember:
 	    default:
 	      return jsdocBuilder.emptyJsdoc;
 	  }

@@ -1,7 +1,7 @@
 {
 	"name": "jsdoc-generator",
 	"displayName": "JSDoc Generator",
-	"description": "Automatic JSDoc generator. Works better with TypeScript, but can be helpful also with JavaScript.",
+	"description": "Automatic JSDoc generator for TypeScript.",
 	"version": "0.0.1",
 	"engines": {
 		"vscode": "^1.57.0"
@@ -11,7 +11,6 @@
 	],
 	"activationEvents": [
 		"onLanguage:typescript",
-		"onLanguage:javascript",
 		"onCommand:jsdoc-generator.generateJsdocFiles"
 	],
 	"main": "./out/extension.js",
@@ -66,7 +65,17 @@
 				"jsdoc-generator.includeParenthesisForMultipleTypes": {
 					"type": "boolean",
 					"default": "true",
-					"description": "When enabled, will put round brackets around union and intersection types. Note that round brackets will still be used if manually put in the type or for union and intersection types if they are also optional or mandatory."
+					"description": "When enabled, will include round brackets around union and intersection types.\nNote that round brackets will still be used if manually put in the type or for union and intersection types which are also optional or mandatory."
+				},
+				"jsdoc-generator.includeDescriptionForConstructors": {
+					"type": "boolean",
+					"default": "false",
+					"description": "When enabled, will include a description for constructors."
+				},
+				"jsdoc-generator.descriptionForConstructors": {
+					"type": "string",
+					"default": "Creates an instance of {Object}.",
+					"description": "When jsdoc-generator.includeDescriptionForConstructors is enabled, will include a description for constructors.\n\"{Object}\" will be replaced with the class name.\nFor default exported classes, \"{Object}\" will be set as a placeholder.\nIf this value is empty, but jsdoc-generator.includeDescriptionForConstructors is enabled, jsdoc-generator.descriptionPlaceholder will be used instead."
 				}
 			}
 		}

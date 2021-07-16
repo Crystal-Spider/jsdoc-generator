@@ -1,6 +1,14 @@
 import * as vscode from 'vscode';
 // eslint-disable-next-line max-len
-import {CompletionItem, TextDocument, Position, CancellationToken, ExtensionContext, Range, CompletionItemKind} from 'vscode';
+import {
+  CompletionItem,
+  TextDocument,
+  Position,
+  CancellationToken,
+  ExtensionContext,
+  Range,
+  CompletionItemKind
+} from 'vscode';
 
 import {JsdocGenerator} from './JsdocGenerator';
 
@@ -126,4 +134,17 @@ export function activate(context: ExtensionContext) {
  */
 export function deactivate() {
   // Empty on purpose
+}
+
+/**
+ * Returns the value of the specified configuration.
+ *
+ * @export
+ * @template T
+ * @param {string} configurationName
+ * @param {T} defaultValue
+ * @returns {T}
+ */
+export function getConfig<T>(configurationName: string, defaultValue: T): T {
+  return vscode.workspace.getConfiguration().get(configurationName, defaultValue);
 }

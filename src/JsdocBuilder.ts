@@ -1,8 +1,17 @@
 import {Node, SyntaxKind, NodeArray, TypeNode, ExpressionWithTypeArguments} from 'typescript';
 import * as ts from 'typescript';
-import {SnippetString, workspace} from 'vscode';
+import {SnippetString} from 'vscode';
 
+import {getConfig} from './extension';
 import {TsFile} from './TsFile';
+import {UndefTemplate} from './UndefTemplate';
+
+/**
+ * Utility type to group all {@link Node}s that can have a TypeScript type.
+ *
+ * @typedef {typedNode}
+ */
+type typedNode = ts.PropertyDeclaration | ts.AccessorDeclaration | ts.ParameterDeclaration | ts.MethodDeclaration;
 
 /**
  * JSDoc builder
@@ -73,17 +82,69 @@ export class JsdocBuilder {
 	  // TODO: add configuration to document arrow function as functions and not properties.
 	  this.buildJsdocHeader();
 	  this.buildJsdocModifiers(node);
-	  this.buildJsdocType(node);
+	  this.buildJsdocLine('type', this.retrieveType(node));
 	  this.buildJsdocEnd();
  	  return this.jsdoc;
  	}
 
+	/**
+	 * Builds and returns the JSDoc for accessor declarations.
+	 *
+	 * @param {ts.AccessorDeclaration} node
+	 * @returns {SnippetString}
+	 */
 	public getAccessorDeclarationJsdoc(node: ts.AccessorDeclaration): SnippetString {
-	  this.buildJsdocHeader();
- 	  this.buildJsdocModifiers(node);
-	  this.buildJsdocType(node);
- 	  this.buildJsdocEnd();
+	  const otherAccessorKind = node.kind === SyntaxKind.GetAccessor ? SyntaxKind.SetAccessor : SyntaxKind.GetAccessor;
+	  const accessorName = node.name.getText();
+	  const accessorParent = <ts.ClassLikeDeclaration>node.parent;
+	  const pairedAccessor = <ts.AccessorDeclaration>accessorParent.members
+	    .find((member) => member.kind === otherAccessorKind && member.name && member.name.getText() === accessorName);
+	  if(pairedAccessor && ts.getJSDocTags(pairedAccessor).length > 0) {
+	    this.jsdoc.appendText('/**\n');
+	    const pairedJsDoc = <ts.JSDoc>ts.getJSDocTags(pairedAccessor)[0].parent;
+	    this.buildDescription(pairedJsDoc.comment ? ts.getTextOfJSDocComment(pairedJsDoc.comment) : '');
+	  } else {
+	    this.buildJsdocHeader();
+	    this.buildJsdocModifiers(node);
+	    if(node.kind === SyntaxKind.GetAccessor && !pairedAccessor) {
+	      this.buildJsdocLine('readonly');
+	    }
+	    this.buildJsdocLine('type', this.retrieveType(node));
+	  }
+	  this.buildJsdocEnd();
  	  return this.jsdoc;
+	}
+
+	/**
+	 * Builds and returns the JSDoc for enum declarations.
+	 *
+	 * @param {ts.EnumDeclaration} node
+	 * @returns {SnippetString}
+	 */
+	public getEnumDeclarationJsdoc(node: ts.EnumDeclaration): SnippetString {
+	  this.buildJsdocHeader();
+	  this.buildJsdocModifiers(node);
+	  this.buildJsdocLine('enum', 'number');
+	  this.buildJsdocEnd();
+	  return this.jsdoc;
+	}
+
+	/**
+	 * Builds and returns the JSDoc for method declarations.
+	 *
+	 * @param {ts.MethodDeclaration} node
+	 * @returns {SnippetString}
+	 */
+	public getMethodDeclarationJsdoc(node: ts.MethodDeclaration): SnippetString {
+	  this.buildJsdocHeader();
+	  this.buildJsdocModifiers(node);
+	  if(node.typeParameters) {
+	    this.buildJsdocLines('template', node.typeParameters.map((typeParameter) => typeParameter.getText()), '');
+	  }
+	  this.buildJsdocParameters(node);
+	  this.buildJsdocReturn(node);
+	  this.buildJsdocEnd();
+	  return this.jsdoc;
 	}
 
  	/**
@@ -130,73 +191,12 @@ export class JsdocBuilder {
  	}
 
 	/**
-	 * Given the node, builds the type tag and value adding parenthesis when needed.
+	 * Builds all heritage clauses for a class or interface declaration.
 	 *
 	 * @private
-	 * @param {ts.PropertyDeclaration | ts.AccessorDeclaration} node
+	 * @param {(ts.ClassDeclaration | ts.InterfaceDeclaration)} node
 	 */
-	private buildJsdocType(node: ts.PropertyDeclaration | ts.AccessorDeclaration) {
-	  const type = this.retrieveType(node);
-	  if(this.checkParenthesisUse(type)) {
-	    this.buildJsdocLine('type', type.charAt(0) + '(' + type.substring(1) + ')');
-	  } else {
-	    this.buildJsdocLine('type', type);
-	  }
-	}
-
-	/**
-	 * Retrieves a string representing the type of the given node.
-	 *
-	 * @private
-	 * @param {(ts.PropertyDeclaration | ts.AccessorDeclaration)} node
-	 * @returns {string} string representing the node type.
-	 */
-	private retrieveType(node: ts.PropertyDeclaration | ts.AccessorDeclaration): string {
-	  const prefix = this.getTypePrefix(<ts.PropertyDeclaration>node);
-	  if(!node.type) {
-	    return prefix + this.inferType(node);
-	  }
-	  if(node.type.getText() === 'any') {
-	    return prefix + '*';
-	  }
-	  return prefix + node.type.getText();
-	}
-
-	/**
-	 * Check if the type of the node has a modifier and returns it.
-	 *
-	 * @private
-	 * @param {ts.PropertyDeclaration} node
-	 * @returns {string} type modifier [?, !], empty if none.
-	 */
-	private getTypePrefix(node: ts.PropertyDeclaration): string {
-	  if(node.questionToken) {
-	    return '?';
-	  }
-	  if(node.exclamationToken) {
-	    return '!';
-	  }
-	  return '';
-	}
-
-	/**
-	 * Checks whether or not to use parenthesis to wrap union and intersection types.
-	 *
-	 * @private
-	 * @param {string} type
-	 * @returns {boolean}
-	 */
-	private checkParenthesisUse(type: string): boolean {
-	  return (
-	    (type.includes('|') || type.includes('&')) &&
-			(
-			  workspace.getConfiguration().get('jsdoc-generator.includeParenthesisForMultipleTypes', true) ||
-				type.includes('?') || type.includes('!')
-			)
-	  );
-	}
-
- 	private buildJsdocHeritage(node: ts.ClassDeclaration | ts.InterfaceDeclaration) {
+	private buildJsdocHeritage(node: ts.ClassDeclaration | ts.InterfaceDeclaration) {
   	if(node.heritageClauses) {
   		node.heritageClauses.forEach((heritageClause) => {
   			switch(heritageClause.token) {
@@ -212,24 +212,51 @@ export class JsdocBuilder {
   	}
  	}
 
- 	private getMultipleTypes(types: NodeArray<ExpressionWithTypeArguments>): string[] {
- 	  return types.map((type) => type.expression.getText() + this.getTypeArguments(type.typeArguments));
- 	}
-
- 	private getTypeArguments(typeArguments: NodeArray<TypeNode> | undefined): string {
- 	  return typeArguments ? '<' + typeArguments.map((typeArgument) => typeArgument.getText()).join(', ') + '>' : '';
- 	}
-
 	/**
-	 * Calls tsFile.inferType() and formats the result for JSDoc.
+	 * Builds all parameters for method declarations, including constructors and arrow functions.
 	 *
 	 * @private
-	 * @param {Node} node
-	 * @returns {string}
+	 * @param {(ts.MethodDeclaration | ts.ConstructorDeclaration)} node
 	 */
-	private inferType(node: Node): string {
-	  const inferredType = this.tsFile.inferType(node);
-	  return (inferredType === '' || inferredType === 'any') ? '*' : inferredType;
+	private buildJsdocParameters(node: ts.MethodDeclaration | ts.ConstructorDeclaration) {
+	  const mappedParameters = node.parameters.map((parameter) => {
+	    let name = parameter.name.getText();
+	    const type = this.retrieveType(parameter);
+	    const initializer = parameter.initializer ? ('=' + parameter.initializer.getText()) : '';
+	    const isOptional = !!parameter.questionToken || !!initializer;
+	    if(isOptional) {
+	      name = '[' + name + initializer + ']';
+	    }
+	    return {
+	      type,
+	      name
+	    };
+	  });
+	  const parametersTypes = mappedParameters.map((param) => param.type);
+	  const parametersNames = mappedParameters.map((param) => param.name);
+	  this.buildJsdocLines('param', parametersTypes, '{}', parametersNames);
+	}
+
+	/**
+	 * Builds the return value, if present, for the given method.
+	 *
+	 * @private
+	 * @param {ts.MethodDeclaration} node
+	 */
+	private buildJsdocReturn(node: ts.MethodDeclaration) {
+	  let returnType;
+	  if(node.type) {
+	    returnType = node.type.getText();
+	  } else {
+	    const functionType = this.inferType(node);
+	    returnType = functionType.substring(functionType.split('=> ')[0].length + 3);
+	  }
+	  if(returnType === 'any') {
+	    returnType = '*';
+	  }
+	  if(returnType !== 'void') {
+	    this.buildJsdocLine('returns', returnType);
+	  }
 	}
 
 	/**
@@ -240,7 +267,7 @@ export class JsdocBuilder {
 	 * @type {SnippetString}
 	 */
  	public get emptyJsdoc(): SnippetString {
-	  this.buildJsdocHeader();
+	  this.buildJsdocHeader(false);
  	  this.buildJsdocEnd();
   	return this.jsdoc;
  	}
@@ -249,25 +276,31 @@ export class JsdocBuilder {
 	 * Builds a JSDoc header including the starting line.
 	 *
 	 * @private
+	 * @param {boolean} [addNewLine=true]
 	 */
- 	private buildJsdocHeader() {
+ 	private buildJsdocHeader(addNewLine: boolean = true) {
   	this.jsdoc.appendText('/**\n');
-  	this.buildDescription();
-  	this.buildAuthor();
-  	this.buildDate();
-  	this.buildJsdocLine();
+	  this.buildDescription();
+	  this.buildDate();
+	  this.buildAuthor();
+	  if(addNewLine) {
+	    this.buildJsdocLine();
+	  }
  	}
 
  	/**
  	 * Builds a line starting with a space and a configurable placeholder for a JSDoc description.
  	 *
  	 * @private
+ 	 * @param {string} [description='']
  	 */
- 	private buildDescription() {
+	private buildDescription(description: string = '') {
   	this.jsdoc.appendText(' * ');
- 	  if(workspace.getConfiguration().get('jsdoc-generator.includeDescriptionPlaceholder', true)) {
+	  if(description) {
+	    this.jsdoc.appendText(description);
+	  } else if(getConfig<boolean>('jsdoc-generator.includeDescriptionPlaceholder', true)) {
  	    this.jsdoc.appendPlaceholder(
- 	      workspace.getConfiguration().get('jsdoc-generator.descriptionPlaceholder', 'Description placeholder')
+	      getConfig<string>('jsdoc-generator.descriptionPlaceholder', 'Description placeholder')
  	    );
  	  }
   	this.jsdoc.appendText('\n');
@@ -279,8 +312,8 @@ export class JsdocBuilder {
  	 * @private
  	 */
  	private buildAuthor() {
- 	  if(workspace.getConfiguration().get('jsdoc-generator.includeAuthor', false)) {
- 	    this.buildJsdocLine('author', workspace.getConfiguration().get('jsdoc-generator.author', 'Insert author'), '');
+ 	  if(getConfig<boolean>('jsdoc-generator.includeAuthor', false)) {
+ 	    this.buildJsdocLine('author', getConfig<string>('jsdoc-generator.author', 'Insert author'), '');
  	  }
  	}
 
@@ -290,10 +323,10 @@ export class JsdocBuilder {
  	 * @private
  	 */
  	private buildDate() {
- 	  if(workspace.getConfiguration().get('jsdoc-generator.includeDate', false)) {
+ 	  if(getConfig<boolean>('jsdoc-generator.includeDate', false)) {
  	    const date = new Date();
 	    let tagValue = date.toLocaleDateString();
-	    if(workspace.getConfiguration().get('jsdoc-generator.includeTime', false)) {
+	    if(getConfig<boolean>('jsdoc-generator.includeTime', false)) {
 	      tagValue += ' - ' + date.toLocaleTimeString();
 	    }
  	  	this.buildJsdocLine('date', tagValue, '');
@@ -314,15 +347,23 @@ export class JsdocBuilder {
 	 * When using all the default values, an empty JSDoc line is built.
 	 * It is possible to create several empty JSDoc lines by setting tagValues as an array with several empty strings.
 	 * The same tag and wrapper will be used for all tagValues in separate lines.
+	 * tagValues and extraValues are used in order as found in the array.
 	 *
 	 * @private
 	 * @param {string} [tag=''] JSDoc tag to insert.
-	 * @param {string[]} [tagValues=['']] JSDoc tag values to insert
+	 * @param {string[]} [tagValues=['']] JSDoc tag values to insert.
 	 * @param {string} [wrapper='{}'] A string used to wrap the tagValue. Should be of even elements and symmetrical.
+	 * @param {string[]} [extraValues=[]] Extra values for each tag line.
 	 */
- 	private buildJsdocLines(tag = '', tagValues: string[] = [''], wrapper = '{}') {
-	  tagValues.forEach((tagValue) => {
-	    this.buildJsdocLine(tag, tagValue, wrapper);
+	private buildJsdocLines(
+		 tag: string = '',
+		 tagValues: string[] = [''],
+		 wrapper: string = '{}',
+		 extraValues: string[] = []
+	) {
+	  tagValues.forEach((tagValue, index) => {
+	    const extraValue = extraValues[index] ? extraValues[index] : '';
+	    this.buildJsdocLine(tag, tagValue, wrapper, extraValue);
 	  });
 	}
 
@@ -335,19 +376,127 @@ export class JsdocBuilder {
 	 * @param {string} [tag=''] JSDoc tag to insert.
 	 * @param {string} [tagValue=''] JSDoc tag value to insert.
 	 * @param {string} [wrapper='{}'] A string used to wrap the tagValue. Should be of even elements and symmetrical.
+	 * @param {string} [extraValue=''] An extra value to add to the line.
 	 */
-	private buildJsdocLine(tag = '', tagValue = '', wrapper = '{}') {
-	  let open = '', close = '';
+	private buildJsdocLine(tag: string = '', tagValue: string = '', wrapper: string = '{}', extraValue: string = '') {
+	  let open = '', close = '', line = '';
 	  if(!!wrapper) {
-		 const middle = wrapper.length / 2;
+		  const middle = wrapper.length / 2;
 	    open = wrapper.substring(0, middle);
 	    close = wrapper.substring(middle);
 	  }
-	 this.jsdoc.appendText(' *' + (!!tag ? ` @${tag}` : '') + (!!tagValue ? ` ${open}${tagValue}${close}` : '') + '\n');
-	 if(!!tagValue && wrapper === '{}') {
-		 // Remove '\' that comes from .appendText() escaping '}'.
-		 const backslashIndex = this.jsdoc.value.indexOf('\\');
-		 this.jsdoc.value = this.jsdoc.value.substring(0, backslashIndex) + this.jsdoc.value.substring(backslashIndex + 1);
-	 }
+	  if(tag) {
+	    line += ' @' + tag;
+	    if(tagValue) {
+	      line += ' ' + open + tagValue + close;
+	      if(extraValue) {
+	        line += ' ' + extraValue;
+	      }
+	    }
+	  }
+	  this.jsdoc.appendText(' *' + line + '\n');
+	  if(!!tagValue && wrapper === '{}') {
+	    // Remove '\' that comes from .appendText() escaping '}'.
+	    const backslashIndex = this.jsdoc.value.indexOf('\\');
+	    this.jsdoc.value = this.jsdoc.value.substring(0, backslashIndex) + this.jsdoc.value.substring(backslashIndex + 1);
+	  }
+	}
+
+	/**
+	 * Maps each {@link ExpressionWithTypeArguments} with its type and eventual type arguments.
+	 *
+	 * @private
+	 * @param {NodeArray<ExpressionWithTypeArguments>} types
+	 * @returns {string[]}
+	 */
+	private getMultipleTypes(types: NodeArray<ExpressionWithTypeArguments>): string[] {
+	  return types.map((type) => type.expression.getText() + this.getTypeArguments(type.typeArguments));
+	}
+
+	/**
+	 * If any, returns all the type arguments formatted for JSDoc, otherwise returns '';
+	 *
+	 * @private
+	 * @param {UndefTemplate<NodeArray<TypeNode>>} typeArguments
+	 * @returns {string}
+	 */
+	private getTypeArguments(typeArguments: UndefTemplate<NodeArray<TypeNode>>): string {
+	  return typeArguments ? '<' + typeArguments.map((typeArgument) => typeArgument.getText()).join(', ') + '>' : '';
+	}
+
+	/**
+	 * Retrieves a string representing the type of the given node.
+	 *
+	 * @private
+	 * @param {typedNode} node
+	 * @returns {string} string representing the node type.
+	 */
+	private retrieveType(node: typedNode): string {
+	  let type;
+	  const prefix = this.getTypePrefix(node);
+	  if(!node.type) {
+	    type = this.inferType(node);
+	  } else if(node.type.getText() === 'any') {
+	    type = '*';
+	  } else {
+	    type = node.type.getText();
+	  }
+	  if(this.checkParenthesisUse(prefix, type)) {
+	    type = '(' + type + ')';
+	  }
+	  return prefix + type;
+	}
+
+	/**
+	 * Check if the type of the node has a modifier and returns it.
+	 *
+	 * @private
+	 * @param {typedNode} node
+	 * @returns {string} type modifier [?, !, ..., *], empty if none.
+	 */
+	private getTypePrefix(node: typedNode): string {
+	  if(node.questionToken) {
+	    return '?';
+	  }
+	  if((<ts.PropertyDeclaration>node).exclamationToken) {
+	    return '!';
+	  }
+	  if((<ts.ParameterDeclaration>node).dotDotDotToken) {
+	    return '...';
+	  }
+	  if((<ts.AccessorDeclaration>node).asteriskToken) {
+	    return '*';
+	  }
+	  return '';
+	}
+
+	/**
+	 * Calls tsFile.inferType() and formats the result for JSDoc.
+	 *
+	 * @private
+	 * @param {Node} node
+	 * @returns {string}
+	 */
+	private inferType(node: Node): string {
+	  const inferredType = this.tsFile.inferType(node);
+	  return (inferredType === '' || inferredType === 'any') ? '*' : inferredType;
+	}
+
+	/**
+	 * Checks whether or not to use parenthesis to wrap union and intersection types.
+	 *
+	 * @private
+	 * @param {string} prefix
+	 * @param {string} type
+	 * @returns {boolean}
+	 */
+	private checkParenthesisUse(prefix: string, type: string): boolean {
+	  return (
+	    (type.includes('|') || type.includes('&')) &&
+			(
+			  getConfig<boolean>('jsdoc-generator.includeParenthesisForMultipleTypes', true) ||
+				prefix !== ''
+			)
+	  );
 	}
 }

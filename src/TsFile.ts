@@ -119,7 +119,7 @@ export class TsFile {
 	 * @private
 	 * @param {Node} source initial node in which to search
 	 * @param {number} position
-	 * @param {Node} parent needed for recursive calls, defaults to source
+	 * @param {Node} [parent=source] needed for recursive calls, defaults to source
 	 * @returns {Node}
 	 */
 	private findNode(source: Node, position: number, parent: Node = source): Node {
