@@ -5,8 +5,7 @@ import {
   SourceFile,
   SyntaxKind,
   TextChangeRange,
-  TextSpan,
-  VariableDeclarationList
+  TextSpan
 } from 'typescript';
 import {Position} from 'vscode';
 
@@ -36,7 +35,6 @@ export class TsFile {
 	  SyntaxKind.GetAccessor,
 	  SyntaxKind.SetAccessor,
 	  SyntaxKind.CallSignature,
-	  SyntaxKind.VariableDeclarationList,
 	  SyntaxKind.FunctionDeclaration,
 	  SyntaxKind.ClassDeclaration,
 	  SyntaxKind.InterfaceDeclaration,
@@ -141,9 +139,6 @@ export class TsFile {
 	  let parent = node;
 	  while(parent) {
 	    if(this.supportedNodes.includes(parent.kind)) {
-	      if(parent.kind === SyntaxKind.VariableDeclarationList) {
-	        return (<VariableDeclarationList> parent).declarations[0];
-	      }
 	      return parent;
 	    }
 	    ({parent} = parent);

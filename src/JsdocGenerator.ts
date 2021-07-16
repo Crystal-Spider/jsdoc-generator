@@ -142,25 +142,27 @@ export class JsdocGenerator {
 	  const jsdocBuilder = new JsdocBuilder(tsFile);
 
 	  switch(node.kind) {
+	    case ts.SyntaxKind.PropertySignature:
+	    case ts.SyntaxKind.PropertyDeclaration:
+	      return jsdocBuilder.getPropertyDeclarationJsdoc(<ts.PropertyDeclaration>node);
+	    case ts.SyntaxKind.Constructor:
+	      return jsdocBuilder.getConstructorJsdoc(<ts.ConstructorDeclaration>node);
+	    case ts.SyntaxKind.GetAccessor:
+	    case ts.SyntaxKind.SetAccessor:
+	      return jsdocBuilder.getAccessorDeclarationJsdoc(<ts.AccessorDeclaration>node);
+	    case ts.SyntaxKind.MethodSignature:
+	    case ts.SyntaxKind.MethodDeclaration:
+	    case ts.SyntaxKind.CallSignature:
+	    case ts.SyntaxKind.FunctionDeclaration:
+	      return jsdocBuilder.getMethodDeclarationJsdoc(<ts.MethodDeclaration>node);
 	    case ts.SyntaxKind.ClassDeclaration:
 	      return jsdocBuilder.getClassLikeDeclarationJsdoc(<ts.ClassDeclaration>node);
 	    case ts.SyntaxKind.InterfaceDeclaration:
 	      return jsdocBuilder.getClassLikeDeclarationJsdoc(<ts.InterfaceDeclaration>node);
-	    case ts.SyntaxKind.PropertyDeclaration:
-	    case ts.SyntaxKind.PropertySignature:
-	      return jsdocBuilder.getPropertyDeclarationJsdoc(<ts.PropertyDeclaration>node);
-	    case ts.SyntaxKind.GetAccessor:
-	    case ts.SyntaxKind.SetAccessor:
-	      return jsdocBuilder.getAccessorDeclarationJsdoc(<ts.AccessorDeclaration>node);
+	    case ts.SyntaxKind.TypeAliasDeclaration:
+	      return jsdocBuilder.emptyJsdoc;
 	    case ts.SyntaxKind.EnumDeclaration:
 	      return jsdocBuilder.getEnumDeclarationJsdoc(<ts.EnumDeclaration>node);
-	    case ts.SyntaxKind.CallSignature:
-	    case ts.SyntaxKind.FunctionDeclaration:
-	    case ts.SyntaxKind.MethodDeclaration:
-	    case ts.SyntaxKind.MethodSignature:
-	      return jsdocBuilder.getMethodDeclarationJsdoc(<ts.MethodDeclaration>node);
-	    case ts.SyntaxKind.Constructor:
-	    	return jsdocBuilder.getConstructorJsdoc(<ts.ConstructorDeclaration>node);
 	    case ts.SyntaxKind.EnumMember:
 	    default:
 	      return jsdocBuilder.emptyJsdoc;
