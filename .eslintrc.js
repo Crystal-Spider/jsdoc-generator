@@ -19,7 +19,6 @@ module.exports = {
         format: ['UPPER_CASE']
       }
     ],
-    '@typescript-eslint/no-inferrable-types': 'warn',
     'comma-dangle': ['warn', 'never'],
     'no-cond-assign': ['error', 'always'],
     'no-console': 'warn',
