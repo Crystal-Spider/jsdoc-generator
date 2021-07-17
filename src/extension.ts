@@ -116,13 +116,13 @@ export function activate(context: ExtensionContext) {
   const generateJsdocFile = vscode.commands.registerCommand('jsdoc-generator.generateJsdocFile', () => {
     lazyInstantiateJsdocGenerator();
     // TODO: implement
-    vscode.window.showInformationMessage('Generating JSDoc for this file...');
+    vscode.window.showWarningMessage('This function is not available yet.');
   });
   // Generates JSDoc for every suitable element in every ts or js file.
   const generateJsdocFiles = vscode.commands.registerCommand('jsdoc-generator.generateJsdocFiles', () => {
     lazyInstantiateJsdocGenerator();
     // TODO: implement
-    vscode.window.showInformationMessage('Generating JSDoc for every file...');
+    vscode.window.showWarningMessage('This function is not available yet.');
   });
   context.subscriptions.push(generateJsdoc, generateJsdocFile, generateJsdocFiles, generateJsdocAutocompletion);
 }
