@@ -157,15 +157,8 @@ export class JsdocBuilder {
   	this.jsdoc.appendText('/**\n');
 	  const constructorDescription = getConfig<string>('jsdoc-generator.descriptionForConstructors', '');
 	  const className = node.parent.name;
-	  if(constructorDescription) {
-	    if(className) {
-	      this.buildDescription(constructorDescription.replace('{Object}', className.getText()));
-	    } else {
-	      constructorDescription.replace('{Object}', '');
-	      this.jsdoc.appendText(' * ' + constructorDescription);
-	      this.jsdoc.appendPlaceholder('{Object}');
-	      this.jsdoc.appendText('\n');
-	    }
+	  if(constructorDescription && className) {
+	    this.buildDescription(constructorDescription.replace('{Object}', className.getText()));
 	  }
 	  this.buildDate();
 	  this.buildAuthor();
@@ -374,6 +367,9 @@ export class JsdocBuilder {
  	 * @private
  	 */
  	private buildJsdocEnd() {
+	  if(this.jsdoc.value.endsWith('\n *\n') && (this.jsdoc.value.match(/\n/g) || []).length > 2) {
+	    this.jsdoc.value = this.jsdoc.value.slice(0, -3);
+	  }
   	this.jsdoc.appendText(' */\n');
  	}
 

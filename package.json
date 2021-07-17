@@ -60,7 +60,7 @@
 				"jsdoc-generator.descriptionForConstructors": {
 					"type": "string",
 					"default": "Creates an instance of {Object}.",
-					"description": "\"{Object}\" will be replaced with the class name.\nFor default exported classes without a name, \"{Object}\" will be set as a placeholder.\nEmpty to disable."
+					"description": "\"{Object}\" will be replaced with the class name.\nFor default exported classes without a name jsdoc-generator.descriptionPlaceholder will be used instead.\nEmpty to disable."
 				}
 			}
 		}
