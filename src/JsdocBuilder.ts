@@ -1,5 +1,25 @@
-import {Node, SyntaxKind, NodeArray, TypeNode, ExpressionWithTypeArguments} from 'typescript';
-import * as ts from 'typescript';
+import {
+  JSDoc,
+  getJSDocTags,
+  getTextOfJSDocComment,
+  Node,
+  SyntaxKind,
+  NodeArray,
+  TypeNode,
+  ExpressionWithTypeArguments,
+  TypeParameterDeclaration,
+  HeritageClause,
+  ModifiersArray,
+  AccessorDeclaration,
+  ClassDeclaration,
+  ClassLikeDeclaration,
+  ConstructorDeclaration,
+  EnumDeclaration,
+  InterfaceDeclaration,
+  MethodDeclaration,
+  ParameterDeclaration,
+  PropertyDeclaration
+} from 'typescript';
 import {SnippetString} from 'vscode';
 
 import {getConfig} from './extension';
@@ -11,7 +31,7 @@ import {UndefTemplate} from './UndefTemplate';
  *
  * @typedef {typedNode}
  */
-type typedNode = ts.PropertyDeclaration | ts.AccessorDeclaration | ts.ParameterDeclaration | ts.MethodDeclaration;
+type typedNode = PropertyDeclaration | AccessorDeclaration | ParameterDeclaration | MethodDeclaration;
 
 /**
  * JSDoc builder
@@ -50,23 +70,21 @@ export class JsdocBuilder {
  	 * Builds and returns the JSDoc for classes and interfaces.
  	 *
  	 * @public
- 	 * @param {ts.ClassDeclaration | ts.InterfaceDeclaration} node {@link ts.Node} representing a
- 	 * {@link ts.ClassDeclaration} or a {@link ts.InterfaceDeclaration}.
+ 	 * @param {ClassDeclaration | InterfaceDeclaration} node {@link Node} representing a
+ 	 * {@link ClassDeclaration} or a {@link InterfaceDeclaration}.
  	 * @returns {SnippetString} the jsdoc
  	 */
-	public getClassLikeDeclarationJsdoc(node: ts.ClassDeclaration | ts.InterfaceDeclaration): SnippetString {
+	public getClassLikeDeclarationJsdoc(node: ClassDeclaration | InterfaceDeclaration): SnippetString {
   	this.buildJsdocHeader();
-  	this.buildJsdocModifiers(node);
+  	this.buildJsdocModifiers(node.modifiers);
   	if(node.name) {
 	    this.buildJsdocLine(node.kind === SyntaxKind.ClassDeclaration ? 'class' : 'interface', node.name.getText(), '');
   		this.buildJsdocLine('typedef', node.name.getText());
 	  } else {
 	    this.buildJsdocLine(node.kind === SyntaxKind.ClassDeclaration ? 'class' : 'interface');
 	  }
-  	this.buildJsdocHeritage(node);
-	  if(node.typeParameters) {
-	    this.buildJsdocLines('template', node.typeParameters.map((typeParameter) => typeParameter.getText()), '');
-	  }
+	  this.buildTypeParameters(node.typeParameters);
+  	this.buildJsdocHeritage(node.heritageClauses);
   	this.buildJsdocEnd();
   	return this.jsdoc;
  	}
@@ -75,37 +93,40 @@ export class JsdocBuilder {
 	 * Builds and returns the JSDoc for property declarations.
 	 *
 	 * @public
-	 * @param {ts.PropertyDeclaration} node
+	 * @param {PropertyDeclaration} node
 	 * @returns {SnippetString}
 	 */
-	public getPropertyDeclarationJsdoc(node: ts.PropertyDeclaration): SnippetString {
-	  // TODO: add configuration to document arrow function as functions and not properties.
-	  this.buildJsdocHeader();
-	  this.buildJsdocModifiers(node);
-	  this.buildJsdocLine('type', this.retrieveType(node));
-	  this.buildJsdocEnd();
+	public getPropertyDeclarationJsdoc(node: PropertyDeclaration): SnippetString {
+	  const arrowFunction = node.getChildren().find((child) => child.kind === SyntaxKind.ArrowFunction);
+	  if(getConfig<boolean>('jsdoc-generator.arrowsAsFunctions', true) && arrowFunction) {
+	    this.getMethodDeclarationJsdoc(<MethodDeclaration>arrowFunction);
+	  } else {
+	    this.buildJsdocHeader();
+	    this.buildJsdocModifiers(node.modifiers);
+	    this.buildJsdocLine('type', this.retrieveType(node));
+	    this.buildJsdocEnd();
+	  }
  	  return this.jsdoc;
  	}
 
 	/**
 	 * Builds and returns the JSDoc for accessor declarations.
 	 *
-	 * @param {ts.AccessorDeclaration} node
+	 * @param {AccessorDeclaration} node
 	 * @returns {SnippetString}
 	 */
-	public getAccessorDeclarationJsdoc(node: ts.AccessorDeclaration): SnippetString {
+	public getAccessorDeclarationJsdoc(node: AccessorDeclaration): SnippetString {
 	  const otherAccessorKind = node.kind === SyntaxKind.GetAccessor ? SyntaxKind.SetAccessor : SyntaxKind.GetAccessor;
 	  const accessorName = node.name.getText();
-	  const accessorParent = <ts.ClassLikeDeclaration>node.parent;
-	  const pairedAccessor = <ts.AccessorDeclaration>accessorParent.members
+	  const pairedAccessor = <AccessorDeclaration>(<ClassLikeDeclaration>node.parent).members
 	    .find((member) => member.kind === otherAccessorKind && member.name && member.name.getText() === accessorName);
-	  if(pairedAccessor && ts.getJSDocTags(pairedAccessor).length > 0) {
+	  if(pairedAccessor && getJSDocTags(pairedAccessor).length > 0) {
 	    this.jsdoc.appendText('/**\n');
-	    const pairedJsDoc = <ts.JSDoc>ts.getJSDocTags(pairedAccessor)[0].parent;
-	    this.buildDescription(pairedJsDoc.comment ? ts.getTextOfJSDocComment(pairedJsDoc.comment) : '');
+	    const pairedDescription = getTextOfJSDocComment((<JSDoc>getJSDocTags(pairedAccessor)[0].parent).comment);
+	    this.buildDescription(pairedDescription ? pairedDescription : '');
 	  } else {
 	    this.buildJsdocHeader();
-	    this.buildJsdocModifiers(node);
+	    this.buildJsdocModifiers(node.modifiers);
 	    if(node.kind === SyntaxKind.GetAccessor && !pairedAccessor) {
 	      this.buildJsdocLine('readonly');
 	    }
@@ -118,12 +139,12 @@ export class JsdocBuilder {
 	/**
 	 * Builds and returns the JSDoc for enum declarations.
 	 *
-	 * @param {ts.EnumDeclaration} node
+	 * @param {EnumDeclaration} node
 	 * @returns {SnippetString}
 	 */
-	public getEnumDeclarationJsdoc(node: ts.EnumDeclaration): SnippetString {
+	public getEnumDeclarationJsdoc(node: EnumDeclaration): SnippetString {
 	  this.buildJsdocHeader();
-	  this.buildJsdocModifiers(node);
+	  this.buildJsdocModifiers(node.modifiers);
 	  this.buildJsdocLine('enum', 'number');
 	  this.buildJsdocEnd();
 	  return this.jsdoc;
@@ -132,16 +153,14 @@ export class JsdocBuilder {
 	/**
 	 * Builds and returns the JSDoc for method declarations.
 	 *
-	 * @param {ts.MethodDeclaration} node
+	 * @param {MethodDeclaration} node
 	 * @returns {SnippetString}
 	 */
-	public getMethodDeclarationJsdoc(node: ts.MethodDeclaration): SnippetString {
+	public getMethodDeclarationJsdoc(node: MethodDeclaration): SnippetString {
 	  this.buildJsdocHeader();
-	  this.buildJsdocModifiers(node);
-	  if(node.typeParameters) {
-	    this.buildJsdocLines('template', node.typeParameters.map((typeParameter) => typeParameter.getText()), '');
-	  }
-	  this.buildJsdocParameters(node);
+	  this.buildJsdocModifiers(node.modifiers);
+	  this.buildTypeParameters(node.typeParameters);
+	  this.buildJsdocParameters(node.parameters);
 	  this.buildJsdocReturn(node);
 	  this.buildJsdocEnd();
 	  return this.jsdoc;
@@ -150,10 +169,10 @@ export class JsdocBuilder {
 	/**
 	 * Builds and returns the JSDoc for constructor declarations.
 	 *
-	 * @param {ts.ConstructorDeclaration} node
+	 * @param {ConstructorDeclaration} node
 	 * @returns {SnippetString}
 	 */
-	public getConstructorJsdoc(node: ts.ConstructorDeclaration): SnippetString {
+	public getConstructorJsdoc(node: ConstructorDeclaration): SnippetString {
   	this.jsdoc.appendText('/**\n');
 	  const constructorDescription = getConfig<string>('jsdoc-generator.descriptionForConstructors', '');
 	  const className = node.parent.name;
@@ -163,21 +182,21 @@ export class JsdocBuilder {
 	  this.buildDate();
 	  this.buildAuthor();
 	  this.buildJsdocLine();
-	  this.buildJsdocModifiers(node);
-	  this.buildJsdocParameters(node);
+	  this.buildJsdocModifiers(node.modifiers);
+	  this.buildJsdocParameters(node.parameters);
 	  this.buildJsdocEnd();
 	  return this.jsdoc;
 	}
 
  	/**
- 	 * Builds a new JSDoc line for each modifier applied on the node.
+ 	 * Builds a new JSDoc line for each modifier.
  	 *
  	 * @private
- 	 * @param {Node} node
+ 	 * @param {UndefTemplate<ModifiersArray>} modifiers
  	 */
- 	private buildJsdocModifiers(node: Node) {
-  	if(node.modifiers && node.modifiers.length > 0) {
-  		node.modifiers.forEach((modifier) => {
+ 	private buildJsdocModifiers(modifiers: UndefTemplate<ModifiersArray>) {
+  	if(modifiers && modifiers.length > 0) {
+  		modifiers.forEach((modifier) => {
   			switch(modifier.kind) {
   				case SyntaxKind.ExportKeyword:
   					this.buildJsdocLine('export');
@@ -213,14 +232,26 @@ export class JsdocBuilder {
  	}
 
 	/**
-	 * Builds all heritage clauses for a class or interface declaration.
+	 * Builds a new JSDoc line for each type parameter.
 	 *
 	 * @private
-	 * @param {(ts.ClassDeclaration | ts.InterfaceDeclaration)} node
+	 * @param {UndefTemplate<NodeArray<TypeParameterDeclaration>>} typeParameters
 	 */
-	private buildJsdocHeritage(node: ts.ClassDeclaration | ts.InterfaceDeclaration) {
-  	if(node.heritageClauses) {
-  		node.heritageClauses.forEach((heritageClause) => {
+	private buildTypeParameters(typeParameters: UndefTemplate<NodeArray<TypeParameterDeclaration>>) {
+	  if(typeParameters) {
+	    this.buildJsdocLines('template', typeParameters.map((typeParameter) => typeParameter.getText()), '');
+	  }
+	}
+
+	/**
+	 * Builds a new JSDoc line for all heritage clauses.
+	 *
+	 * @private
+	 * @param {UndefTemplate<NodeArray<HeritageClause>>} heritageClauses
+	 */
+	private buildJsdocHeritage(heritageClauses: UndefTemplate<NodeArray<HeritageClause>>) {
+  	if(heritageClauses) {
+  		heritageClauses.forEach((heritageClause) => {
   			switch(heritageClause.token) {
   				case SyntaxKind.ExtendsKeyword:
   					this.buildJsdocLines('extends', this.getMultipleTypes(heritageClause.types));
@@ -235,13 +266,13 @@ export class JsdocBuilder {
  	}
 
 	/**
-	 * Builds all parameters for method declarations, including constructors and arrow functions.
+	 * Builds a new JSDoc line for all parameters.
 	 *
 	 * @private
-	 * @param {(ts.MethodDeclaration | ts.ConstructorDeclaration)} node
+	 * @param {NodeArray<ParameterDeclaration>} parameters
 	 */
-	private buildJsdocParameters(node: ts.MethodDeclaration | ts.ConstructorDeclaration) {
-	  const mappedParameters = node.parameters.map((parameter) => {
+	private buildJsdocParameters(parameters: NodeArray<ParameterDeclaration>) {
+	  const mappedParameters = parameters.map((parameter) => {
 	    let name = parameter.name.getText();
 	    const type = this.retrieveType(parameter);
 	    const initializer = parameter.initializer ? ('=' + parameter.initializer.getText()) : '';
@@ -263,9 +294,9 @@ export class JsdocBuilder {
 	 * Builds the return value, if present, for the given method.
 	 *
 	 * @private
-	 * @param {ts.MethodDeclaration} node
+	 * @param {MethodDeclaration} node
 	 */
-	private buildJsdocReturn(node: ts.MethodDeclaration) {
+	private buildJsdocReturn(node: MethodDeclaration) {
 	  let returnType;
 	  if(node.type) {
 	    returnType = node.type.getText();
@@ -289,7 +320,7 @@ export class JsdocBuilder {
 	 * @type {SnippetString}
 	 */
  	public get emptyJsdoc(): SnippetString {
-	  this.buildJsdocHeader(false);
+	  this.buildJsdocHeader();
  	  this.buildJsdocEnd();
   	return this.jsdoc;
  	}
@@ -298,16 +329,13 @@ export class JsdocBuilder {
 	 * Builds a JSDoc header including the starting line.
 	 *
 	 * @private
-	 * @param {boolean} [addNewLine=true]
 	 */
- 	private buildJsdocHeader(addNewLine: boolean = true) {
+ 	private buildJsdocHeader() {
   	this.jsdoc.appendText('/**\n');
 	  this.buildDescription();
 	  this.buildDate();
 	  this.buildAuthor();
-	  if(addNewLine) {
-	    this.buildJsdocLine();
-	  }
+	  this.buildJsdocLine();
  	}
 
  	/**
@@ -489,13 +517,13 @@ export class JsdocBuilder {
 	  if(node.questionToken) {
 	    return '?';
 	  }
-	  if((<ts.PropertyDeclaration>node).exclamationToken) {
+	  if((<PropertyDeclaration>node).exclamationToken) {
 	    return '!';
 	  }
-	  if((<ts.ParameterDeclaration>node).dotDotDotToken) {
+	  if((<ParameterDeclaration>node).dotDotDotToken) {
 	    return '...';
 	  }
-	  if((<ts.AccessorDeclaration>node).asteriskToken) {
+	  if((<AccessorDeclaration>node).asteriskToken) {
 	    return '*';
 	  }
 	  return '';
