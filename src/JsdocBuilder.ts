@@ -18,7 +18,8 @@ import {
   InterfaceDeclaration,
   MethodDeclaration,
   ParameterDeclaration,
-  PropertyDeclaration
+  PropertyDeclaration,
+  TypeAliasDeclaration
 } from 'typescript';
 import {SnippetString} from 'vscode';
 
@@ -70,9 +71,8 @@ export class JsdocBuilder {
  	 * Builds and returns the JSDoc for classes and interfaces.
  	 *
  	 * @public
- 	 * @param {ClassDeclaration | InterfaceDeclaration} node {@link Node} representing a
- 	 * {@link ClassDeclaration} or a {@link InterfaceDeclaration}.
- 	 * @returns {SnippetString} the jsdoc
+ 	 * @param {ClassDeclaration | InterfaceDeclaration} node
+ 	 * @returns {SnippetString} - JSDoc
  	 */
 	public getClassLikeDeclarationJsdoc(node: ClassDeclaration | InterfaceDeclaration): SnippetString {
   	this.buildJsdocHeader();
@@ -94,7 +94,7 @@ export class JsdocBuilder {
 	 *
 	 * @public
 	 * @param {PropertyDeclaration} node
-	 * @returns {SnippetString}
+	 * @returns {SnippetString} - JSDoc
 	 */
 	public getPropertyDeclarationJsdoc(node: PropertyDeclaration): SnippetString {
 	  const arrowFunction = node.getChildren().find((child) => child.kind === SyntaxKind.ArrowFunction);
@@ -113,7 +113,7 @@ export class JsdocBuilder {
 	 * Builds and returns the JSDoc for accessor declarations.
 	 *
 	 * @param {AccessorDeclaration} node
-	 * @returns {SnippetString}
+	 * @returns {SnippetString} - JSDoc
 	 */
 	public getAccessorDeclarationJsdoc(node: AccessorDeclaration): SnippetString {
 	  const otherAccessorKind = node.kind === SyntaxKind.GetAccessor ? SyntaxKind.SetAccessor : SyntaxKind.GetAccessor;
@@ -140,7 +140,7 @@ export class JsdocBuilder {
 	 * Builds and returns the JSDoc for enum declarations.
 	 *
 	 * @param {EnumDeclaration} node
-	 * @returns {SnippetString}
+	 * @returns {SnippetString} - JSDoc
 	 */
 	public getEnumDeclarationJsdoc(node: EnumDeclaration): SnippetString {
 	  this.buildJsdocHeader();
@@ -154,7 +154,7 @@ export class JsdocBuilder {
 	 * Builds and returns the JSDoc for method declarations.
 	 *
 	 * @param {MethodDeclaration} node
-	 * @returns {SnippetString}
+	 * @returns {SnippetString} - JSDoc
 	 */
 	public getMethodDeclarationJsdoc(node: MethodDeclaration): SnippetString {
 	  this.buildJsdocHeader();
@@ -170,7 +170,7 @@ export class JsdocBuilder {
 	 * Builds and returns the JSDoc for constructor declarations.
 	 *
 	 * @param {ConstructorDeclaration} node
-	 * @returns {SnippetString}
+	 * @returns {SnippetString} - JSDoc
 	 */
 	public getConstructorJsdoc(node: ConstructorDeclaration): SnippetString {
   	this.jsdoc.appendText('/**\n');
@@ -186,6 +186,21 @@ export class JsdocBuilder {
 	  this.buildJsdocParameters(node.parameters);
 	  this.buildJsdocEnd();
 	  return this.jsdoc;
+	}
+
+	/**
+	 * Builds and returns the JSDoc for type aliases, union types and intersection types.
+	 *
+	 * @param {TypeAliasDeclaration} node
+	 * @returns {SnippetString} - JSDoc
+	 */
+	public getTypeAliasJsdoc(node: TypeAliasDeclaration): SnippetString {
+	  this.buildJsdocHeader();
+  	this.buildJsdocModifiers(node.modifiers);
+	  this.buildJsdocLine('typedef', node.name.getText());
+	  this.buildTypeParameters(node.typeParameters);
+  	this.buildJsdocEnd();
+  	return this.jsdoc;
 	}
 
  	/**

@@ -15,7 +15,9 @@ import {
   MethodDeclaration,
   ClassDeclaration,
   InterfaceDeclaration,
-  EnumDeclaration
+  EnumDeclaration,
+  VariableDeclarationList,
+  TypeAliasDeclaration
 } from 'typescript';
 import {TextDocument, TextEditor, window, SnippetString, Position} from 'vscode';
 
@@ -157,6 +159,7 @@ export class JsdocGenerator {
 	 */
 	private buildJsdoc(node: Node, tsFile: TsFile): SnippetString {
 	  const jsdocBuilder = new JsdocBuilder(tsFile);
+	  console.log(node);
 
 	  switch(node.kind) {
 	    case SyntaxKind.PropertySignature:
@@ -170,6 +173,8 @@ export class JsdocGenerator {
 	    case SyntaxKind.MethodSignature:
 	    case SyntaxKind.MethodDeclaration:
 	    case SyntaxKind.CallSignature:
+	    case SyntaxKind.FunctionExpression:
+	    case SyntaxKind.ArrowFunction:
 	    case SyntaxKind.FunctionDeclaration:
 	      return jsdocBuilder.getMethodDeclarationJsdoc(<MethodDeclaration>node);
 	    case SyntaxKind.ClassDeclaration:
@@ -177,13 +182,20 @@ export class JsdocGenerator {
 	    case SyntaxKind.InterfaceDeclaration:
 	      return jsdocBuilder.getClassLikeDeclarationJsdoc(<InterfaceDeclaration>node);
 	    case SyntaxKind.TypeAliasDeclaration:
-	      return jsdocBuilder.emptyJsdoc;
+	      return jsdocBuilder.getTypeAliasJsdoc(<TypeAliasDeclaration>node);
 	    case SyntaxKind.EnumDeclaration:
 	      return jsdocBuilder.getEnumDeclarationJsdoc(<EnumDeclaration>node);
+	    case SyntaxKind.VariableDeclarationList:
+	      const firstDeclaration = (<VariableDeclarationList>node).declarations[0];
+	      const {initializer} = firstDeclaration;
+	      // FIX: the type of let variables without an initializer is not correctly inferred. Says it doesn't support export variables.
+	      if(initializer && tsFile.isNodeSupported(initializer)) {
+	        return this.buildJsdoc(initializer, tsFile);
+	      }
+	      return jsdocBuilder.getPropertyDeclarationJsdoc(<PropertyDeclaration><unknown>firstDeclaration);
 	    case SyntaxKind.EnumMember:
 	    default:
 	      return jsdocBuilder.emptyJsdoc;
-			// TODO: add support for variables.
 	  }
 	}
 

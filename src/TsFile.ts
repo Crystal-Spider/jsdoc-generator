@@ -19,13 +19,13 @@ import {UndefTemplate} from './UndefTemplate';
  * @typedef {TsFile}
  */
 export class TsFile {
-	/**
-	 * TS Nodes that can have a JSDoc.
-	 *
-	 * @private
-	 * @readonly
-	 * @type {SyntaxKind[]}
-	 */
+  /**
+   * TS Nodes that can have a JSDoc.
+   *
+   * @private
+   * @readonly
+   * @type {SyntaxKind[]}
+   */
 	private readonly supportedNodes: SyntaxKind[] = [
 	  SyntaxKind.PropertySignature,
 	  SyntaxKind.PropertyDeclaration,
@@ -35,6 +35,9 @@ export class TsFile {
 	  SyntaxKind.GetAccessor,
 	  SyntaxKind.SetAccessor,
 	  SyntaxKind.CallSignature,
+	  SyntaxKind.FunctionExpression,
+	  SyntaxKind.ArrowFunction,
+	  SyntaxKind.VariableDeclarationList,
 	  SyntaxKind.FunctionDeclaration,
 	  SyntaxKind.ClassDeclaration,
 	  SyntaxKind.InterfaceDeclaration,
@@ -92,6 +95,30 @@ export class TsFile {
 	}
 
 	/**
+	 * Checks whether or not the given node is supported.
+	 *
+	 * @param {Node} node
+	 * @returns {boolean}
+	 */
+	public isNodeSupported(node: Node): boolean {
+	  return this.supportedNodes.includes(node.kind);
+	}
+
+	/**
+	 * Uses the TypeScript API to infer the node type. Returns '' when the type cannot be inferred;
+	 *
+	 * @param {Node} node
+	 * @returns {string}
+	 */
+	public inferType(node: Node): string {
+	  if(this.program) {
+	    const type = this.program.getTypeChecker().getTypeAtLocation(node);
+	    return this.program.getTypeChecker().typeToString(type);
+	  }
+	  return '';
+	}
+
+	/**
 	 * Exposes the supported node for the current file at the current caret position.
 	 *
 	 * @readonly
@@ -137,26 +164,13 @@ export class TsFile {
 	 */
 	private retrieveSupportedNode(node: Node): UndefTemplate<Node> {
 	  let parent = node;
+	  console.log(parent);
 	  while(parent) {
-	    if(this.supportedNodes.includes(parent.kind)) {
+	    if(this.isNodeSupported(parent)) {
 	      return parent;
 	    }
 	    ({parent} = parent);
 	  }
 	  return undefined;
-	}
-
-	/**
-	 * Uses the TypeScript API to infer the node type. Returns '' when the type cannot be inferred;
-	 *
-	 * @param {Node} node
-	 * @returns {string}
-	 */
-	public inferType(node: Node): string {
-	  if(this.program) {
-	    const type = this.program.getTypeChecker().getTypeAtLocation(node);
-	    return this.program.getTypeChecker().typeToString(type);
-	  }
-	  return '';
 	}
 }
