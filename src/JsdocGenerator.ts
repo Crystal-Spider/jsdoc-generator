@@ -183,6 +183,7 @@ export class JsdocGenerator {
 	    case SyntaxKind.EnumMember:
 	    default:
 	      return jsdocBuilder.emptyJsdoc;
+			// TODO: add support for variables.
 	  }
 	}
 
