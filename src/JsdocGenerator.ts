@@ -1,5 +1,22 @@
-import * as path from 'path';
-import * as ts from 'typescript';
+import {extname} from 'path';
+import {
+  LanguageService,
+  createLanguageService,
+  createDocumentRegistry,
+  SourceFile,
+  sys,
+  Node,
+  LineAndCharacter,
+  getLineAndCharacterOfPosition,
+  SyntaxKind,
+  PropertyDeclaration,
+  ConstructorDeclaration,
+  AccessorDeclaration,
+  MethodDeclaration,
+  ClassDeclaration,
+  InterfaceDeclaration,
+  EnumDeclaration
+} from 'typescript';
 import {TextDocument, TextEditor, window, SnippetString, Position} from 'vscode';
 
 import {JsdocBuilder} from './JsdocBuilder';
@@ -33,16 +50,16 @@ export class JsdocGenerator {
 	 * Language Service.
 	 *
 	 * @private
-	 * @type {ts.LanguageService}
+	 * @type {LanguageService}
 	 */
-	private languageServices: ts.LanguageService;
+	private languageServices: LanguageService;
 
 	/**
 	 * @constructor
 	 */
 	constructor() {
 	  this.languageServiceHost = new LanguageServiceHost();
-	  this.languageServices = ts.createLanguageService(this.languageServiceHost, ts.createDocumentRegistry());
+	  this.languageServices = createLanguageService(this.languageServiceHost, createDocumentRegistry());
 	}
 
 	/**
@@ -58,7 +75,7 @@ export class JsdocGenerator {
 	    const tsFile = this.retrieveTsFile(textEditor.document, caret);
 	    const {supportedNode} = tsFile;
 	    if(supportedNode) {
-	      const jsdocLocation = this.getJsdocLocation(<ts.SourceFile>tsFile.sourceFile, supportedNode);
+	      const jsdocLocation = this.getJsdocLocation(<SourceFile>tsFile.sourceFile, supportedNode);
 	      const jsdoc = this.buildJsdoc(supportedNode, tsFile);
 	      this.insertJsdoc(jsdoc, jsdocLocation, textEditor);
 	    } else {
@@ -111,22 +128,22 @@ export class JsdocGenerator {
 	 */
 	private getDocumentFileName(document: TextDocument): string {
 	  let fileName = document.fileName.replace(/\\/g, '/');
-	  if(document.languageId === 'typescript' && path.extname(fileName) !== 'ts') {
+	  if(document.languageId === 'typescript' && extname(fileName) !== 'ts') {
 	    fileName += '.ts';
 	  }
-	  return ts.sys.useCaseSensitiveFileNames ? fileName.toLowerCase() : fileName;
+	  return sys.useCaseSensitiveFileNames ? fileName.toLowerCase() : fileName;
 	}
 
 	/**
-	 * Returns the {@link ts.LineAndCharacter} where to insert the JSDoc.
+	 * Returns the {@link LineAndCharacter} where to insert the JSDoc.
 	 *
 	 * @private
-	 * @param {ts.SourceFile} sourceFile
-	 * @param {ts.Node} node
-	 * @returns {ts.LineAndCharacter}
+	 * @param {SourceFile} sourceFile
+	 * @param {Node} node
+	 * @returns {LineAndCharacter}
 	 */
-	private getJsdocLocation(sourceFile: ts.SourceFile, node: ts.Node): ts.LineAndCharacter {
-	  return ts.getLineAndCharacterOfPosition(sourceFile, node.getStart());
+	private getJsdocLocation(sourceFile: SourceFile, node: Node): LineAndCharacter {
+	  return getLineAndCharacterOfPosition(sourceFile, node.getStart());
 	}
 
 	/**
@@ -134,36 +151,36 @@ export class JsdocGenerator {
 	 * calls the appropriate JSDoc building method.
 	 *
 	 * @private
-	 * @param {ts.Node} node
+	 * @param {Node} node
 	 * @param {TsFile} tsFile
 	 * @returns {SnippetString} JSDoc built.
 	 */
-	private buildJsdoc(node: ts.Node, tsFile: TsFile): SnippetString {
+	private buildJsdoc(node: Node, tsFile: TsFile): SnippetString {
 	  const jsdocBuilder = new JsdocBuilder(tsFile);
 
 	  switch(node.kind) {
-	    case ts.SyntaxKind.PropertySignature:
-	    case ts.SyntaxKind.PropertyDeclaration:
-	      return jsdocBuilder.getPropertyDeclarationJsdoc(<ts.PropertyDeclaration>node);
-	    case ts.SyntaxKind.Constructor:
-	      return jsdocBuilder.getConstructorJsdoc(<ts.ConstructorDeclaration>node);
-	    case ts.SyntaxKind.GetAccessor:
-	    case ts.SyntaxKind.SetAccessor:
-	      return jsdocBuilder.getAccessorDeclarationJsdoc(<ts.AccessorDeclaration>node);
-	    case ts.SyntaxKind.MethodSignature:
-	    case ts.SyntaxKind.MethodDeclaration:
-	    case ts.SyntaxKind.CallSignature:
-	    case ts.SyntaxKind.FunctionDeclaration:
-	      return jsdocBuilder.getMethodDeclarationJsdoc(<ts.MethodDeclaration>node);
-	    case ts.SyntaxKind.ClassDeclaration:
-	      return jsdocBuilder.getClassLikeDeclarationJsdoc(<ts.ClassDeclaration>node);
-	    case ts.SyntaxKind.InterfaceDeclaration:
-	      return jsdocBuilder.getClassLikeDeclarationJsdoc(<ts.InterfaceDeclaration>node);
-	    case ts.SyntaxKind.TypeAliasDeclaration:
+	    case SyntaxKind.PropertySignature:
+	    case SyntaxKind.PropertyDeclaration:
+	      return jsdocBuilder.getPropertyDeclarationJsdoc(<PropertyDeclaration>node);
+	    case SyntaxKind.Constructor:
+	      return jsdocBuilder.getConstructorJsdoc(<ConstructorDeclaration>node);
+	    case SyntaxKind.GetAccessor:
+	    case SyntaxKind.SetAccessor:
+	      return jsdocBuilder.getAccessorDeclarationJsdoc(<AccessorDeclaration>node);
+	    case SyntaxKind.MethodSignature:
+	    case SyntaxKind.MethodDeclaration:
+	    case SyntaxKind.CallSignature:
+	    case SyntaxKind.FunctionDeclaration:
+	      return jsdocBuilder.getMethodDeclarationJsdoc(<MethodDeclaration>node);
+	    case SyntaxKind.ClassDeclaration:
+	      return jsdocBuilder.getClassLikeDeclarationJsdoc(<ClassDeclaration>node);
+	    case SyntaxKind.InterfaceDeclaration:
+	      return jsdocBuilder.getClassLikeDeclarationJsdoc(<InterfaceDeclaration>node);
+	    case SyntaxKind.TypeAliasDeclaration:
 	      return jsdocBuilder.emptyJsdoc;
-	    case ts.SyntaxKind.EnumDeclaration:
-	      return jsdocBuilder.getEnumDeclarationJsdoc(<ts.EnumDeclaration>node);
-	    case ts.SyntaxKind.EnumMember:
+	    case SyntaxKind.EnumDeclaration:
+	      return jsdocBuilder.getEnumDeclarationJsdoc(<EnumDeclaration>node);
+	    case SyntaxKind.EnumMember:
 	    default:
 	      return jsdocBuilder.emptyJsdoc;
 	  }
@@ -174,11 +191,11 @@ export class JsdocGenerator {
 	 *
 	 * @private
 	 * @param {SnippetString} jsdoc
-	 * @param {ts.LineAndCharacter} location
+	 * @param {LineAndCharacter} location
 	 * @param {TextEditor} textEditor
 	 * @returns {Thenable<boolean>}
 	 */
-	private insertJsdoc(jsdoc: SnippetString, location: ts.LineAndCharacter, textEditor: TextEditor): Thenable<boolean> {
+	private insertJsdoc(jsdoc: SnippetString, location: LineAndCharacter, textEditor: TextEditor): Thenable<boolean> {
 	  return textEditor.insertSnippet(jsdoc, new Position(location.line, location.character));
 	}
 }
