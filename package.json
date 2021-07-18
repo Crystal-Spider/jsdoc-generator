@@ -62,10 +62,10 @@
 					"default": "Creates an instance of {Object}.",
 					"description": "\"{Object}\" will be replaced with the class name.\nFor default exported classes without a name jsdoc-generator.descriptionPlaceholder will be used instead.\nEmpty to disable."
 				},
-				"jsdoc-generator.arrowsAsFunctions": {
+				"jsdoc-generator.functionVariablesAsFunctions": {
 					"type": "boolean",
 					"default": "true",
-					"description": "When enabled, will document arrow functions in the same way as normal functions. Disable to document like properties."
+					"description": "When enabled, will document variables with a function assigned as function declarations. Disable to document like properties."
 				}
 			}
 		}

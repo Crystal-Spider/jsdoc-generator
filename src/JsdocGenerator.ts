@@ -17,7 +17,8 @@ import {
   InterfaceDeclaration,
   EnumDeclaration,
   VariableDeclarationList,
-  TypeAliasDeclaration
+  TypeAliasDeclaration,
+  VariableStatement
 } from 'typescript';
 import {TextDocument, TextEditor, window, SnippetString, Position} from 'vscode';
 
@@ -159,7 +160,6 @@ export class JsdocGenerator {
 	 */
 	private buildJsdoc(node: Node, tsFile: TsFile): SnippetString {
 	  const jsdocBuilder = new JsdocBuilder(tsFile);
-	  console.log(node);
 
 	  switch(node.kind) {
 	    case SyntaxKind.PropertySignature:
@@ -185,14 +185,12 @@ export class JsdocGenerator {
 	      return jsdocBuilder.getTypeAliasJsdoc(<TypeAliasDeclaration>node);
 	    case SyntaxKind.EnumDeclaration:
 	      return jsdocBuilder.getEnumDeclarationJsdoc(<EnumDeclaration>node);
+	    case SyntaxKind.VariableStatement:
+	      return jsdocBuilder.getPropertyDeclarationJsdoc(
+	        (<VariableDeclarationList>(<VariableStatement>node).getChildAt(1)).declarations[0]
+	      );
 	    case SyntaxKind.VariableDeclarationList:
-	      const firstDeclaration = (<VariableDeclarationList>node).declarations[0];
-	      const {initializer} = firstDeclaration;
-	      // FIX: the type of let variables without an initializer is not correctly inferred. Says it doesn't support export variables.
-	      if(initializer && tsFile.isNodeSupported(initializer)) {
-	        return this.buildJsdoc(initializer, tsFile);
-	      }
-	      return jsdocBuilder.getPropertyDeclarationJsdoc(<PropertyDeclaration><unknown>firstDeclaration);
+	      return jsdocBuilder.getPropertyDeclarationJsdoc((<VariableDeclarationList>node).declarations[0]);
 	    case SyntaxKind.EnumMember:
 	    default:
 	      return jsdocBuilder.emptyJsdoc;

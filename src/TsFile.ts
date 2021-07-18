@@ -37,6 +37,7 @@ export class TsFile {
 	  SyntaxKind.CallSignature,
 	  SyntaxKind.FunctionExpression,
 	  SyntaxKind.ArrowFunction,
+	  SyntaxKind.VariableStatement,
 	  SyntaxKind.VariableDeclarationList,
 	  SyntaxKind.FunctionDeclaration,
 	  SyntaxKind.ClassDeclaration,
@@ -112,8 +113,8 @@ export class TsFile {
 	 */
 	public inferType(node: Node): string {
 	  if(this.program) {
-	    const type = this.program.getTypeChecker().getTypeAtLocation(node);
-	    return this.program.getTypeChecker().typeToString(type);
+	    const type = this.program.getTypeChecker().typeToString(this.program.getTypeChecker().getTypeAtLocation(node));
+	    return type;
 	  }
 	  return '';
 	}
@@ -164,8 +165,8 @@ export class TsFile {
 	 */
 	private retrieveSupportedNode(node: Node): UndefTemplate<Node> {
 	  let parent = node;
-	  console.log(parent);
 	  while(parent) {
+	    console.log(parent);
 	    if(this.isNodeSupported(parent)) {
 	      return parent;
 	    }

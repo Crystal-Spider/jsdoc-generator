@@ -19,7 +19,8 @@ import {
   MethodDeclaration,
   ParameterDeclaration,
   PropertyDeclaration,
-  TypeAliasDeclaration
+  TypeAliasDeclaration,
+  VariableDeclaration
 } from 'typescript';
 import {SnippetString} from 'vscode';
 
@@ -30,9 +31,14 @@ import {UndefTemplate} from './UndefTemplate';
 /**
  * Utility type to group all {@link Node}s that can have a TypeScript type.
  *
- * @typedef {typedNode}
+ * @typedef {TypedNode}
  */
-type typedNode = PropertyDeclaration | AccessorDeclaration | ParameterDeclaration | MethodDeclaration;
+type TypedNode =
+	| PropertyDeclaration
+	| AccessorDeclaration
+	| ParameterDeclaration
+	| MethodDeclaration
+	| VariableDeclaration;
 
 /**
  * JSDoc builder
@@ -96,10 +102,10 @@ export class JsdocBuilder {
 	 * @param {PropertyDeclaration} node
 	 * @returns {SnippetString} - JSDoc
 	 */
-	public getPropertyDeclarationJsdoc(node: PropertyDeclaration): SnippetString {
-	  const arrowFunction = node.getChildren().find((child) => child.kind === SyntaxKind.ArrowFunction);
-	  if(getConfig<boolean>('jsdoc-generator.arrowsAsFunctions', true) && arrowFunction) {
-	    this.getMethodDeclarationJsdoc(<MethodDeclaration>arrowFunction);
+	public getPropertyDeclarationJsdoc(node: PropertyDeclaration | VariableDeclaration): SnippetString {
+	  const functionAssigned = node.getChildren().find((child) => this.isFunctionKind(child.kind));
+	  if(getConfig<boolean>('jsdoc-generator.functionVariablesAsFunctions', true) && functionAssigned) {
+	    this.getMethodDeclarationJsdoc(<MethodDeclaration>functionAssigned);
 	  } else {
 	    this.buildJsdocHeader();
 	    this.buildJsdocModifiers(node.modifiers);
@@ -502,10 +508,10 @@ export class JsdocBuilder {
 	 * Retrieves a string representing the type of the given node.
 	 *
 	 * @private
-	 * @param {typedNode} node
+	 * @param {TypedNode} node
 	 * @returns {string} string representing the node type.
 	 */
-	private retrieveType(node: typedNode): string {
+	private retrieveType(node: TypedNode): string {
 	  let type;
 	  const prefix = this.getTypePrefix(node);
 	  if(!node.type) {
@@ -525,20 +531,25 @@ export class JsdocBuilder {
 	 * Check if the type of the node has a modifier and returns it.
 	 *
 	 * @private
-	 * @param {typedNode} node
+	 * @param {TypedNode} node
 	 * @returns {string} type modifier [?, !, ..., *], empty if none.
 	 */
-	private getTypePrefix(node: typedNode): string {
-	  if(node.questionToken) {
+	private getTypePrefix(node: TypedNode): string {
+	  if(node.kind !== SyntaxKind.VariableDeclaration && node.questionToken) {
 	    return '?';
 	  }
-	  if((<PropertyDeclaration>node).exclamationToken) {
+	  if(node.kind !== SyntaxKind.Parameter && node.exclamationToken) {
 	    return '!';
 	  }
-	  if((<ParameterDeclaration>node).dotDotDotToken) {
+	  if(node.kind === SyntaxKind.Parameter && node.dotDotDotToken) {
 	    return '...';
 	  }
-	  if((<AccessorDeclaration>node).asteriskToken) {
+	  if(
+	    node.kind !== SyntaxKind.PropertyDeclaration &&
+			node.kind !== SyntaxKind.Parameter &&
+			node.kind !== SyntaxKind.VariableDeclaration &&
+			node.asteriskToken
+	  ) {
 	    return '*';
 	  }
 	  return '';
@@ -571,6 +582,24 @@ export class JsdocBuilder {
 			  getConfig<boolean>('jsdoc-generator.includeParenthesisForMultipleTypes', true) ||
 				prefix !== ''
 			)
+	  );
+	}
+
+	/**
+	 * Checks whether the given kind represents a function node kind.
+	 *
+	 * @private
+	 * @param {SyntaxKind} kind
+	 * @returns {boolean}
+	 */
+	private isFunctionKind(kind: SyntaxKind): boolean {
+	  return (
+	    kind === SyntaxKind.ArrowFunction ||
+			kind === SyntaxKind.MethodSignature ||
+			kind === SyntaxKind.MethodDeclaration ||
+			kind === SyntaxKind.CallSignature ||
+			kind === SyntaxKind.FunctionExpression ||
+			kind === SyntaxKind.FunctionDeclaration
 	  );
 	}
 }
