@@ -22,7 +22,7 @@
 			},
 			{
 				"command": "jsdoc-generator.generateJsdocFile",
-				"title": "Generate JSDoc for the current files."
+				"title": "Generate JSDoc for the current file."
 			},
 			{
 				"command": "jsdoc-generator.generateJsdoc",

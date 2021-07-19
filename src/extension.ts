@@ -115,8 +115,11 @@ export function activate(context: ExtensionContext) {
   // Generates JSDoc for every suitable element in the current file.
   const generateJsdocFile = vscode.commands.registerCommand('jsdoc-generator.generateJsdocFile', () => {
     lazyInstantiateJsdocGenerator();
-    // TODO: implement
-    vscode.window.showWarningMessage('This function is not available yet.');
+    if(vscode.window.activeTextEditor) {
+      jsdocGenerator.generateJsdocFile(vscode.window.activeTextEditor);
+    } else {
+      vscode.window.showErrorMessage('Unable to generate JSDoc: no editor has been selected.');
+    }
   });
   // Generates JSDoc for every suitable element in every ts or js file.
   const generateJsdocFiles = vscode.commands.registerCommand('jsdoc-generator.generateJsdocFiles', () => {

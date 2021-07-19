@@ -1,5 +1,6 @@
 import {
   getPositionOfLineAndCharacter,
+  JSDoc,
   Node,
   Program,
   SourceFile,
@@ -64,18 +65,18 @@ export class TsFile {
 	/**
 	 * Caret position.
 	 *
-	 * @type {Position}
+	 * @type {UndefTemplate<Position>}
 	 */
-	caret: Position;
+	caret: UndefTemplate<Position>;
 
 	/**
 	 * @constructor
 	 * @param {UndefTemplate<Program>} program
 	 * @param {string} fileName
 	 * @param {string} newText
-	 * @param {Position} caret
+	 * @param {UndefTemplate<Position>} caret
 	 */
-	constructor(program: UndefTemplate<Program>, fileName: string, newText: string, caret: Position) {
+	constructor(program: UndefTemplate<Program>, fileName: string, newText: string, caret: UndefTemplate<Position>) {
 	  this.caret = caret;
 	  this.program = program;
 	  if(program) {
@@ -120,13 +121,34 @@ export class TsFile {
 	}
 
 	/**
+	 * Checks whether the given node has a JSDoc.
+	 *
+	 * @param {Node} node
+	 * @returns {boolean}
+	 */
+	public hasJsdoc(node: Node): boolean {
+	  return !!(<any>node).jsDoc;
+	}
+
+	/**
+	 * Retrieves the JSDoc of the given node.
+	 * Could unexpectedly return undefined if not called after {@link TsFile.hasJsdoc} has returned true.
+	 *
+	 * @param {Node} node
+	 * @returns {JSDoc}
+	 */
+	public getJsdoc(node: Node): JSDoc {
+	  return <JSDoc>(<any>node).jsDoc;
+	}
+
+	/**
 	 * Exposes the supported node for the current file at the current caret position.
 	 *
 	 * @readonly
 	 * @type {UndefTemplate<Node>}
 	 */
 	public get supportedNode(): UndefTemplate<Node> {
-	  if(this.sourceFile) {
+	  if(this.sourceFile && this.caret) {
 	    const {line} = this.caret;
 	    const {character} = this.caret;
 	    const position = getPositionOfLineAndCharacter(this.sourceFile, line, character);
@@ -140,9 +162,9 @@ export class TsFile {
 	 * Finds the deepest node that contains the position.
 	 *
 	 * @private
-	 * @param {Node} source initial node in which to search
+	 * @param {Node} source initial node in which to search.
 	 * @param {number} position
-	 * @param {Node} [parent=source] needed for recursive calls, defaults to source
+	 * @param {Node} [parent=source] needed for recursive calls, defaults to source.
 	 * @returns {Node}
 	 */
 	private findNode(source: Node, position: number, parent: Node = source): Node {
@@ -166,7 +188,6 @@ export class TsFile {
 	private retrieveSupportedNode(node: Node): UndefTemplate<Node> {
 	  let parent = node;
 	  while(parent) {
-	    console.log(parent);
 	    if(this.isNodeSupported(parent)) {
 	      return parent;
 	    }

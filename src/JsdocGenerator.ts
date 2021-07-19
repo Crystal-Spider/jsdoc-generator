@@ -1,4 +1,3 @@
-import {extname} from 'path';
 import {
   LanguageService,
   createLanguageService,
@@ -25,6 +24,7 @@ import {TextDocument, TextEditor, window, SnippetString, Position} from 'vscode'
 import {JsdocBuilder} from './JsdocBuilder';
 import {LanguageServiceHost} from './LanguageServiceHost';
 import {TsFile} from './TsFile';
+import {UndefTemplate} from './UndefTemplate';
 
 /**
  * JSDoc Generator
@@ -66,7 +66,34 @@ export class JsdocGenerator {
 	}
 
 	/**
-	 * Generate and insert JSDoc for the given textEditor.
+	 * Generate and insert JSDoc for the given textEditor for all the supported nodes.
+	 * Displays error messages in case of failure in generating the JSDoc.
+	 *
+	 * @param {TextEditor} textEditor
+	 */
+	public generateJsdocFile(textEditor: TextEditor) {
+	  if(this.isLanguageSupported(textEditor.document)) {
+	    const tsFile = this.retrieveTsFile(textEditor.document);
+	    const {sourceFile} = tsFile;
+	    if(sourceFile) {
+	      const jsdocNumber = this.writeFileJsdoc(tsFile, sourceFile, textEditor);
+	      if(jsdocNumber > 0) {
+	        window.showInformationMessage(
+	          'Correctly generated ' + jsdocNumber + ' JSDoc' + (jsdocNumber > 1 ? 's' : '') + '!'
+	        );
+	      } else {
+	        window.showWarningMessage('No JSDoc was generated.');
+	      }
+	    } else {
+	      window.showErrorMessage('Unable to generate JSDoc for the current file.');
+	    }
+	  } else {
+	    window.showErrorMessage('Unable to generate JSDoc: ' + textEditor.document.languageId + ' is not supported.');
+	  }
+	}
+
+	/**
+	 * Generate and insert JSDoc for the given textEditor at the current location.
 	 * Displays error messages in case of failure in generating the JSDoc.
 	 *
 	 * @public
@@ -78,9 +105,7 @@ export class JsdocGenerator {
 	    const tsFile = this.retrieveTsFile(textEditor.document, caret);
 	    const {supportedNode} = tsFile;
 	    if(supportedNode) {
-	      const jsdocLocation = this.getJsdocLocation(<SourceFile>tsFile.sourceFile, supportedNode);
-	      const jsdoc = this.buildJsdoc(supportedNode, tsFile);
-	      this.insertJsdoc(jsdoc, jsdocLocation, textEditor);
+	      this.writeJsdoc(supportedNode, tsFile, textEditor);
 	    } else {
 	      window.showErrorMessage(
 	        'Unable to generate JSDoc at position (Ln ' + caret.line + ', Col ' + caret.character + ').'
@@ -109,10 +134,10 @@ export class JsdocGenerator {
 	 *
 	 * @private
 	 * @param {TextDocument} document
-	 * @param {Position} caret
+	 * @param {UndefTemplate<Position>} [caret=undefined]
 	 * @returns {TsFile}
 	 */
-	private retrieveTsFile(document: TextDocument, caret: Position): TsFile {
+	private retrieveTsFile(document: TextDocument, caret: UndefTemplate<Position> = undefined): TsFile {
 	  const fileText = document.getText();
 	  const fileName = this.getDocumentFileName(document);
 	  this.languageServiceHost.updateFile(fileName, fileText);
@@ -130,11 +155,22 @@ export class JsdocGenerator {
 	 * @returns {string} document file name
 	 */
 	private getDocumentFileName(document: TextDocument): string {
-	  let fileName = document.fileName.replace(/\\/g, '/');
-	  if(document.languageId === 'typescript' && extname(fileName) !== 'ts') {
-	    fileName += '.ts';
-	  }
+	  const fileName = document.fileName.replace(/\\/g, '/');
 	  return sys.useCaseSensitiveFileNames ? fileName.toLowerCase() : fileName;
+	}
+
+	/**
+	 * Builds the JSDoc and inserts the JSDoc in the location retrieved.
+	 *
+	 * @private
+	 * @param {Node} node node for which generate the JSDoc.
+	 * @param {TsFile} tsFile {@link tsFile} object associated with the current file.
+	 * @param {TextEditor} textEditor
+	 */
+	private writeJsdoc(node: Node, tsFile: TsFile, textEditor: TextEditor) {
+	  const jsdocLocation = this.getJsdocLocation(<SourceFile>tsFile.sourceFile, node);
+	  const jsdoc = this.buildJsdoc(node, tsFile);
+	  this.insertJsdoc(jsdoc, jsdocLocation, textEditor);
 	}
 
 	/**
@@ -187,7 +223,7 @@ export class JsdocGenerator {
 	      return jsdocBuilder.getEnumDeclarationJsdoc(<EnumDeclaration>node);
 	    case SyntaxKind.VariableStatement:
 	      return jsdocBuilder.getPropertyDeclarationJsdoc(
-	        (<VariableDeclarationList>(<VariableStatement>node).getChildAt(1)).declarations[0]
+	        (<VariableDeclarationList>(<VariableStatement>node).declarationList).declarations[0]
 	      );
 	    case SyntaxKind.VariableDeclarationList:
 	      return jsdocBuilder.getPropertyDeclarationJsdoc((<VariableDeclarationList>node).declarations[0]);
@@ -208,5 +244,55 @@ export class JsdocGenerator {
 	 */
 	private insertJsdoc(jsdoc: SnippetString, location: LineAndCharacter, textEditor: TextEditor): Thenable<boolean> {
 	  return textEditor.insertSnippet(jsdoc, new Position(location.line, location.character));
+	}
+
+	/**
+	 * For the given sourceFile, iteratively calls {@link JsdocGenerator.writeJsdoc} with a bottom up approach
+	 * for every supported node without a JSDoc.
+	 *
+	 * @private
+	 * @param {TsFile} tsFile
+	 * @param {SourceFile} sourceFile
+	 * @param {TextEditor} textEditor
+	 * @returns {number} amount of JSDoc generated.
+	 */
+	private writeFileJsdoc(tsFile: TsFile, sourceFile: SourceFile, textEditor: TextEditor): number {
+	  let jsdocNumber = 0;
+	  // Iterated bottom up to avoid shifting of start position of nodes.
+	  for(let c = sourceFile.statements.length - 1; c >= 0; c--) {
+	    const statement = sourceFile.statements[c];
+	    if(tsFile.isNodeSupported(statement)) {
+	      if(
+	        statement.kind === SyntaxKind.ClassExpression ||
+					statement.kind === SyntaxKind.ClassDeclaration ||
+					statement.kind === SyntaxKind.InterfaceDeclaration
+	      ) {
+	        const {members} = <ClassDeclaration>statement;
+	        for(let k = members.length - 1; k >= 0; k--) {
+	          jsdocNumber += this.writeJsdocConditionally(members[k], tsFile, textEditor);
+	        }
+	      }
+	      jsdocNumber += this.writeJsdocConditionally(statement, tsFile, textEditor);
+	    }
+	  }
+	  return jsdocNumber;
+	}
+
+	/**
+	 * Checks whether to write the JSDoc for the given node or not. If yes, writes and returns 1.
+	 * Doesn't write and returns 0 otherwise.
+	 *
+	 * @private
+	 * @param {Node} node
+	 * @param {TsFile} tsFile
+	 * @param {TextEditor} textEditor
+	 * @returns {number} 1 if the JSDoc has been written, 0 otherwise.
+	 */
+	private writeJsdocConditionally(node: Node, tsFile: TsFile, textEditor: TextEditor): number {
+	  if(!(tsFile.hasJsdoc(node))) {
+	    this.writeJsdoc(node, tsFile, textEditor);
+	    return 1;
+	  }
+	  return 0;
 	}
 }

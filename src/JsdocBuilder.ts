@@ -1,6 +1,4 @@
 import {
-  JSDoc,
-  getJSDocTags,
   getTextOfJSDocComment,
   Node,
   SyntaxKind,
@@ -84,10 +82,14 @@ export class JsdocBuilder {
   	this.buildJsdocHeader();
   	this.buildJsdocModifiers(node.modifiers);
   	if(node.name) {
-	    this.buildJsdocLine(node.kind === SyntaxKind.ClassDeclaration ? 'class' : 'interface', node.name.getText(), '');
+	    this.buildJsdocLine(
+	      node.kind === SyntaxKind.InterfaceDeclaration ? 'interface' : 'class',
+	      node.name.getText(),
+	      ''
+	    );
   		this.buildJsdocLine('typedef', node.name.getText());
 	  } else {
-	    this.buildJsdocLine(node.kind === SyntaxKind.ClassDeclaration ? 'class' : 'interface');
+	    this.buildJsdocLine(node.kind === SyntaxKind.InterfaceDeclaration ? 'interface' : 'class');
 	  }
 	  this.buildTypeParameters(node.typeParameters);
   	this.buildJsdocHeritage(node.heritageClauses);
@@ -104,8 +106,11 @@ export class JsdocBuilder {
 	 */
 	public getPropertyDeclarationJsdoc(node: PropertyDeclaration | VariableDeclaration): SnippetString {
 	  const functionAssigned = node.getChildren().find((child) => this.isFunctionKind(child.kind));
+	  const classAssigned = node.getChildren().find((child) => child.kind === SyntaxKind.ClassExpression);
 	  if(getConfig<boolean>('jsdoc-generator.functionVariablesAsFunctions', true) && functionAssigned) {
 	    this.getMethodDeclarationJsdoc(<MethodDeclaration>functionAssigned);
+	  } else if(classAssigned) {
+	    this.getClassLikeDeclarationJsdoc(<ClassDeclaration>classAssigned);
 	  } else {
 	    this.buildJsdocHeader();
 	    this.buildJsdocModifiers(node.modifiers);
@@ -126,9 +131,9 @@ export class JsdocBuilder {
 	  const accessorName = node.name.getText();
 	  const pairedAccessor = <AccessorDeclaration>(<ClassLikeDeclaration>node.parent).members
 	    .find((member) => member.kind === otherAccessorKind && member.name && member.name.getText() === accessorName);
-	  if(pairedAccessor && getJSDocTags(pairedAccessor).length > 0) {
+	  if(pairedAccessor && this.tsFile.hasJsdoc(pairedAccessor)) {
 	    this.jsdoc.appendText('/**\n');
-	    const pairedDescription = getTextOfJSDocComment((<JSDoc>getJSDocTags(pairedAccessor)[0].parent).comment);
+	    const pairedDescription = getTextOfJSDocComment(this.tsFile.getJsdoc(pairedAccessor).comment);
 	    this.buildDescription(pairedDescription ? pairedDescription : '');
 	  } else {
 	    this.buildJsdocHeader();
@@ -188,6 +193,7 @@ export class JsdocBuilder {
 	  this.buildDate();
 	  this.buildAuthor();
 	  this.buildJsdocLine();
+	  this.buildJsdocLine('constructor');
 	  this.buildJsdocModifiers(node.modifiers);
 	  this.buildJsdocParameters(node.parameters);
 	  this.buildJsdocEnd();
@@ -418,6 +424,9 @@ export class JsdocBuilder {
  	private buildJsdocEnd() {
 	  if(this.jsdoc.value.endsWith('\n *\n') && (this.jsdoc.value.match(/\n/g) || []).length > 2) {
 	    this.jsdoc.value = this.jsdoc.value.slice(0, -3);
+	  }
+	  if(this.jsdoc.value.startsWith('/**\n *\n') && (this.jsdoc.value.match(/\n/g) || []).length > 2) {
+	    this.jsdoc.value = this.jsdoc.value.substring(0, 4) + this.jsdoc.value.substring(7);
 	  }
   	this.jsdoc.appendText(' */\n');
  	}
