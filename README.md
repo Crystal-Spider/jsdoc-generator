@@ -1,7 +1,7 @@
 # jsdoc-generator README
+Automatic JSDoc generator for TypeScript.
 
-This is the README for your extension "jsdoc-generator". After writing up a brief description, we recommend including the following sections.
-
+---
 ## Features
 
 Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
@@ -12,59 +12,42 @@ For example if there is an image subfolder under your extension project workspac
 
 > Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
 
-## Requirements
-
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
-
 ## Extension Settings
-
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
 This extension contributes the following settings:
 
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
+* `jsdoc-generator.descriptionPlaceholder`:\
+Set the description placeholder. Empty to disable.\
+Default: `"Description placeholder"`
+* `jsdoc-generator.author`:\
+Set the value for the author tag.\
+Empty to disable, set to "author" to insert "author" as placeholder.\
+Default: `""`
+* `jsdoc-generator.includeDate`:\
+When enabled, will include the date tag.\
+Default: `false`
+* `jsdoc-generator.includeTime`:\
+When both this and jsdoc-generator.includeDate are enabled, will include the current local time in the date tag.\
+Default: `true`
+* `jsdoc-generator.includeParenthesisForMultipleTypes`:\
+When enabled, will include round brackets around union and intersection types.\
+Note that round brackets will still be used if manually put in the type or for union and intersection types which are also optional or mandatory.\
+Default: `true`
+* `jsdoc-generator.descriptionForConstructors`:\
+"{Object}" will be replaced with the class name.\
+For default exported classes without a name `jsdoc-generator.descriptionPlaceholder` will be used instead.\
+Empty to disable.\
+Default: `"Creates an instance of {Object}."`
+* `jsdoc-generator.functionVariablesAsFunctions`:\
+When enabled, will document variables with a function assigned as function declarations.\
+Disable to document like properties.\
+Default: `true`
 
+---
 ## Known Issues
+Type inference does not work for variable declarations without an initializer.
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
+---
 ## Release Notes
-
-Users appreciate release notes as you update your extension.
-
 ### 1.0.0
 
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
------------------------------------------------------------------------------------------------------------
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (macOS) to see a list of Markdown snippets
-
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+Initial release of JSDoc Generator

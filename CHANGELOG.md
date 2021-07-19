@@ -2,8 +2,25 @@
 
 All notable changes to the "jsdoc-generator" extension will be documented in this file.
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-- Initial release
+## [1.0.0] - 2021/07/20
+### Added
+- 3 commands declarations.
+- Extension configurations.
+- Bundling.
+- [README] file.
+- JSDoc single node generation (1st command).
+- JSDoc single node generation with completion.
+- JSDoc single file generation (2nd command).
+- Type inference to generate more precise JSDoc.
+- Few basic unit tests.
+- This [CHANGELOG] file.
+
+[Unreleased]: https://github.com/Nyphet/jsdoc-generator
+[1.0.0]: https://github.com/Nyphet/jsdoc-generator
+[README]: https://github.com/Nyphet/jsdoc-generator
+[CHANGELOG]: https://github.com/Nyphet/jsdoc-generator

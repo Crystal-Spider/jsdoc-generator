@@ -2,18 +2,19 @@
 	"name": "jsdoc-generator",
 	"displayName": "JSDoc Generator",
 	"description": "Automatic JSDoc generator for TypeScript.",
+	"icon": "jsdoc-generator.png",
 	"version": "0.0.1",
 	"engines": {
 		"vscode": "^1.57.0"
 	},
 	"categories": [
-		"Other"
+		"Snippets"
 	],
 	"activationEvents": [
 		"onLanguage:typescript",
 		"onCommand:jsdoc-generator.generateJsdocFiles"
 	],
-	"main": "./out/extension.js",
+	"main": "./dist/main.js",
 	"contributes": {
 		"commands": [
 			{
@@ -35,12 +36,12 @@
 				"jsdoc-generator.descriptionPlaceholder": {
 					"type": "string",
 					"default": "Description placeholder",
-					"description": "Set the description placeholder. Empty to disable."
+					"description": "Set the description placeholder.\nEmpty to disable."
 				},
 				"jsdoc-generator.author": {
 					"type": "string",
 					"default": "",
-					"description": "Set the value for the author tag. Empty to disable, \"author\" to insert \"author\" as placeholder."
+					"description": "Set the value for the author tag.\nEmpty to disable, set to \"author\" to insert \"author\" as placeholder."
 				},
 				"jsdoc-generator.includeDate": {
 					"type": "boolean",
@@ -65,17 +66,21 @@
 				"jsdoc-generator.functionVariablesAsFunctions": {
 					"type": "boolean",
 					"default": "true",
-					"description": "When enabled, will document variables with a function assigned as function declarations. Disable to document like properties."
+					"description": "When enabled, will document variables with a function assigned as function declarations.\nDisable to document like properties."
 				}
 			}
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run compile",
 		"compile": "tsc -p ./",
 		"watch": "tsc -watch -p ./",
 		"pretest": "npm run compile && npm run eslint:fix",
 		"test": "node ./out/test/runTest.js",
+		"test-compile": "tsc -p ./",
+		"esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=dist/main.js --external:vscode --format=cjs --platform=node",
+		"esbuild": "npm run -S esbuild-base -- --sourcemap",
+		"esbuild-watch": "npm run -S esbuild-base -- --sourcemap --watch",
+		"vscode:prepublish": "npm run -S esbuild-base -- --minify",
 		"eslint:show": "npx eslint . --ext .js,.ts",
 		"eslint:fix": "npx eslint . --ext .js,.ts --fix"
 	},
@@ -86,6 +91,7 @@
 		"@types/vscode": "^1.57.0",
 		"@typescript-eslint/eslint-plugin": "^4.28.1",
 		"@typescript-eslint/parser": "^4.28.1",
+		"esbuild": "^0.12.15",
 		"eslint": "^7.30.0",
 		"eslint-plugin-import": "^2.23.4",
 		"eslint-plugin-jsdoc": "^35.4.1",
