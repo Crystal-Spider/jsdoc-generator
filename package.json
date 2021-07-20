@@ -4,7 +4,7 @@
 	"description": "Automatic JSDoc generator for TypeScript.",
 	"publisher": "crystal-spider",
 	"icon": "jsdoc-generator.png",
-	"version": "0.0.1",
+	"version": "1.0.0",
 	"engines": {
 		"vscode": "^1.57.0"
 	},
@@ -72,6 +72,10 @@
 				}
 			}
 		}
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Nyphet/jsdoc-generator.git"
 	},
 	"scripts": {
 		"compile": "tsc -p ./",
