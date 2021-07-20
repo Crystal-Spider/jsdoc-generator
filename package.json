@@ -2,6 +2,7 @@
 	"name": "jsdoc-generator",
 	"displayName": "JSDoc Generator",
 	"description": "Automatic JSDoc generator for TypeScript.",
+	"publisher": "crystal-spider",
 	"icon": "jsdoc-generator.png",
 	"version": "0.0.1",
 	"engines": {
