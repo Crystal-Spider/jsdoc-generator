@@ -138,7 +138,7 @@ export class TsFile {
 	 * @returns {JSDoc}
 	 */
 	public getJsdoc(node: Node): JSDoc {
-	  return <JSDoc>(<any>node).jsDoc;
+	  return <JSDoc>(<any>node).jsDoc[0];
 	}
 
 	/**

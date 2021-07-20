@@ -1,16 +1,15 @@
-# jsdoc-generator README
+# JSDoc Generator - README
 Automatic JSDoc generator for TypeScript.
 
 ---
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+Generates specific JSDoc for any supported TypeScript node.
 
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+It can be generated for a single node by explicitly calling the command `Generate JSDoc` or by using auto-completion:
+![Generate JSDoc demo](demos/jsdoc-generator.generateJsdoc.gif)
+Can also be generated for all supported TypeScript nodes in a single file that do not already have a JSDoc by calling the command `Generate JSDoc for the current file`:
+![Generate JSDoc demo](demos/jsdoc-generator.generateJsdocFile.gif)
 
 ## Extension Settings
 This extension contributes the following settings:
@@ -41,6 +40,18 @@ Default: `"Creates an instance of {Object}."`
 When enabled, will document variables with a function assigned as function declarations.\
 Disable to document like properties.\
 Default: `true`
+
+---
+## Commands
+* `Generate JSDoc`\
+Generates JSDoc for the TypeScript node the caret is in or on.
+Available also for auto-completion by typing `/**` at the start of a line.
+* `Generate JSDoc for the current file`\
+Generates JSDoc for the currently open file for all TypeScript nodes that do not have one.\
+Eventually choosing a keyboard shortcut is left to the user.
+* `Generate JSDoc for all TypeScript files`\
+Currently only prompts a message saying `This function is not available yet.`\
+Eventually choosing a keyboard shortcut is left to the user.
 
 ---
 ## Known Issues

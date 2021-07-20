@@ -335,6 +335,9 @@ export class JsdocBuilder {
 	    returnType = '*';
 	  }
 	  if(returnType !== 'void') {
+	    if(this.checkParenthesisUse('', returnType)) {
+	      returnType = '(' + returnType + ')';
+	    }
 	    this.buildJsdocLine('returns', returnType);
 	  }
 	}

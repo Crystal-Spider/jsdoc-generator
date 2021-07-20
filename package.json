@@ -8,22 +8,23 @@
 		"vscode": "^1.57.0"
 	},
 	"categories": [
-		"Snippets"
+		"Snippets",
+		"Programming Languages"
 	],
 	"activationEvents": [
 		"onLanguage:typescript",
 		"onCommand:jsdoc-generator.generateJsdocFiles"
 	],
-	"main": "./dist/main.js",
+	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
 			{
 				"command": "jsdoc-generator.generateJsdocFiles",
-				"title": "Generate JSDoc for all JavaScript and TypeScript files."
+				"title": "Generate JSDoc for all TypeScript files"
 			},
 			{
 				"command": "jsdoc-generator.generateJsdocFile",
-				"title": "Generate JSDoc for the current file."
+				"title": "Generate JSDoc for the current file"
 			},
 			{
 				"command": "jsdoc-generator.generateJsdoc",
