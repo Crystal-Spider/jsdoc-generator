@@ -15,7 +15,7 @@
 		"onLanguage:typescript",
 		"onCommand:jsdoc-generator.generateJsdocFiles"
 	],
-	"main": "./out/extension.js",
+	"main": "./dist/main.js",
 	"contributes": {
 		"commands": [
 			{
