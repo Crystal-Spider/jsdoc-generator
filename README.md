@@ -59,6 +59,6 @@ Type inference does not work for variable declarations without an initializer.
 
 ---
 ## Release Notes
-### [1.0.0](https://github.com/Nyphet/jsdoc-generator)
+### [1.0.0](https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.0.0)
 
 Initial release of JSDoc Generator

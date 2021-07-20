@@ -21,6 +21,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - This [CHANGELOG] file.
 
 [Unreleased]: https://github.com/Nyphet/jsdoc-generator
-[1.0.0]: https://github.com/Nyphet/jsdoc-generator
+[1.0.0]: https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.0.0
 [README]: https://github.com/Nyphet/jsdoc-generator
-[CHANGELOG]: https://github.com/Nyphet/jsdoc-generator
+[CHANGELOG]: https://github.com/Nyphet/jsdoc-generator/blob/main/CHANGELOG.md
