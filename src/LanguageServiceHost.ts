@@ -102,7 +102,7 @@ export class LanguageServiceHost implements ts.LanguageServiceHost {
    * Returns all file names.
    *
    * @public
-   * @returns {string[]} File names
+   * @returns {string[]} File names.
    */
   public getScriptFileNames(): string[] {
     return Object.keys(this.files);
@@ -169,7 +169,7 @@ export class LanguageServiceHost implements ts.LanguageServiceHost {
    * Not supported if the ts module is consumed outside of a node module.
    *
    * @public
-   * @param {ts.CompilerOptions} options Compiler Options.
+   * @param {ts.CompilerOptions} options compiler Options.
    * @returns {string} Path of the default library files.
    */
   public getDefaultLibFileName(options: ts.CompilerOptions): string {

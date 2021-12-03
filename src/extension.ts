@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-
 import {
   CompletionItem,
   TextDocument,
@@ -83,15 +82,15 @@ export function activate(context: ExtensionContext) {
     [
       {
         scheme: 'file',
-        language: 'javascript'
+        language: 'typescript'
       }, {
         scheme: 'file',
-        language: 'typescript'
+        language: 'typescriptreact'
       }
     ],
     {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken) {
+      provideCompletionItems(document: TextDocument, position: Position, _token: CancellationToken) {
         const line = document.lineAt(position.line).text;
         const prefix = line.slice(0, position.character);
         if(prefix.match(/^\s*\/\*\*\s*$/)) {
@@ -131,12 +130,12 @@ export function activate(context: ExtensionContext) {
 }
 
 /**
- * This method is called when the extension is deactivated
+ * This method is called when the extension is deactivated.
  *
  * @export
  */
 export function deactivate() {
-  // Empty on purpose
+  // Empty on purpose.
 }
 
 /**
@@ -144,8 +143,8 @@ export function deactivate() {
  *
  * @export
  * @template T
- * @param {string} configurationName - Configuration name, supports dotted names.
- * @param {T} defaultValue - A value should be returned when no value could be found.
+ * @param {string} configurationName configuration name, supports dotted names.
+ * @param {T} defaultValue a value should be returned when no value could be found.
  * @returns {T} The value from the configuration or the default.
  */
 export function getConfig<T>(configurationName: string, defaultValue: T): T {

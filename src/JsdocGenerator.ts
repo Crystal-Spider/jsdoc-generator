@@ -27,7 +27,7 @@ import {TsFile} from './TsFile';
 import {UndefTemplate} from './UndefTemplate';
 
 /**
- * JSDoc Generator
+ * JSDoc Generator.
  *
  * @typedef {JsdocGenerator}
  */
@@ -39,7 +39,7 @@ export class JsdocGenerator {
 	 * @readonly
 	 * @type {string[]}
 	 */
-	private readonly languages: string[] = ['typescript'];
+	private readonly languages: string[] = ['typescript', 'typescriptreact'];
 
 	/**
 	 * Handles all interactions between the Language Service and the external world.
@@ -152,7 +152,7 @@ export class JsdocGenerator {
 	 *
 	 * @private
 	 * @param {TextDocument} document
-	 * @returns {string} document file name
+	 * @returns {string} document file name.
 	 */
 	private getDocumentFileName(document: TextDocument): string {
 	  const fileName = document.fileName.replace(/\\/g, '/');
@@ -164,7 +164,7 @@ export class JsdocGenerator {
 	 *
 	 * @private
 	 * @param {Node} node node for which generate the JSDoc.
-	 * @param {TsFile} tsFile {@link tsFile} object associated with the current file.
+	 * @param {TsFile} tsFile object {@link TsFile} associated with the current file.
 	 * @param {TextEditor} textEditor
 	 */
 	private writeJsdoc(node: Node, tsFile: TsFile, textEditor: TextEditor) {

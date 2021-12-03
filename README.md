@@ -1,5 +1,5 @@
 # JSDoc Generator - README
-Automatic JSDoc generator for TypeScript.
+Automatic JSDoc generator for TypeScript and Typescript React.
 
 ---
 ## Features
@@ -55,10 +55,14 @@ Eventually choosing a keyboard shortcut is left to the user.
 
 ---
 ## Known Issues
-Type inference does not work for variable declarations without an initializer.
+Type inference does not work for variable declarations without an initializer.  
+Some non [everyday types](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html) are not correctly inferred and treated as any or empty object.
 
 ---
 ## Release Notes
+### [1.1.0](https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.1.0)
+
+Added support for Typescript React.
 ### [1.0.0](https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.0.0)
 
-Initial release of JSDoc Generator
+Initial release of JSDoc Generator.

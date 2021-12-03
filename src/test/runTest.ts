@@ -2,7 +2,7 @@ import * as path from 'path';
 import {runTests} from 'vscode-test';
 
 /**
- * Entry point to run tests
+ * Entry point to run tests.
  *
  * @async
  */
