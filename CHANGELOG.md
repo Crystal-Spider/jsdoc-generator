@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2021/12/03
+### Added
+- Support for TypeScript React.
+### Changed
+- A few minor project configuration settings with consequent fixes.
+
+
 ## [1.0.0] - 2021/07/20
 ### Added
 - 3 commands declarations.
@@ -21,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - This [CHANGELOG] file.
 
 [Unreleased]: https://github.com/Nyphet/jsdoc-generator
+[1.1.0]: https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.1.0
 [1.0.0]: https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.0.0
 [README]: https://github.com/Nyphet/jsdoc-generator
 [CHANGELOG]: https://github.com/Nyphet/jsdoc-generator/blob/main/CHANGELOG.md
