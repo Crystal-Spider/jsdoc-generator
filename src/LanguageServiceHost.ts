@@ -113,7 +113,7 @@ export class LanguageServiceHost implements ts.LanguageServiceHost {
    *
    * @public
    * @param {string} fileName
-   * @returns {string} File version
+   * @returns {string} File version.
    */
   public getScriptVersion(fileName: string): string {
     return this.files[fileName] ? this.files[fileName].version.toString() : NaN.toString();
@@ -124,7 +124,7 @@ export class LanguageServiceHost implements ts.LanguageServiceHost {
    *
    * @public
    * @param {string} fileName
-   * @returns {ts.IScriptSnapshot | undefined} Script snapshot or undefined
+   * @returns {ts.IScriptSnapshot | undefined} Script snapshot or undefined.
    */
   public getScriptSnapshot(fileName: string): ts.IScriptSnapshot | undefined {
     return this.files[fileName] ? ts.ScriptSnapshot.fromString(this.files[fileName].text) : undefined;
@@ -135,7 +135,7 @@ export class LanguageServiceHost implements ts.LanguageServiceHost {
    *
    * @public
    * @param {string} fileName
-   * @param {ts.ScriptTarget} langVersion defaults to {@link ts.ScriptTarget.Latest}
+   * @param {ts.ScriptTarget} langVersion defaults to {@link ts.ScriptTarget.Latest}.
    * @returns {ts.SourceFile | null}
    */
   public getSourceFile(fileName: string, langVersion: ts.ScriptTarget = ts.ScriptTarget.Latest): ts.SourceFile | null {
@@ -146,7 +146,7 @@ export class LanguageServiceHost implements ts.LanguageServiceHost {
    * Returns the current working directory.
    *
    * @public
-   * @returns {string} Current working directory
+   * @returns {string} Current working directory.
    */
   public getCurrentDirectory(): string {
     return process.cwd();
@@ -156,7 +156,7 @@ export class LanguageServiceHost implements ts.LanguageServiceHost {
    * Returns the Compiler Settings.
    *
    * @public
-   * @returns {ts.CompilerOptions} Compiler Options
+   * @returns {ts.CompilerOptions} Compiler Options.
    */
   public getCompilationSettings(): ts.CompilerOptions {
     return {
@@ -169,8 +169,8 @@ export class LanguageServiceHost implements ts.LanguageServiceHost {
    * Not supported if the ts module is consumed outside of a node module.
    *
    * @public
-   * @param {ts.CompilerOptions} options Compiler Options
-   * @returns {string} Path of the default library files
+   * @param {ts.CompilerOptions} options Compiler Options.
+   * @returns {string} Path of the default library files.
    */
   public getDefaultLibFileName(options: ts.CompilerOptions): string {
     return ts.getDefaultLibFilePath(options);

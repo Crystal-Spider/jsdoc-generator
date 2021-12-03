@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-// eslint-disable-next-line max-len
+
 import {
   CompletionItem,
   TextDocument,

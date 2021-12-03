@@ -107,7 +107,7 @@ export class TsFile {
 	}
 
 	/**
-	 * Uses the TypeScript API to infer the node type. Returns '' when the type cannot be inferred;
+	 * Uses the TypeScript API to infer the node type. Returns '' when the type cannot be inferred.
 	 *
 	 * @param {Node} node
 	 * @returns {string}
