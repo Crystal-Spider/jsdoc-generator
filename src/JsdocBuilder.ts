@@ -165,7 +165,7 @@ export class JsdocBuilder {
 	 * Builds and returns the JSDoc for method declarations.
 	 *
 	 * @param {MethodDeclaration} node
-	 * @returns {SnippetString} JSDoc
+	 * @returns {SnippetString} the JSDoc for method declaration.
 	 */
 	public getMethodDeclarationJsdoc(node: MethodDeclaration): SnippetString {
 	  this.buildJsdocHeader();
@@ -181,7 +181,7 @@ export class JsdocBuilder {
 	 * Builds and returns the JSDoc for constructor declarations.
 	 *
 	 * @param {ConstructorDeclaration} node
-	 * @returns {SnippetString} JSDoc
+	 * @returns {SnippetString} the JSDoc for constructor declaration.
 	 */
 	public getConstructorJsdoc(node: ConstructorDeclaration): SnippetString {
   	this.jsdoc.appendText('/**\n');
@@ -204,7 +204,7 @@ export class JsdocBuilder {
 	 * Builds and returns the JSDoc for type aliases, union types and intersection types.
 	 *
 	 * @param {TypeAliasDeclaration} node
-	 * @returns {SnippetString} JSDoc
+	 * @returns {SnippetString} the JSDoc for type alias.
 	 */
 	public getTypeAliasJsdoc(node: TypeAliasDeclaration): SnippetString {
 	  this.buildJsdocHeader();
@@ -226,7 +226,9 @@ export class JsdocBuilder {
   		modifiers.forEach((modifier) => {
   			switch(modifier.kind) {
   				case SyntaxKind.ExportKeyword:
-  					this.buildJsdocLine('export');
+	          if(getConfig<boolean>('jsdoc-generator.includeExport', true)) {
+	            this.buildJsdocLine('export');
+	          }
   					break;
   				case SyntaxKind.PrivateKeyword:
   					this.buildJsdocLine('private');
@@ -244,7 +246,9 @@ export class JsdocBuilder {
   					this.buildJsdocLine('abstract');
   					break;
   				case SyntaxKind.AsyncKeyword:
-  					this.buildJsdocLine('async');
+	          if(getConfig<boolean>('jsdoc-generator.includeAsync', true)) {
+	            this.buildJsdocLine('async');
+	          }
   					break;
   				case SyntaxKind.ReadonlyKeyword:
   					this.buildJsdocLine('readonly');
@@ -442,10 +446,10 @@ export class JsdocBuilder {
 	 * tagValues and extraValues are used in order as found in the array.
 	 *
 	 * @private
-	 * @param {string} [tag=''] JSDoc tag to insert.
-	 * @param {string[]} [tagValues=['']] JSDoc tag values to insert.
-	 * @param {string} [wrapper='{}'] A string used to wrap the tagValue. Should be of even elements and symmetrical.
-	 * @param {string[]} [extraValues=[]] Extra values for each tag line.
+	 * @param {string} [tag=''] the JSDoc tag to insert.
+	 * @param {string[]} [tagValues=['']] the JSDoc tag values to insert.
+	 * @param {string} [wrapper='{}'] a string used to wrap the tagValue. Should be of even elements and symmetrical.
+	 * @param {string[]} [extraValues=[]] extra values for each tag line.
 	 */
 	private buildJsdocLines(
 		 tag: string = '',
@@ -465,10 +469,10 @@ export class JsdocBuilder {
 	 * When setting wrapper to '', the tagValue is not wrapped.
 	 *
 	 * @private
-	 * @param {string} [tag=''] JSDoc tag to insert.
-	 * @param {string} [tagValue=''] JSDoc tag value to insert.
-	 * @param {string} [wrapper='{}'] A string used to wrap the tagValue. Should be of even elements and symmetrical.
-	 * @param {string} [extraValue=''] An extra value to add to the line.
+	 * @param {string} [tag=''] the JSDoc tag to insert.
+	 * @param {string} [tagValue=''] the JSDoc tag value to insert.
+	 * @param {string} [wrapper='{}'] a string used to wrap the tagValue. Should be of even elements and symmetrical.
+	 * @param {string} [extraValue=''] an extra value to add to the line.
 	 */
 	private buildJsdocLine(tag: string = '', tagValue: string = '', wrapper: string = '{}', extraValue: string = '') {
 	  let open = '', close = '', line = '';
@@ -506,7 +510,7 @@ export class JsdocBuilder {
 	}
 
 	/**
-	 * If any, returns all the type arguments formatted for JSDoc, otherwise returns '';
+	 * If any, returns all the type arguments formatted for JSDoc, otherwise returns ''.
 	 *
 	 * @private
 	 * @param {UndefTemplate<NodeArray<TypeNode>>} typeArguments

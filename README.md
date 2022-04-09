@@ -40,6 +40,14 @@ Default: `"Creates an instance of {Object}."`
 When enabled, will document variables with a function assigned as function declarations.\
 Disable to document like properties.\
 Default: `true`
+* `jsdoc-generator.includeExport`:\
+When enabled, will include the export tag.\
+Disable to exclude it from the generated JSDoc.\
+Default: `true`
+* `jsdoc-generator.includeAsync`:\
+When enabled, will include the async tag.\
+Disable to exclude it from the generated JSDoc.\
+Default: `true`
 
 ---
 ## Commands
@@ -60,6 +68,9 @@ Some non [everyday types](https://www.typescriptlang.org/docs/handbook/2/everyda
 
 ---
 ## Release Notes
+### [1.1.1](https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.1.1)
+
+Added two setting options
 ### [1.1.0](https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.1.0)
 
 Added support for Typescript React.

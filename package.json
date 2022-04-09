@@ -1,111 +1,121 @@
 {
-	"name": "jsdoc-generator",
-	"displayName": "JSDoc Generator",
-	"description": "Automatic JSDoc generator for TypeScript.",
-	"publisher": "crystal-spider",
-	"icon": "jsdoc-generator.png",
-	"version": "1.1.0",
-	"engines": {
-		"vscode": "^1.57.0"
-	},
-	"categories": [
-		"Snippets",
-		"Programming Languages"
-	],
-	"activationEvents": [
-		"onLanguage:typescript",
-		"onLanguage:typescriptreact",
-		"onCommand:jsdoc-generator.generateJsdocFiles"
-	],
-	"main": "./dist/main.js",
-	"contributes": {
-		"commands": [
-			{
-				"command": "jsdoc-generator.generateJsdocFiles",
-				"title": "Generate JSDoc for all TypeScript files"
-			},
-			{
-				"command": "jsdoc-generator.generateJsdocFile",
-				"title": "Generate JSDoc for the current file"
-			},
-			{
-				"command": "jsdoc-generator.generateJsdoc",
-				"title": "Generate JSDoc"
-			}
-		],
-		"configuration": {
-			"title": "JSDoc Generator configuration",
-			"properties": {
-				"jsdoc-generator.descriptionPlaceholder": {
-					"type": "string",
-					"default": "Description placeholder",
-					"description": "Set the description placeholder.\nEmpty to disable."
-				},
-				"jsdoc-generator.author": {
-					"type": "string",
-					"default": "",
-					"description": "Set the value for the author tag.\nEmpty to disable, set to \"author\" to insert \"author\" as placeholder."
-				},
-				"jsdoc-generator.includeDate": {
-					"type": "boolean",
-					"default": "false",
-					"description": "When enabled, will include the date tag."
-				},
-				"jsdoc-generator.includeTime": {
-					"type": "boolean",
-					"default": "true",
-					"description": "When both this and jsdoc-generator.includeDate are enabled, will include the current local time in the date tag."
-				},
-				"jsdoc-generator.includeParenthesisForMultipleTypes": {
-					"type": "boolean",
-					"default": "true",
-					"description": "When enabled, will include round brackets around union and intersection types.\nNote that round brackets will still be used if manually put in the type or for union and intersection types which are also optional or mandatory."
-				},
-				"jsdoc-generator.descriptionForConstructors": {
-					"type": "string",
-					"default": "Creates an instance of {Object}.",
-					"description": "\"{Object}\" will be replaced with the class name.\nFor default exported classes without a name jsdoc-generator.descriptionPlaceholder will be used instead.\nEmpty to disable."
-				},
-				"jsdoc-generator.functionVariablesAsFunctions": {
-					"type": "boolean",
-					"default": "true",
-					"description": "When enabled, will document variables with a function assigned as function declarations.\nDisable to document like properties."
-				}
-			}
-		}
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/Nyphet/jsdoc-generator.git"
-	},
-	"scripts": {
-		"compile": "tsc -p ./",
-		"watch": "tsc -watch -p ./",
-		"pretest": "npm run compile && npm run eslint:fix",
-		"test": "node ./out/test/runTest.js",
-		"test-compile": "tsc -p ./",
-		"esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=dist/main.js --external:vscode --format=cjs --platform=node",
-		"esbuild": "npm run -S esbuild-base -- --sourcemap",
-		"esbuild-watch": "npm run -S esbuild-base -- --sourcemap --watch",
-		"vscode:prepublish": "npm run -S esbuild-base -- --minify",
-		"eslint:show": "npx eslint . --ext .js,.ts",
-		"eslint:fix": "npx eslint . --ext .js,.ts --fix"
-	},
-	"devDependencies": {
-		"@types/glob": "^7.1.3",
-		"@types/mocha": "^8.2.2",
-		"@types/node": "14.x",
-		"@types/vscode": "^1.57.0",
-		"@typescript-eslint/eslint-plugin": "^4.32.0",
-		"@typescript-eslint/parser": "^4.32.0",
-		"esbuild": "^0.12.15",
-		"eslint": "^7.32.0",
-		"eslint-plugin-import": "^2.24.2",
-		"eslint-plugin-jsdoc": "^36.1.0",
-		"eslint-plugin-unused-imports": "^1.1.5",
-		"glob": "^7.1.7",
-		"mocha": "^8.4.0",
-		"typescript": "^4.3.5",
-		"vscode-test": "^1.5.2"
-	}
+  "name": "jsdoc-generator",
+  "displayName": "JSDoc Generator",
+  "description": "Automatic JSDoc generator for TypeScript.",
+  "publisher": "crystal-spider",
+  "icon": "jsdoc-generator.png",
+  "version": "1.1.1",
+  "engines": {
+    "vscode": "^1.57.0"
+  },
+  "categories": [
+    "Snippets",
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onLanguage:typescript",
+    "onLanguage:typescriptreact",
+    "onCommand:jsdoc-generator.generateJsdocFiles"
+  ],
+  "main": "./dist/main.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "jsdoc-generator.generateJsdocFiles",
+        "title": "Generate JSDoc for all TypeScript files"
+      },
+      {
+        "command": "jsdoc-generator.generateJsdocFile",
+        "title": "Generate JSDoc for the current file"
+      },
+      {
+        "command": "jsdoc-generator.generateJsdoc",
+        "title": "Generate JSDoc"
+      }
+    ],
+    "configuration": {
+      "title": "JSDoc Generator configuration",
+      "properties": {
+        "jsdoc-generator.descriptionPlaceholder": {
+          "type": "string",
+          "default": "Description placeholder",
+          "description": "Set the description placeholder.\nEmpty to disable."
+        },
+        "jsdoc-generator.author": {
+          "type": "string",
+          "default": "",
+          "description": "Set the value for the author tag.\nEmpty to disable, set to \"author\" to insert \"author\" as placeholder."
+        },
+        "jsdoc-generator.includeDate": {
+          "type": "boolean",
+          "default": "false",
+          "description": "When enabled, will include the date tag."
+        },
+        "jsdoc-generator.includeTime": {
+          "type": "boolean",
+          "default": "true",
+          "description": "When both this and jsdoc-generator.includeDate are enabled, will include the current local time in the date tag."
+        },
+        "jsdoc-generator.includeParenthesisForMultipleTypes": {
+          "type": "boolean",
+          "default": "true",
+          "description": "When enabled, will include round brackets around union and intersection types.\nNote that round brackets will still be used if manually put in the type or for union and intersection types which are also optional or mandatory."
+        },
+        "jsdoc-generator.descriptionForConstructors": {
+          "type": "string",
+          "default": "Creates an instance of {Object}.",
+          "description": "\"{Object}\" will be replaced with the class name.\nFor default exported classes without a name jsdoc-generator.descriptionPlaceholder will be used instead.\nEmpty to disable."
+        },
+        "jsdoc-generator.functionVariablesAsFunctions": {
+          "type": "boolean",
+          "default": "true",
+          "description": "When enabled, will document variables with a function assigned as function declarations.\nDisable to document like properties."
+        },
+        "jsdoc-generator.includeExport": {
+          "type": "boolean",
+          "default": "true",
+          "description": "Whether to include the export tag or not."
+        },
+        "jsdoc-generator.includeAsync": {
+          "type": "boolean",
+          "default": "true",
+          "description": "Whether to include the async tag or not."
+        }
+      }
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Nyphet/jsdoc-generator.git"
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run eslint:fix",
+    "test": "node ./out/test/runTest.js",
+    "test-compile": "tsc -p ./",
+    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=dist/main.js --external:vscode --format=cjs --platform=node",
+    "esbuild": "npm run -S esbuild-base -- --sourcemap",
+    "esbuild-watch": "npm run -S esbuild-base -- --sourcemap --watch",
+    "vscode:prepublish": "npm run -S esbuild-base -- --minify",
+    "eslint:show": "npx eslint . --ext .js,.ts",
+    "eslint:fix": "npx eslint . --ext .js,.ts --fix"
+  },
+  "devDependencies": {
+    "@types/glob": "^7.1.3",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "14.x",
+    "@types/vscode": "^1.57.0",
+    "@typescript-eslint/eslint-plugin": "^4.32.0",
+    "@typescript-eslint/parser": "^4.32.0",
+    "esbuild": "^0.12.15",
+    "eslint": "^7.32.0",
+    "eslint-plugin-import": "^2.24.2",
+    "eslint-plugin-jsdoc": "^36.1.0",
+    "eslint-plugin-unused-imports": "^1.1.5",
+    "glob": "^7.1.7",
+    "mocha": "^8.4.0",
+    "typescript": "^4.3.5",
+    "vscode-test": "^1.5.2"
+  }
 }
