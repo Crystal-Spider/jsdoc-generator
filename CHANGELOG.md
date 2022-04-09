@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Nothing new
 
 ## [1.1.1] - 2022/04/09
-## Added
+### Added
 - Setting to toggle whether to include export tag
 - Setting to toggle whether to include async tag
 
