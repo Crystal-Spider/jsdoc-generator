@@ -19,7 +19,12 @@ Nothing new
 ### Changed
 
 - Template tags now correctly only show the name of the type parameter.
+
+### Fixed
+
 - Fixed [#5](https://github.com/Nyphet/jsdoc-generator/issues/5).
+- Fixed unnecessary brackets around union or intersection types.  
+  For example, `Type<T & U>` before became `(Type<T & U>)`, now it correctly stays as `Type<T & U>`.
 
 ## [1.1.1] - 2022/04/09
 

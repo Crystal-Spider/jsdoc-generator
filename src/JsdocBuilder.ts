@@ -50,9 +50,9 @@ export class JsdocBuilder {
    */
   public get emptyJsdoc(): SnippetString {
     this.buildJsdocHeader();
-     this.buildJsdocEnd();
+    this.buildJsdocEnd();
     return this.jsdoc;
-   }
+  }
 
   /**
    * Whether to include types in the JSDoc.
@@ -73,13 +73,13 @@ export class JsdocBuilder {
     this.tsFile = tsFile;
   }
 
-   /**
-    * Builds and returns the JSDoc for classes and interfaces.
-    *
-    * @public
-    * @param {ClassDeclaration | InterfaceDeclaration} node
-    * @returns {SnippetString} JSDoc.
-    */
+  /**
+   * Builds and returns the JSDoc for classes and interfaces.
+   *
+   * @public
+   * @param {ClassDeclaration | InterfaceDeclaration} node
+   * @returns {SnippetString} JSDoc.
+   */
   public getClassLikeDeclarationJsdoc(node: ClassDeclaration | InterfaceDeclaration): SnippetString {
     this.buildJsdocHeader();
     this.buildJsdocModifiers(node.modifiers);
@@ -93,7 +93,7 @@ export class JsdocBuilder {
     this.buildJsdocHeritage(node.heritageClauses);
     this.buildJsdocEnd();
     return this.jsdoc;
-   }
+  }
 
   /**
    * Builds and returns the JSDoc for property declarations.
@@ -117,8 +117,8 @@ export class JsdocBuilder {
       }
       this.buildJsdocEnd();
     }
-     return this.jsdoc;
-   }
+    return this.jsdoc;
+  }
 
   /**
    * Builds and returns the JSDoc for accessor declarations.
@@ -146,7 +146,7 @@ export class JsdocBuilder {
       }
     }
     this.buildJsdocEnd();
-     return this.jsdoc;
+    return this.jsdoc;
   }
 
   /**
@@ -217,12 +217,12 @@ export class JsdocBuilder {
     return this.jsdoc;
   }
 
-   /**
-    * Builds a new JSDoc line for each modifier.
-    *
-    * @private
-    * @param {?ModifiersArray} [modifiers]
-    */
+  /**
+   * Builds a new JSDoc line for each modifier.
+   *
+   * @private
+   * @param {?ModifiersArray} [modifiers]
+   */
   private buildJsdocModifiers(modifiers?: ModifiersArray) {
     if (modifiers && modifiers.length > 0) {
       modifiers.forEach(modifier => {
@@ -262,7 +262,7 @@ export class JsdocBuilder {
         }
       });
     }
-   }
+  }
 
   /**
    * Builds a new JSDoc line for each type parameter.
@@ -296,7 +296,7 @@ export class JsdocBuilder {
         }
       });
     }
-   }
+  }
 
   /**
    * Builds a new JSDoc line for all parameters.
@@ -337,7 +337,7 @@ export class JsdocBuilder {
       returnType = '*';
     }
     if (returnType !== 'void') {
-      if (this.checkParenthesisUse('', returnType)) {
+      if (this.checkParenthesisUse(returnType)) {
         returnType = `(${returnType})`;
       }
       this.buildJsdocLine('returns', this.includeTypes ? returnType : '');
@@ -349,39 +349,39 @@ export class JsdocBuilder {
    *
    * @private
    */
-   private buildJsdocHeader() {
+  private buildJsdocHeader() {
     this.jsdoc.appendText('/**\n');
     this.buildDescription();
     this.buildDate();
     this.buildAuthor();
     this.buildJsdocLine();
-   }
+  }
 
-   /**
-    * Builds a line starting with a space and a configurable placeholder for a JSDoc description.
-    *
-    * @private
-    * @param {string} [description='']
-    */
+  /**
+   * Builds a line starting with a space and a configurable placeholder for a JSDoc description.
+   *
+   * @private
+   * @param {string} [description='']
+   */
   private buildDescription(description: string = '') {
     this.jsdoc.appendText(' * ');
     const placeholder = getConfig('descriptionPlaceholder', '');
     if (description) {
       this.jsdoc.appendText(description);
     } else if (placeholder) {
-       this.jsdoc.appendPlaceholder(placeholder);
-     }
+      this.jsdoc.appendPlaceholder(placeholder);
+    }
     this.jsdoc.appendText('\n');
-   }
+  }
 
-   /**
-    * If configured to do so, builds a line with the author tag and configured value.
-    *
-    * @private
-    */
-   private buildAuthor() {
+  /**
+   * If configured to do so, builds a line with the author tag and configured value.
+   *
+   * @private
+   */
+  private buildAuthor() {
     const author = getConfig('author', '');
-     if (author) {
+    if (author) {
       if (author === 'author') {
         this.jsdoc.appendText(' * @author ');
         this.jsdoc.appendPlaceholder(author);
@@ -389,31 +389,31 @@ export class JsdocBuilder {
       } else {
         this.buildJsdocLine('author', author, '');
       }
-     }
-   }
+    }
+  }
 
-   /**
-    * If configured to do so, builds a line with the date tag and configured value.
-    *
-    * @private
-    */
-   private buildDate() {
-     if (getConfig('includeDate', false)) {
-       const date = new Date();
+  /**
+   * If configured to do so, builds a line with the date tag and configured value.
+   *
+   * @private
+   */
+  private buildDate() {
+    if (getConfig('includeDate', false)) {
+      const date = new Date();
       let tagValue = date.toLocaleDateString();
       if (getConfig('includeTime', true)) {
         tagValue += ` - ${date.toLocaleTimeString()}`;
       }
-       this.buildJsdocLine('date', tagValue, '');
-     }
-   }
+      this.buildJsdocLine('date', tagValue, '');
+    }
+  }
 
-   /**
-    * Builds the ending line of a JSDoc.
-    *
-    * @private
-    */
-   private buildJsdocEnd() {
+  /**
+   * Builds the ending line of a JSDoc.
+   *
+   * @private
+   */
+  private buildJsdocEnd() {
     if (this.jsdoc.value.endsWith('\n *\n') && (this.jsdoc.value.match(/\n/g) || []).length > 2) {
       this.jsdoc.value = this.jsdoc.value.slice(0, -3);
     }
@@ -421,7 +421,7 @@ export class JsdocBuilder {
       this.jsdoc.value = this.jsdoc.value.substring(0, 4) + this.jsdoc.value.substring(7);
     }
     this.jsdoc.appendText(' */\n');
-   }
+  }
 
   /**
    * Builds multiple lines for a JSDoc.
@@ -519,7 +519,7 @@ export class JsdocBuilder {
       } else {
         type = node.type.getText();
       }
-      if (this.checkParenthesisUse(prefix, type)) {
+      if (this.checkParenthesisUse(type, prefix)) {
         type = `(${type})`;
       }
       return prefix + type;
@@ -571,13 +571,12 @@ export class JsdocBuilder {
    * Checks whether or not to use parenthesis to wrap union and intersection types.
    *
    * @private
-   * @param {string} prefix
    * @param {string} type
+   * @param {string} [prefix='']
    * @returns {boolean}
    */
-  private checkParenthesisUse(prefix: string, type: string): boolean {
-    // Check also for ! and & inside <>
-    return (type.includes('|') || type.includes('&')) && (getConfig('includeParenthesisForMultipleTypes', true) || prefix !== '');
+  private checkParenthesisUse(type: string, prefix: string = ''): boolean {
+    return (/^[^(<]+([^(<]|[(<].*[)>])*(&|\|).*$/.test(type)) && (getConfig('includeParenthesisForMultipleTypes', true) || prefix !== '');
   }
 
   /**

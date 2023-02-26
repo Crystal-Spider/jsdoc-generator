@@ -346,7 +346,6 @@
 			"warn",
 			"always"
 		],
-		"wrap-regex": "warn",
 		"arrow-body-style": [
 			"warn",
 			"as-needed"
