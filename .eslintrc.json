@@ -159,18 +159,6 @@
 		"no-extend-native": "error",
 		"no-extra-bind": "error",
 		"no-floating-decimal": "error",
-		"no-implicit-coercion": [
-			"warn",
-			{
-				"boolean": true,
-				"number": true,
-				"string": true,
-				"disallowTemplateShorthand": true,
-				"allow": [
-					"!!"
-				]
-			}
-		],
 		"no-implied-eval": "error",
 		"no-invalid-this": "error",
 		"no-iterator": "error",
