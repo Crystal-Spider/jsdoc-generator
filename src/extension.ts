@@ -11,13 +11,30 @@ import {JsdocGenerator} from './JsdocGenerator';
 let jsdocGenerator: JsdocGenerator;
 
 /**
+ * Configuration item name.
+ *
+ * @typedef {ConfigurationItem}
+ */
+type ConfigurationItem =
+  'descriptionPlaceholder' |
+  'author' |
+  'includeDate' |
+  'includeTime' |
+  'includeTypes' |
+  'includeParenthesisForMultipleTypes' |
+  'descriptionForConstructors' |
+  'functionVariablesAsFunctions' |
+  'includeExport' |
+  'includeAsync';
+
+/**
  * JSDoc Autocompletion item.
  *
  * @class
- * @typedef {GenerateJsdocCompletionItem}
+ * @typedef {JsdocCompletionItem}
  * @extends {CompletionItem}
  */
-class GenerateJsdocCompletionItem extends CompletionItem {
+class JsdocCompletionItem extends CompletionItem {
   /**
    * @constructor
    * @param {string} line
@@ -54,7 +71,7 @@ class GenerateJsdocCompletionItem extends CompletionItem {
  * Lazy instantiates the JsdocGenerator object.
  */
 function lazyInstantiateJsdocGenerator() {
-  if(!jsdocGenerator) {
+  if (!jsdocGenerator) {
     jsdocGenerator = new JsdocGenerator();
   }
 }
@@ -92,8 +109,8 @@ export function activate(context: ExtensionContext) {
       provideCompletionItems(document: TextDocument, position: Position, _: CancellationToken) {
         const line = document.lineAt(position.line).text;
         const prefix = line.slice(0, position.character);
-        if(prefix.match(/^\s*\/\*\*\s*$/)) {
-          return [new GenerateJsdocCompletionItem(line, position)];
+        if (prefix.match(/^\s*\/\*\*\s*$/)) {
+          return [new JsdocCompletionItem(line, position)];
         }
         return null;
       }
@@ -104,7 +121,7 @@ export function activate(context: ExtensionContext) {
   // Generates JSDoc for the current selection.
   const generateJsdoc = vscode.commands.registerCommand('jsdoc-generator.generateJsdoc', () => {
     lazyInstantiateJsdocGenerator();
-    if(vscode.window.activeTextEditor) {
+    if (vscode.window.activeTextEditor) {
       jsdocGenerator.generateJsdoc(vscode.window.activeTextEditor);
     } else {
       vscode.window.showErrorMessage('Unable to generate JSDoc: no editor has been selected.');
@@ -113,7 +130,7 @@ export function activate(context: ExtensionContext) {
   // Generates JSDoc for every suitable element in the current file.
   const generateJsdocFile = vscode.commands.registerCommand('jsdoc-generator.generateJsdocFile', () => {
     lazyInstantiateJsdocGenerator();
-    if(vscode.window.activeTextEditor) {
+    if (vscode.window.activeTextEditor) {
       jsdocGenerator.generateJsdocFile(vscode.window.activeTextEditor);
     } else {
       vscode.window.showErrorMessage('Unable to generate JSDoc: no editor has been selected.');
@@ -142,10 +159,10 @@ export function deactivate() {
  *
  * @export
  * @template T
- * @param {string} configurationName configuration name, supports dotted names.
+ * @param {ConfigurationItem} configurationName configuration name, supports dotted names.
  * @param {T} defaultValue a value should be returned when no value could be found.
  * @returns {T} The value from the configuration or the default.
  */
-export function getConfig<T>(configurationName: string, defaultValue: T): T {
-  return vscode.workspace.getConfiguration().get(configurationName, defaultValue);
+export function getConfig<T>(configurationName: ConfigurationItem, defaultValue: T): T {
+  return vscode.workspace.getConfiguration().get(`jsdoc-generator.${configurationName}`, defaultValue);
 }

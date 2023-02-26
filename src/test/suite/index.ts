@@ -16,7 +16,7 @@ export function run(): Promise<void> {
 
   return new Promise((c, e) => {
     glob('**/**.test.js', {cwd: testsRoot}, (err, files) => {
-      if(err) {
+      if (err) {
         e(err);
       }
 
@@ -26,13 +26,13 @@ export function run(): Promise<void> {
       try {
         // Run the mocha test
         mocha.run(failures => {
-          if(failures > 0) {
+          if (failures > 0) {
             e(new Error(`${failures}  tests failed.`));
           } else {
             c();
           }
         });
-      } catch(error) {
+      } catch (error) {
         // eslint-disable-next-line no-console
         console.error(error);
         e(error);

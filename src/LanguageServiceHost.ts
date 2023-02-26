@@ -75,7 +75,7 @@ export class LanguageServiceHost implements ts.LanguageServiceHost {
    * @param {string} fileText
    */
   public updateFile(fileName: string, fileText: string) {
-    if(this.fileExists(fileName)) {
+    if (this.fileExists(fileName)) {
       this.files[fileName].text = fileText;
       this.files[fileName].version++;
     } else {

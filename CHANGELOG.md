@@ -13,8 +13,13 @@ Nothing new
 
 ### Added
 
-- Setting to toggle whether to include types.
+- Setting to toggle whether to include types (defaults to `true`).
 - Support for JavaScript and JavaScript React.
+
+### Changed
+
+- Template tags now correctly only show the name of the type parameter.
+- Fixed [#5](https://github.com/Nyphet/jsdoc-generator/issues/5).
 
 ## [1.1.1] - 2022/04/09
 

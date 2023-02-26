@@ -260,28 +260,7 @@
 			}
 		],
 		"key-spacing": "warn",
-		"keyword-spacing": [
-			"warn",
-			{
-				"overrides": {
-					"if": {
-						"after": false
-					},
-					"for": {
-						"after": false
-					},
-					"while": {
-						"after": false
-					},
-					"switch": {
-						"after": false
-					},
-					"catch": {
-						"after": false
-					}
-				}
-			}
-		],
+		"keyword-spacing": "warn",
 		"max-depth": [
 			"warn",
 			4
@@ -484,7 +463,7 @@
 			{
 				"ObjectExpression": {
 					"consistent": true,
-					"minProperties": 2
+					"minProperties": 3
 				},
 				"ObjectPattern": {
 					"consistent": false,

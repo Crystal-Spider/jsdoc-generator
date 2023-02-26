@@ -26,6 +26,8 @@ import {TsFile} from './TsFile';
 /**
  * JSDoc Generator.
  *
+ * @export
+ * @class JsdocGenerator
  * @typedef {JsdocGenerator}
  */
 export class JsdocGenerator {
@@ -74,12 +76,12 @@ export class JsdocGenerator {
 	 * @param {TextEditor} textEditor
 	 */
 	public generateJsdocFile(textEditor: TextEditor) {
-	  if(this.isLanguageSupported(textEditor.document)) {
+	  if (this.isLanguageSupported(textEditor.document)) {
 	    const tsFile = this.retrieveTsFile(textEditor.document);
 	    const {sourceFile} = tsFile;
-	    if(sourceFile) {
+	    if (sourceFile) {
 	      const jsdocNumber = this.writeFileJsdoc(tsFile, sourceFile, textEditor);
-	      if(jsdocNumber > 0) {
+	      if (jsdocNumber > 0) {
 	        window.showInformationMessage(`Correctly generated ${jsdocNumber} JSDoc${(jsdocNumber > 1 ? 's' : '')}!`);
 	      } else {
 	        window.showWarningMessage('No JSDoc was generated.');
@@ -100,11 +102,11 @@ export class JsdocGenerator {
 	 * @param {TextEditor} textEditor
 	 */
 	public generateJsdoc(textEditor: TextEditor) {
-	  if(this.isLanguageSupported(textEditor.document)) {
+	  if (this.isLanguageSupported(textEditor.document)) {
 	    const caret = textEditor.selection.start;
 	    const tsFile = this.retrieveTsFile(textEditor.document, caret);
 	    const {supportedNode} = tsFile;
-	    if(supportedNode) {
+	    if (supportedNode) {
 	      this.writeJsdoc(supportedNode, tsFile, textEditor);
 	    } else {
 	      window.showErrorMessage(`Unable to generate JSDoc at position (Ln ${caret.line}, Col ${caret.character}).`);
@@ -194,7 +196,7 @@ export class JsdocGenerator {
 	private buildJsdoc(node: Node, tsFile: TsFile): SnippetString {
 	  const jsdocBuilder = new JsdocBuilder(tsFile);
 
-	  switch(node.kind) {
+	  switch (node.kind) {
 	    case SyntaxKind.PropertySignature:
 	    case SyntaxKind.PropertyDeclaration:
 	      return jsdocBuilder.getPropertyDeclarationJsdoc(<PropertyDeclaration>node);
@@ -254,16 +256,16 @@ export class JsdocGenerator {
 	private writeFileJsdoc(tsFile: TsFile, sourceFile: SourceFile, textEditor: TextEditor): number {
 	  let jsdocNumber = 0;
 	  // Iterated bottom up to avoid shifting of start position of nodes.
-	  for(let c = sourceFile.statements.length - 1; c >= 0; c--) {
+	  for (let c = sourceFile.statements.length - 1; c >= 0; c--) {
 	    const statement = sourceFile.statements[c];
-	    if(tsFile.isNodeSupported(statement)) {
-	      if(
+	    if (tsFile.isNodeSupported(statement)) {
+	      if (
 	        statement.kind === SyntaxKind.ClassExpression ||
 					statement.kind === SyntaxKind.ClassDeclaration ||
 					statement.kind === SyntaxKind.InterfaceDeclaration
 	      ) {
 	        const {members} = <ClassDeclaration>statement;
-	        for(let k = members.length - 1; k >= 0; k--) {
+	        for (let k = members.length - 1; k >= 0; k--) {
 	          jsdocNumber += this.writeJsdocConditionally(members[k], tsFile, textEditor);
 	        }
 	      }
@@ -284,7 +286,7 @@ export class JsdocGenerator {
 	 * @returns {number} 1 if the JSDoc has been written, 0 otherwise.
 	 */
 	private writeJsdocConditionally(node: Node, tsFile: TsFile, textEditor: TextEditor): number {
-	  if(!tsFile.hasJsdoc(node)) {
+	  if (!tsFile.hasJsdoc(node)) {
 	    this.writeJsdoc(node, tsFile, textEditor);
 	    return 1;
 	  }

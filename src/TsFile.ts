@@ -75,9 +75,9 @@ export class TsFile {
 	constructor(fileName: string, newText: string, caret?: Position, program?: Program) {
 	  this.caret = caret;
 	  this.program = program;
-	  if(program) {
+	  if (program) {
 	    const sourceFile = program.getSourceFile(fileName);
-	    if(sourceFile) {
+	    if (sourceFile) {
 	      sourceFile.update(newText, <TextChangeRange>{
 	        newLength: newText.length,
 	        span: <TextSpan>{
@@ -140,7 +140,7 @@ export class TsFile {
 	 * @type {(Node | undefined)}
 	 */
 	public get supportedNode(): Node | undefined {
-	  if(this.sourceFile && this.caret) {
+	  if (this.sourceFile && this.caret) {
 	    const {line} = this.caret;
 	    const {character} = this.caret;
 	    const position = getPositionOfLineAndCharacter(this.sourceFile, line, character);
@@ -161,7 +161,7 @@ export class TsFile {
 	 */
 	private findNode(source: Node, position: number, parent: Node = source): Node {
 	  let node: Node = parent;
-	  if(source.getFullStart() <= position && source.getEnd() >= position) {
+	  if (source.getFullStart() <= position && source.getEnd() >= position) {
 	    node = source;
 	  }
 	  source.forEachChild(child => { node = this.findNode(child, position, node); });
@@ -179,8 +179,8 @@ export class TsFile {
 	 */
 	private retrieveSupportedNode(node: Node): Node | undefined {
 	  let parent = node;
-	  while(parent) {
-	    if(this.isNodeSupported(parent)) {
+	  while (parent) {
+	    if (this.isNodeSupported(parent)) {
 	      return parent;
 	    }
 	    ({parent} = parent);
