@@ -1,11 +1,4 @@
-import {getPositionOfLineAndCharacter,
-  JSDoc,
-  Node,
-  Program,
-  SourceFile,
-  SyntaxKind,
-  TextChangeRange,
-  TextSpan} from 'typescript';
+import {getPositionOfLineAndCharacter, JSDoc, Node, Program, SourceFile, SyntaxKind} from 'typescript';
 import {Position} from 'vscode';
 
 /**
@@ -78,13 +71,9 @@ export class TsFile {
 	  if (program) {
 	    const sourceFile = program.getSourceFile(fileName);
 	    if (sourceFile) {
-	      sourceFile.update(newText, <TextChangeRange>{
-	        newLength: newText.length,
-	        span: <TextSpan>{
-	          start: 0,
-	          length: newText.length
-	        }
-	      });
+	      sourceFile.update(newText, {newLength: newText.length,
+	        span: {start: 0,
+	          length: newText.length} });
 	      this.sourceFile = sourceFile;
 	    }
 	  } else {
@@ -119,7 +108,7 @@ export class TsFile {
 	 * @returns {boolean}
 	 */
 	public hasJsdoc(node: Node): boolean {
-	  return !!(<any>node).jsDoc;
+	  return !!(node as any).jsDoc;
 	}
 
 	/**
@@ -130,7 +119,7 @@ export class TsFile {
 	 * @returns {JSDoc}
 	 */
 	public getJsdoc(node: Node): JSDoc {
-	  return <JSDoc>(<any>node).jsDoc[0];
+	  return (node as any).jsDoc[0];
 	}
 
 	/**

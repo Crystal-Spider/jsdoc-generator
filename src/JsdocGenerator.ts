@@ -1,22 +1,4 @@
-import {LanguageService,
-  createLanguageService,
-  createDocumentRegistry,
-  SourceFile,
-  sys,
-  Node,
-  LineAndCharacter,
-  getLineAndCharacterOfPosition,
-  SyntaxKind,
-  PropertyDeclaration,
-  ConstructorDeclaration,
-  AccessorDeclaration,
-  MethodDeclaration,
-  ClassDeclaration,
-  InterfaceDeclaration,
-  EnumDeclaration,
-  VariableDeclarationList,
-  TypeAliasDeclaration,
-  VariableStatement} from 'typescript';
+import {LanguageService, createLanguageService, createDocumentRegistry, SourceFile, sys, Node, LineAndCharacter, getLineAndCharacterOfPosition, SyntaxKind, PropertyDeclaration, ConstructorDeclaration, AccessorDeclaration, MethodDeclaration, ClassDeclaration, InterfaceDeclaration, EnumDeclaration, VariableDeclarationList, TypeAliasDeclaration, VariableStatement} from 'typescript';
 import {TextDocument, TextEditor, window, SnippetString, Position} from 'vscode';
 
 import {JsdocBuilder} from './JsdocBuilder';
@@ -167,7 +149,7 @@ export class JsdocGenerator {
 	 * @param {TextEditor} textEditor
 	 */
 	private writeJsdoc(node: Node, tsFile: TsFile, textEditor: TextEditor) {
-	  const jsdocLocation = this.getJsdocLocation(<SourceFile>tsFile.sourceFile, node);
+	  const jsdocLocation = this.getJsdocLocation(tsFile.sourceFile as SourceFile, node);
 	  const jsdoc = this.buildJsdoc(node, tsFile);
 	  this.insertJsdoc(jsdoc, jsdocLocation, textEditor);
 	}
@@ -199,31 +181,31 @@ export class JsdocGenerator {
 	  switch (node.kind) {
 	    case SyntaxKind.PropertySignature:
 	    case SyntaxKind.PropertyDeclaration:
-	      return jsdocBuilder.getPropertyDeclarationJsdoc(<PropertyDeclaration>node);
+	      return jsdocBuilder.getPropertyDeclarationJsdoc(node as PropertyDeclaration);
 	    case SyntaxKind.Constructor:
-	      return jsdocBuilder.getConstructorJsdoc(<ConstructorDeclaration>node);
+	      return jsdocBuilder.getConstructorJsdoc(node as ConstructorDeclaration);
 	    case SyntaxKind.GetAccessor:
 	    case SyntaxKind.SetAccessor:
-	      return jsdocBuilder.getAccessorDeclarationJsdoc(<AccessorDeclaration>node);
+	      return jsdocBuilder.getAccessorDeclarationJsdoc(node as AccessorDeclaration);
 	    case SyntaxKind.MethodSignature:
 	    case SyntaxKind.MethodDeclaration:
 	    case SyntaxKind.CallSignature:
 	    case SyntaxKind.FunctionExpression:
 	    case SyntaxKind.ArrowFunction:
 	    case SyntaxKind.FunctionDeclaration:
-	      return jsdocBuilder.getMethodDeclarationJsdoc(<MethodDeclaration>node);
+	      return jsdocBuilder.getMethodDeclarationJsdoc(node as MethodDeclaration);
 	    case SyntaxKind.ClassDeclaration:
-	      return jsdocBuilder.getClassLikeDeclarationJsdoc(<ClassDeclaration>node);
+	      return jsdocBuilder.getClassLikeDeclarationJsdoc(node as ClassDeclaration);
 	    case SyntaxKind.InterfaceDeclaration:
-	      return jsdocBuilder.getClassLikeDeclarationJsdoc(<InterfaceDeclaration>node);
+	      return jsdocBuilder.getClassLikeDeclarationJsdoc(node as InterfaceDeclaration);
 	    case SyntaxKind.TypeAliasDeclaration:
-	      return jsdocBuilder.getTypeAliasJsdoc(<TypeAliasDeclaration>node);
+	      return jsdocBuilder.getTypeAliasJsdoc(node as TypeAliasDeclaration);
 	    case SyntaxKind.EnumDeclaration:
-	      return jsdocBuilder.getEnumDeclarationJsdoc(<EnumDeclaration>node);
+	      return jsdocBuilder.getEnumDeclarationJsdoc(node as EnumDeclaration);
 	    case SyntaxKind.VariableStatement:
-	      return jsdocBuilder.getPropertyDeclarationJsdoc((<VariableDeclarationList>(<VariableStatement>node).declarationList).declarations[0]);
+	      return jsdocBuilder.getPropertyDeclarationJsdoc(((node as VariableStatement).declarationList as VariableDeclarationList).declarations[0]);
 	    case SyntaxKind.VariableDeclarationList:
-	      return jsdocBuilder.getPropertyDeclarationJsdoc((<VariableDeclarationList>node).declarations[0]);
+	      return jsdocBuilder.getPropertyDeclarationJsdoc((node as VariableDeclarationList).declarations[0]);
 	    case SyntaxKind.EnumMember:
 	    default:
 	      return jsdocBuilder.emptyJsdoc;
@@ -264,7 +246,7 @@ export class JsdocGenerator {
 					statement.kind === SyntaxKind.ClassDeclaration ||
 					statement.kind === SyntaxKind.InterfaceDeclaration
 	      ) {
-	        const {members} = <ClassDeclaration>statement;
+	        const {members} = statement as ClassDeclaration;
 	        for (let k = members.length - 1; k >= 0; k--) {
 	          jsdocNumber += this.writeJsdocConditionally(members[k], tsFile, textEditor);
 	        }

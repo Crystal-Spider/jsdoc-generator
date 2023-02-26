@@ -270,7 +270,8 @@
 			{
 				"code": 160,
 				"comments": 160,
-				"tabWidth": 2
+				"tabWidth": 2,
+        "ignorePattern": "^import"
 			}
 		],
 		"max-nested-callbacks": [

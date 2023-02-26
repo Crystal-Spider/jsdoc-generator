@@ -1,23 +1,4 @@
-import {getTextOfJSDocComment,
-  Node,
-  SyntaxKind,
-  NodeArray,
-  TypeNode,
-  ExpressionWithTypeArguments,
-  TypeParameterDeclaration,
-  HeritageClause,
-  ModifiersArray,
-  AccessorDeclaration,
-  ClassDeclaration,
-  ClassLikeDeclaration,
-  ConstructorDeclaration,
-  EnumDeclaration,
-  InterfaceDeclaration,
-  MethodDeclaration,
-  ParameterDeclaration,
-  PropertyDeclaration,
-  TypeAliasDeclaration,
-  VariableDeclaration} from 'typescript';
+import {getTextOfJSDocComment, Node, SyntaxKind, NodeArray, TypeNode, ExpressionWithTypeArguments, TypeParameterDeclaration, HeritageClause, ModifiersArray, AccessorDeclaration, ClassDeclaration, ClassLikeDeclaration, ConstructorDeclaration, EnumDeclaration, InterfaceDeclaration, MethodDeclaration, ParameterDeclaration, PropertyDeclaration, TypeAliasDeclaration, VariableDeclaration} from 'typescript';
 import {SnippetString} from 'vscode';
 
 import {getConfig} from './extension';
