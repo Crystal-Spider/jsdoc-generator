@@ -1,5 +1,4 @@
-import {
-  getTextOfJSDocComment,
+import {getTextOfJSDocComment,
   Node,
   SyntaxKind,
   NodeArray,
@@ -18,13 +17,11 @@ import {
   ParameterDeclaration,
   PropertyDeclaration,
   TypeAliasDeclaration,
-  VariableDeclaration
-} from 'typescript';
+  VariableDeclaration} from 'typescript';
 import {SnippetString} from 'vscode';
 
 import {getConfig} from './extension';
 import {TsFile} from './TsFile';
-import {UndefTemplate} from './UndefTemplate';
 
 /**
  * Utility type to group all {@link Node}s that can have a TypeScript type.
@@ -105,8 +102,8 @@ export class JsdocBuilder {
 	 * @returns {SnippetString} JSDoc.
 	 */
 	public getPropertyDeclarationJsdoc(node: PropertyDeclaration | VariableDeclaration): SnippetString {
-	  const functionAssigned = node.getChildren().find((child) => this.isFunctionKind(child.kind));
-	  const classAssigned = node.getChildren().find((child) => child.kind === SyntaxKind.ClassExpression);
+	  const functionAssigned = node.getChildren().find(child => this.isFunctionKind(child.kind));
+	  const classAssigned = node.getChildren().find(child => child.kind === SyntaxKind.ClassExpression);
 	  if(getConfig<boolean>('jsdoc-generator.functionVariablesAsFunctions', true) && functionAssigned) {
 	    this.getMethodDeclarationJsdoc(<MethodDeclaration>functionAssigned);
 	  } else if(classAssigned) {
@@ -130,7 +127,7 @@ export class JsdocBuilder {
 	  const otherAccessorKind = node.kind === SyntaxKind.GetAccessor ? SyntaxKind.SetAccessor : SyntaxKind.GetAccessor;
 	  const accessorName = node.name.getText();
 	  const pairedAccessor = <AccessorDeclaration>(<ClassLikeDeclaration>node.parent).members
-	    .find((member) => member.kind === otherAccessorKind && member.name && member.name.getText() === accessorName);
+	    .find(member => member.kind === otherAccessorKind && member.name && member.name.getText() === accessorName);
 	  if(pairedAccessor && this.tsFile.hasJsdoc(pairedAccessor)) {
 	    this.jsdoc.appendText('/**\n');
 	    const pairedDescription = getTextOfJSDocComment(this.tsFile.getJsdoc(pairedAccessor).comment);
@@ -219,11 +216,11 @@ export class JsdocBuilder {
  	 * Builds a new JSDoc line for each modifier.
  	 *
  	 * @private
- 	 * @param {UndefTemplate<ModifiersArray>} modifiers
+ 	 * @param {?ModifiersArray} [modifiers]
  	 */
- 	private buildJsdocModifiers(modifiers: UndefTemplate<ModifiersArray>) {
+	private buildJsdocModifiers(modifiers?: ModifiersArray) {
   	if(modifiers && modifiers.length > 0) {
-  		modifiers.forEach((modifier) => {
+  		modifiers.forEach(modifier => {
   			switch(modifier.kind) {
   				case SyntaxKind.ExportKeyword:
 	          if(getConfig<boolean>('jsdoc-generator.includeExport', true)) {
@@ -266,11 +263,11 @@ export class JsdocBuilder {
 	 * Builds a new JSDoc line for each type parameter.
 	 *
 	 * @private
-	 * @param {UndefTemplate<NodeArray<TypeParameterDeclaration>>} typeParameters
+	 * @param {?NodeArray<TypeParameterDeclaration>} [typeParameters]
 	 */
-	private buildTypeParameters(typeParameters: UndefTemplate<NodeArray<TypeParameterDeclaration>>) {
+	private buildTypeParameters(typeParameters?: NodeArray<TypeParameterDeclaration>) {
 	  if(typeParameters) {
-	    this.buildJsdocLines('template', typeParameters.map((typeParameter) => typeParameter.getText()), '');
+	    this.buildJsdocLines('template', typeParameters.map(typeParameter => typeParameter.getText()), '');
 	  }
 	}
 
@@ -278,11 +275,11 @@ export class JsdocBuilder {
 	 * Builds a new JSDoc line for all heritage clauses.
 	 *
 	 * @private
-	 * @param {UndefTemplate<NodeArray<HeritageClause>>} heritageClauses
+	 * @param {?NodeArray<HeritageClause>} [heritageClauses]
 	 */
-	private buildJsdocHeritage(heritageClauses: UndefTemplate<NodeArray<HeritageClause>>) {
+	private buildJsdocHeritage(heritageClauses?: NodeArray<HeritageClause>) {
   	if(heritageClauses) {
-  		heritageClauses.forEach((heritageClause) => {
+  		heritageClauses.forEach(heritageClause => {
   			switch(heritageClause.token) {
   				case SyntaxKind.ExtendsKeyword:
   					this.buildJsdocLines('extends', this.getMultipleTypes(heritageClause.types));
@@ -303,21 +300,21 @@ export class JsdocBuilder {
 	 * @param {NodeArray<ParameterDeclaration>} parameters
 	 */
 	private buildJsdocParameters(parameters: NodeArray<ParameterDeclaration>) {
-	  const mappedParameters = parameters.map((parameter) => {
+	  const mappedParameters = parameters.map(parameter => {
 	    let name = parameter.name.getText();
 	    const type = this.retrieveType(parameter);
-	    const initializer = parameter.initializer ? ('=' + parameter.initializer.getText()) : '';
+	    const initializer = parameter.initializer ? (`=${parameter.initializer.getText()}`) : '';
 	    const isOptional = !!parameter.questionToken || !!initializer;
 	    if(isOptional) {
-	      name = '[' + name + initializer + ']';
+	      name = `[${name}${initializer}]`;
 	    }
 	    return {
 	      type,
 	      name
 	    };
 	  });
-	  const parametersTypes = mappedParameters.map((param) => param.type);
-	  const parametersNames = mappedParameters.map((param) => param.name);
+	  const parametersTypes = mappedParameters.map(param => param.type);
+	  const parametersNames = mappedParameters.map(param => param.name);
 	  this.buildJsdocLines('param', parametersTypes, '{}', parametersNames);
 	}
 
@@ -340,7 +337,7 @@ export class JsdocBuilder {
 	  }
 	  if(returnType !== 'void') {
 	    if(this.checkParenthesisUse('', returnType)) {
-	      returnType = '(' + returnType + ')';
+	      returnType = `(${returnType})`;
 	    }
 	    this.buildJsdocLine('returns', returnType);
 	  }
@@ -417,7 +414,7 @@ export class JsdocBuilder {
  	    const date = new Date();
 	    let tagValue = date.toLocaleDateString();
 	    if(getConfig<boolean>('jsdoc-generator.includeTime', true)) {
-	      tagValue += ' - ' + date.toLocaleTimeString();
+	      tagValue += ` - ${date.toLocaleTimeString()}`;
 	    }
  	  	this.buildJsdocLine('date', tagValue, '');
  	  }
@@ -482,15 +479,15 @@ export class JsdocBuilder {
 	    close = wrapper.substring(middle);
 	  }
 	  if(tag) {
-	    line += ' @' + tag;
+	    line += ` @${tag}`;
 	    if(tagValue) {
-	      line += ' ' + open + tagValue + close;
+	      line += ` ${open}${tagValue}${close}`;
 	      if(extraValue) {
-	        line += ' ' + extraValue;
+	        line += ` ${extraValue}`;
 	      }
 	    }
 	  }
-	  this.jsdoc.appendText(' *' + line + '\n');
+	  this.jsdoc.appendText(` *${line}\n`);
 	  if(!!tagValue && wrapper === '{}') {
 	    // Remove '\' that comes from .appendText() escaping '}'.
 	    const backslashIndex = this.jsdoc.value.indexOf('\\');
@@ -506,18 +503,18 @@ export class JsdocBuilder {
 	 * @returns {string[]}
 	 */
 	private getMultipleTypes(types: NodeArray<ExpressionWithTypeArguments>): string[] {
-	  return types.map((type) => type.expression.getText() + this.getTypeArguments(type.typeArguments));
+	  return types.map(type => type.expression.getText() + this.getTypeArguments(type.typeArguments));
 	}
 
 	/**
 	 * If any, returns all the type arguments formatted for JSDoc, otherwise returns ''.
 	 *
 	 * @private
-	 * @param {UndefTemplate<NodeArray<TypeNode>>} typeArguments
+	 * @param {?NodeArray<TypeNode>} [typeArguments]
 	 * @returns {string}
 	 */
-	private getTypeArguments(typeArguments: UndefTemplate<NodeArray<TypeNode>>): string {
-	  return typeArguments ? '<' + typeArguments.map((typeArgument) => typeArgument.getText()).join(', ') + '>' : '';
+	private getTypeArguments(typeArguments?: NodeArray<TypeNode>): string {
+	  return typeArguments ? `<${typeArguments.map(typeArgument => typeArgument.getText()).join(', ')}>` : '';
 	}
 
 	/**
@@ -538,7 +535,7 @@ export class JsdocBuilder {
 	    type = node.type.getText();
 	  }
 	  if(this.checkParenthesisUse(prefix, type)) {
-	    type = '(' + type + ')';
+	    type = `(${type})`;
 	  }
 	  return prefix + type;
 	}

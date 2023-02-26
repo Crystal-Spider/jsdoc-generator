@@ -1,10 +1,10 @@
 {
   "name": "jsdoc-generator",
   "displayName": "JSDoc Generator",
-  "description": "Automatic JSDoc generator for TypeScript.",
+  "description": "Automatic JSDoc generator for TypeScript and JavaScript.",
   "publisher": "crystal-spider",
   "icon": "jsdoc-generator.png",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "engines": {
     "vscode": "^1.57.0"
   },
@@ -15,14 +15,15 @@
   "activationEvents": [
     "onLanguage:typescript",
     "onLanguage:typescriptreact",
-    "onCommand:jsdoc-generator.generateJsdocFiles"
+    "onLanguage:javascript",
+    "onLanguage:javascriptreact"
   ],
   "main": "./dist/main.js",
   "contributes": {
     "commands": [
       {
         "command": "jsdoc-generator.generateJsdocFiles",
-        "title": "Generate JSDoc for all TypeScript files"
+        "title": "Generate JSDoc for all TypeScript and JavaScript files"
       },
       {
         "command": "jsdoc-generator.generateJsdocFile",
@@ -55,6 +56,11 @@
           "type": "boolean",
           "default": "true",
           "description": "When both this and jsdoc-generator.includeDate are enabled, will include the current local time in the date tag."
+        },
+        "jsdoc-generator.includeTypes": {
+          "type": "boolean",
+          "default": "true",
+          "description": "Whether to include types into the generated JSDoc."
         },
         "jsdoc-generator.includeParenthesisForMultipleTypes": {
           "type": "boolean",

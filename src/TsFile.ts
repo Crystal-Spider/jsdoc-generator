@@ -1,16 +1,12 @@
-import {
-  getPositionOfLineAndCharacter,
+import {getPositionOfLineAndCharacter,
   JSDoc,
   Node,
   Program,
   SourceFile,
   SyntaxKind,
   TextChangeRange,
-  TextSpan
-} from 'typescript';
+  TextSpan} from 'typescript';
 import {Position} from 'vscode';
-
-import {UndefTemplate} from './UndefTemplate';
 
 /**
  * Class representing a TypeScript File with some utility methods for JSDoc generation.
@@ -51,32 +47,32 @@ export class TsFile {
 	/**
 	 * TS Program.
 	 *
-	 * @type {UndefTemplate<Program>}
+	 * @type {?Program}
 	 */
-	program: UndefTemplate<Program>;
+	program?: Program;
 
 	/**
 	 * TS sourceFile.
 	 *
-	 * @type {UndefTemplate<SourceFile>}
+	 * @type {?SourceFile}
 	 */
-	sourceFile: UndefTemplate<SourceFile>;
+	sourceFile?: SourceFile;
 
 	/**
 	 * Caret position.
 	 *
-	 * @type {UndefTemplate<Position>}
+	 * @type {?Position}
 	 */
-	caret: UndefTemplate<Position>;
+	caret?: Position;
 
 	/**
 	 * @constructor
-	 * @param {UndefTemplate<Program>} program
 	 * @param {string} fileName
 	 * @param {string} newText
-	 * @param {UndefTemplate<Position>} caret
+	 * @param {?Position} [caret]
+	 * @param {?Program} [program]
 	 */
-	constructor(program: UndefTemplate<Program>, fileName: string, newText: string, caret: UndefTemplate<Position>) {
+	constructor(fileName: string, newText: string, caret?: Position, program?: Program) {
 	  this.caret = caret;
 	  this.program = program;
 	  if(program) {
@@ -113,11 +109,7 @@ export class TsFile {
 	 * @returns {string}
 	 */
 	public inferType(node: Node): string {
-	  if(this.program) {
-	    const type = this.program.getTypeChecker().typeToString(this.program.getTypeChecker().getTypeAtLocation(node));
-	    return type;
-	  }
-	  return '';
+	  return this.program ? this.program.getTypeChecker().typeToString(this.program.getTypeChecker().getTypeAtLocation(node)) : '';
 	}
 
 	/**
@@ -145,9 +137,9 @@ export class TsFile {
 	 * Exposes the supported node for the current file at the current caret position.
 	 *
 	 * @readonly
-	 * @type {UndefTemplate<Node>}
+	 * @type {(Node | undefined)}
 	 */
-	public get supportedNode(): UndefTemplate<Node> {
+	public get supportedNode(): Node | undefined {
 	  if(this.sourceFile && this.caret) {
 	    const {line} = this.caret;
 	    const {character} = this.caret;
@@ -172,7 +164,7 @@ export class TsFile {
 	  if(source.getFullStart() <= position && source.getEnd() >= position) {
 	    node = source;
 	  }
-	  source.forEachChild((child) => { node = this.findNode(child, position, node); });
+	  source.forEachChild(child => { node = this.findNode(child, position, node); });
 	  return node;
 	}
 
@@ -183,9 +175,9 @@ export class TsFile {
 	 *
 	 * @private
 	 * @param {Node} node
-	 * @returns {UndefTemplate<Node>}
+	 * @returns {(Node | undefined)}
 	 */
-	private retrieveSupportedNode(node: Node): UndefTemplate<Node> {
+	private retrieveSupportedNode(node: Node): Node | undefined {
 	  let parent = node;
 	  while(parent) {
 	    if(this.isNodeSupported(parent)) {

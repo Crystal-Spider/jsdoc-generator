@@ -1,5 +1,4 @@
-import {
-  LanguageService,
+import {LanguageService,
   createLanguageService,
   createDocumentRegistry,
   SourceFile,
@@ -17,14 +16,12 @@ import {
   EnumDeclaration,
   VariableDeclarationList,
   TypeAliasDeclaration,
-  VariableStatement
-} from 'typescript';
+  VariableStatement} from 'typescript';
 import {TextDocument, TextEditor, window, SnippetString, Position} from 'vscode';
 
 import {JsdocBuilder} from './JsdocBuilder';
 import {LanguageServiceHost} from './LanguageServiceHost';
 import {TsFile} from './TsFile';
-import {UndefTemplate} from './UndefTemplate';
 
 /**
  * JSDoc Generator.
@@ -39,7 +36,12 @@ export class JsdocGenerator {
 	 * @readonly
 	 * @type {string[]}
 	 */
-	private readonly languages: string[] = ['typescript', 'typescriptreact'];
+	private readonly languages: string[] = [
+	  'javascript',
+	  'javascriptreact',
+	  'typescript',
+	  'typescriptreact'
+	];
 
 	/**
 	 * Handles all interactions between the Language Service and the external world.
@@ -78,9 +80,7 @@ export class JsdocGenerator {
 	    if(sourceFile) {
 	      const jsdocNumber = this.writeFileJsdoc(tsFile, sourceFile, textEditor);
 	      if(jsdocNumber > 0) {
-	        window.showInformationMessage(
-	          'Correctly generated ' + jsdocNumber + ' JSDoc' + (jsdocNumber > 1 ? 's' : '') + '!'
-	        );
+	        window.showInformationMessage(`Correctly generated ${jsdocNumber} JSDoc${(jsdocNumber > 1 ? 's' : '')}!`);
 	      } else {
 	        window.showWarningMessage('No JSDoc was generated.');
 	      }
@@ -88,7 +88,7 @@ export class JsdocGenerator {
 	      window.showErrorMessage('Unable to generate JSDoc for the current file.');
 	    }
 	  } else {
-	    window.showErrorMessage('Unable to generate JSDoc: ' + textEditor.document.languageId + ' is not supported.');
+	    window.showErrorMessage(`Unable to generate JSDoc: ${textEditor.document.languageId} is not supported.`);
 	  }
 	}
 
@@ -107,12 +107,10 @@ export class JsdocGenerator {
 	    if(supportedNode) {
 	      this.writeJsdoc(supportedNode, tsFile, textEditor);
 	    } else {
-	      window.showErrorMessage(
-	        'Unable to generate JSDoc at position (Ln ' + caret.line + ', Col ' + caret.character + ').'
-	      );
+	      window.showErrorMessage(`Unable to generate JSDoc at position (Ln ${caret.line}, Col ${caret.character}).`);
 	    }
 	  } else {
-	    window.showErrorMessage('Unable to generate JSDoc: ' + textEditor.document.languageId + ' is not supported.');
+	    window.showErrorMessage(`Unable to generate JSDoc: ${textEditor.document.languageId} is not supported.`);
 	  }
 	}
 
@@ -121,10 +119,10 @@ export class JsdocGenerator {
 	 *
 	 * @private
 	 * @param {TextDocument} document
-	 * @returns {boolean}
+	 * @returns {boolean} whether the document language is supported.
 	 */
 	private isLanguageSupported(document: TextDocument): boolean {
-	  return this.languages.some((language) => language === document.languageId);
+	  return this.languages.some(language => language === document.languageId);
 	}
 
 	/**
@@ -134,21 +132,20 @@ export class JsdocGenerator {
 	 *
 	 * @private
 	 * @param {TextDocument} document
-	 * @param {UndefTemplate<Position>} [caret=undefined]
+	 * @param {?Position} [caret]
 	 * @returns {TsFile}
 	 */
-	private retrieveTsFile(document: TextDocument, caret: UndefTemplate<Position> = undefined): TsFile {
+	private retrieveTsFile(document: TextDocument, caret?: Position): TsFile {
 	  const fileText = document.getText();
 	  const fileName = this.getDocumentFileName(document);
 	  this.languageServiceHost.updateFile(fileName, fileText);
 	  this.languageServices.getSyntacticDiagnostics(fileName);
 	  const program = this.languageServices.getProgram();
-	  return new TsFile(program, fileName, document.getText(), caret);
+	  return new TsFile(fileName, document.getText(), caret, program);
 	}
 
 	/**
-	 * If it's a TypeScript document, returns the fileName with forced '/' as directory separator
-	 * and, if missing, a forced .ts extension.
+	 * If it's a TypeScript document, returns the fileName with forced '/' as directory separator.
 	 *
 	 * @private
 	 * @param {TextDocument} document
@@ -222,9 +219,7 @@ export class JsdocGenerator {
 	    case SyntaxKind.EnumDeclaration:
 	      return jsdocBuilder.getEnumDeclarationJsdoc(<EnumDeclaration>node);
 	    case SyntaxKind.VariableStatement:
-	      return jsdocBuilder.getPropertyDeclarationJsdoc(
-	        (<VariableDeclarationList>(<VariableStatement>node).declarationList).declarations[0]
-	      );
+	      return jsdocBuilder.getPropertyDeclarationJsdoc((<VariableDeclarationList>(<VariableStatement>node).declarationList).declarations[0]);
 	    case SyntaxKind.VariableDeclarationList:
 	      return jsdocBuilder.getPropertyDeclarationJsdoc((<VariableDeclarationList>node).declarations[0]);
 	    case SyntaxKind.EnumMember:
@@ -289,7 +284,7 @@ export class JsdocGenerator {
 	 * @returns {number} 1 if the JSDoc has been written, 0 otherwise.
 	 */
 	private writeJsdocConditionally(node: Node, tsFile: TsFile, textEditor: TextEditor): number {
-	  if(!(tsFile.hasJsdoc(node))) {
+	  if(!tsFile.hasJsdoc(node)) {
 	    this.writeJsdoc(node, tsFile, textEditor);
 	    return 1;
 	  }

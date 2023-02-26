@@ -289,8 +289,8 @@
 		"max-len": [
 			"warn",
 			{
-				"code": 140,
-				"comments": 140,
+				"code": 160,
+				"comments": 160,
 				"tabWidth": 2
 			}
 		],
@@ -385,7 +385,7 @@
 		],
 		"arrow-parens": [
 			"warn",
-			"always"
+			"as-needed"
 		],
 		"arrow-spacing": "warn",
 		"constructor-super": "error",
@@ -490,9 +490,7 @@
 					"consistent": false,
 					"minProperties": 5
 				},
-				"ImportDeclaration": {
-					"minProperties": 7
-				},
+				"ImportDeclaration": "never",
 				"ExportDeclaration": "never"
 			}
 		],

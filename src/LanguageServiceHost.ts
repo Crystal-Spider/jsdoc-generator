@@ -33,9 +33,7 @@ export class LanguageServiceHost implements ts.LanguageServiceHost {
    * @private
    * @type {{[fileName: string]: File}}
    */
-  private files: {
-    [fileName: string]: File
-  };
+  private files: {[fileName: string]: File};
 
   /**
    * Initializes the list of files.
