@@ -86,6 +86,25 @@
           "type": "boolean",
           "default": "true",
           "description": "Whether to include the async tag or not."
+        },
+        "jsdoc-generator.customTags": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "tag": {
+                "type": "string",
+                "description": "Tag name"
+              },
+              "placeholder": {
+                "type": "string",
+                "description": "Placeholder text",
+                "default": ""
+              }
+            }
+          },
+          "default": [],
+          "description": "Set custom tags."
         }
       }
     }

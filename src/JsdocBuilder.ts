@@ -1,4 +1,4 @@
-import {getTextOfJSDocComment, Node, SyntaxKind, NodeArray, TypeNode, ExpressionWithTypeArguments, TypeParameterDeclaration, HeritageClause, ModifiersArray, AccessorDeclaration, ClassDeclaration, ClassLikeDeclaration, ConstructorDeclaration, EnumDeclaration, InterfaceDeclaration, MethodDeclaration, ParameterDeclaration, PropertyDeclaration, TypeAliasDeclaration, VariableDeclaration} from 'typescript';
+import {getTextOfJSDocComment, Node, SyntaxKind, NodeArray, TypeNode, ExpressionWithTypeArguments, TypeParameterDeclaration, HeritageClause, ModifiersArray, AccessorDeclaration, ClassDeclaration, ClassLikeDeclaration, ConstructorDeclaration, EnumDeclaration, InterfaceDeclaration, MethodDeclaration, ParameterDeclaration, PropertyDeclaration, TypeAliasDeclaration, VariableDeclaration, Modifier} from 'typescript';
 import {SnippetString} from 'vscode';
 
 import {getConfig} from './extension';
@@ -82,7 +82,7 @@ export class JsdocBuilder {
    */
   public getClassLikeDeclarationJsdoc(node: ClassDeclaration | InterfaceDeclaration): SnippetString {
     this.buildJsdocHeader();
-    this.buildJsdocModifiers(node.modifiers);
+    this.buildJsdocModifiers(node.modifiers as NodeArray<Modifier>);
     if (node.name) {
       this.buildJsdocLine(node.kind === SyntaxKind.InterfaceDeclaration ? 'interface' : 'class', this.includeTypes ? node.name.getText() : '', '');
       this.buildJsdocLine('typedef', node.name.getText());
@@ -91,6 +91,7 @@ export class JsdocBuilder {
     }
     this.buildTypeParameters(node.typeParameters);
     this.buildJsdocHeritage(node.heritageClauses);
+    this.buildCustomTags();
     this.buildJsdocEnd();
     return this.jsdoc;
   }
@@ -111,10 +112,11 @@ export class JsdocBuilder {
       this.getClassLikeDeclarationJsdoc(classAssigned as ClassDeclaration);
     } else {
       this.buildJsdocHeader();
-      this.buildJsdocModifiers(node.modifiers);
+      this.buildJsdocModifiers(node.modifiers as NodeArray<Modifier>);
       if (this.includeTypes) {
         this.buildJsdocLine('type', this.retrieveType(node));
       }
+      this.buildCustomTags();
       this.buildJsdocEnd();
     }
     return this.jsdoc;
@@ -137,7 +139,7 @@ export class JsdocBuilder {
       this.buildDescription(pairedDescription ? pairedDescription : '');
     } else {
       this.buildJsdocHeader();
-      this.buildJsdocModifiers(node.modifiers);
+      this.buildJsdocModifiers(node.modifiers as NodeArray<Modifier>);
       if (node.kind === SyntaxKind.GetAccessor && !pairedAccessor) {
         this.buildJsdocLine('readonly');
       }
@@ -145,6 +147,7 @@ export class JsdocBuilder {
         this.buildJsdocLine('type', this.retrieveType(node));
       }
     }
+    this.buildCustomTags();
     this.buildJsdocEnd();
     return this.jsdoc;
   }
@@ -159,6 +162,7 @@ export class JsdocBuilder {
     this.buildJsdocHeader();
     this.buildJsdocModifiers(node.modifiers);
     this.buildJsdocLine('enum', this.includeTypes ? 'number' : '');
+    this.buildCustomTags();
     this.buildJsdocEnd();
     return this.jsdoc;
   }
@@ -171,10 +175,11 @@ export class JsdocBuilder {
    */
   public getMethodDeclarationJsdoc(node: MethodDeclaration): SnippetString {
     this.buildJsdocHeader();
-    this.buildJsdocModifiers(node.modifiers);
+    this.buildJsdocModifiers(node.modifiers as NodeArray<Modifier>);
     this.buildTypeParameters(node.typeParameters);
     this.buildJsdocParameters(node.parameters);
     this.buildJsdocReturn(node);
+    this.buildCustomTags();
     this.buildJsdocEnd();
     return this.jsdoc;
   }
@@ -198,6 +203,7 @@ export class JsdocBuilder {
     this.buildJsdocLine('constructor');
     this.buildJsdocModifiers(node.modifiers);
     this.buildJsdocParameters(node.parameters);
+    this.buildCustomTags();
     this.buildJsdocEnd();
     return this.jsdoc;
   }
@@ -213,6 +219,7 @@ export class JsdocBuilder {
     this.buildJsdocModifiers(node.modifiers);
     this.buildJsdocLine('typedef', node.name.getText());
     this.buildTypeParameters(node.typeParameters);
+    this.buildCustomTags();
     this.buildJsdocEnd();
     return this.jsdoc;
   }
@@ -409,6 +416,22 @@ export class JsdocBuilder {
   }
 
   /**
+   * Builds custom tags.
+   *
+   * @private
+   */
+  private buildCustomTags() {
+    const customTags = getConfig('customTags', []);
+
+    for (const customTag of customTags) {
+      const {tag, placeholder = ''} = customTag;
+      if (tag) {
+        this.buildJsdocLine(`${tag}`, `${placeholder}`, '');
+      }
+    }
+  }
+
+  /**
    * Builds the ending line of a JSDoc.
    *
    * @private
@@ -501,7 +524,7 @@ export class JsdocBuilder {
   }
 
   /**
-   * Retrieves a string representing the type of the given node.  
+   * Retrieves a string representing the type of the given node.
    * Returns '' if {@link JsdocBuilder.includeTypes} is false.
    *
    * @private

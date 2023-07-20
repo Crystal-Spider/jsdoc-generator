@@ -54,6 +54,17 @@ This extension contributes the following settings:
   When enabled, will include the async tag.  
   Disable to exclude it from the generated JSDoc.  
   Default: `true`
+- `jsdoc-generator.customTags`:  
+  When configured, will add custom tags by default.  
+  Example:
+  ```javascript
+  "jsdoc-generator.customTags": [
+    {
+      "tag": "example",
+      "placeholder": "Example placeholder"
+    },
+  ]
+  ```
 
 ---
 
@@ -79,6 +90,10 @@ Some non [everyday types](https://www.typescriptlang.org/docs/handbook/2/everyda
 ---
 
 ## Release Notes
+
+### [1.3.0](https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.3.0)
+
+Added a new setting option to create custom tags.
 
 ### [1.2.0](https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.2.0)
 
