@@ -1,4 +1,4 @@
-import {getTextOfJSDocComment, Node, SyntaxKind, NodeArray, TypeNode, ExpressionWithTypeArguments, TypeParameterDeclaration, HeritageClause, ModifiersArray, AccessorDeclaration, ClassDeclaration, ClassLikeDeclaration, ConstructorDeclaration, EnumDeclaration, InterfaceDeclaration, MethodDeclaration, ParameterDeclaration, PropertyDeclaration, TypeAliasDeclaration, VariableDeclaration, Modifier} from 'typescript';
+import {getTextOfJSDocComment, Node, SyntaxKind, NodeArray, TypeNode, ExpressionWithTypeArguments, TypeParameterDeclaration, HeritageClause, ModifiersArray, AccessorDeclaration, ClassDeclaration, ClassLikeDeclaration, ConstructorDeclaration, EnumDeclaration, InterfaceDeclaration, MethodDeclaration, ParameterDeclaration, PropertyDeclaration, TypeAliasDeclaration, VariableDeclaration} from 'typescript';
 import {SnippetString} from 'vscode';
 
 import {getConfig} from './extension';
@@ -82,7 +82,7 @@ export class JsdocBuilder {
    */
   public getClassLikeDeclarationJsdoc(node: ClassDeclaration | InterfaceDeclaration): SnippetString {
     this.buildJsdocHeader();
-    this.buildJsdocModifiers(node.modifiers as NodeArray<Modifier>);
+    this.buildJsdocModifiers(node.modifiers);
     if (node.name) {
       this.buildJsdocLine(node.kind === SyntaxKind.InterfaceDeclaration ? 'interface' : 'class', this.includeTypes ? node.name.getText() : '', '');
       this.buildJsdocLine('typedef', node.name.getText());
@@ -112,7 +112,7 @@ export class JsdocBuilder {
       this.getClassLikeDeclarationJsdoc(classAssigned as ClassDeclaration);
     } else {
       this.buildJsdocHeader();
-      this.buildJsdocModifiers(node.modifiers as NodeArray<Modifier>);
+      this.buildJsdocModifiers(node.modifiers);
       if (this.includeTypes) {
         this.buildJsdocLine('type', this.retrieveType(node));
       }
@@ -139,7 +139,7 @@ export class JsdocBuilder {
       this.buildDescription(pairedDescription ? pairedDescription : '');
     } else {
       this.buildJsdocHeader();
-      this.buildJsdocModifiers(node.modifiers as NodeArray<Modifier>);
+      this.buildJsdocModifiers(node.modifiers);
       if (node.kind === SyntaxKind.GetAccessor && !pairedAccessor) {
         this.buildJsdocLine('readonly');
       }
@@ -175,7 +175,7 @@ export class JsdocBuilder {
    */
   public getMethodDeclarationJsdoc(node: MethodDeclaration): SnippetString {
     this.buildJsdocHeader();
-    this.buildJsdocModifiers(node.modifiers as NodeArray<Modifier>);
+    this.buildJsdocModifiers(node.modifiers);
     this.buildTypeParameters(node.typeParameters);
     this.buildJsdocParameters(node.parameters);
     this.buildJsdocReturn(node);
@@ -422,7 +422,6 @@ export class JsdocBuilder {
    */
   private buildCustomTags() {
     const customTags = getConfig('customTags', []);
-
     for (const customTag of customTags) {
       const {tag, placeholder = ''} = customTag;
       if (tag) {

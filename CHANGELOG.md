@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Nothing new
 
+## [1.3.0] - 2023/07/21
+
+### Added
+
+- New setting option to create custom tags.
+
 ## [1.2.0] - 2023/02/26
 
 ### Added
@@ -59,6 +65,7 @@ Nothing new
 - This [CHANGELOG] file.
 
 [unreleased]: https://github.com/Nyphet/jsdoc-generator
+[1.3.0]: https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.3.0
 [1.2.0]: https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.2.0
 [1.1.1]: https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.1.1
 [1.1.0]: https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.1.0
