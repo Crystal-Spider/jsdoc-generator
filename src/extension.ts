@@ -25,7 +25,8 @@ type ConfigurationItem =
   'descriptionForConstructors' |
   'functionVariablesAsFunctions' |
   'includeExport' |
-  'includeAsync';
+  'includeAsync' |
+  'customTags';
 
 /**
  * JSDoc Autocompletion item.
