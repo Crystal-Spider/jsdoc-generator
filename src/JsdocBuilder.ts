@@ -279,7 +279,18 @@ export class JsdocBuilder {
    */
   private buildTypeParameters(typeParameters?: NodeArray<TypeParameterDeclaration>) {
     if (typeParameters) {
-      this.buildJsdocLines('template', typeParameters.map(typeParameter => typeParameter.name.getText()), '');
+      const mappedTypeParameters = typeParameters.map(typeParameter => {
+        let name = typeParameter.name.getText();
+        const type = this.includeTypes ? (typeParameter.constraint?.getText() ?? '') : '';
+        if (typeParameter.default) {
+          name = `[${name}=${typeParameter.default.getText()}]`;
+        }
+        return {
+          type,
+          name
+        };
+      });
+      this.buildJsdocLines('template', mappedTypeParameters.map(param => param.type), '{}', mappedTypeParameters.map(param => param.name));
     }
   }
 
@@ -306,7 +317,7 @@ export class JsdocBuilder {
   }
 
   /**
-   * Builds a new JSDoc line for all parameters.
+   * Builds a new JSDoc line for each parameter.
    *
    * @private
    * @param {NodeArray<ParameterDeclaration>} parameters
@@ -316,12 +327,13 @@ export class JsdocBuilder {
       let name = parameter.name.getText();
       const type = this.retrieveType(parameter);
       const initializer = parameter.initializer ? (`=${parameter.initializer.getText()}`) : '';
-      const isOptional = !!(parameter.questionToken || initializer);
-      if (isOptional) {
+      if (parameter.questionToken || initializer) {
         name = `[${name}${initializer}]`;
       }
-      return {type,
-        name};
+      return {
+        type,
+        name
+      };
     });
     this.buildJsdocLines('param', mappedParameters.map(param => param.type), '{}', mappedParameters.map(param => param.name));
   }
@@ -556,7 +568,7 @@ export class JsdocBuilder {
    * @param {TypedNode} node
    * @returns {string} type modifier [?, !, ..., *], empty if none.
    */
-  private getTypePrefix(node: TypedNode): string {
+  private getTypePrefix(node: TypedNode): '?' | '!' | '...' | '*' | '' {
     if (node.kind !== SyntaxKind.VariableDeclaration && node.questionToken) {
       return '?';
     }
