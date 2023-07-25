@@ -1,8 +1,9 @@
 import {LanguageService, createLanguageService, createDocumentRegistry, SourceFile, sys, Node, LineAndCharacter, getLineAndCharacterOfPosition, SyntaxKind, PropertyDeclaration, ConstructorDeclaration, AccessorDeclaration, MethodDeclaration, ClassDeclaration, InterfaceDeclaration, EnumDeclaration, VariableDeclarationList, TypeAliasDeclaration, VariableStatement} from 'typescript';
-import {TextDocument, TextEditor, window, SnippetString, Position} from 'vscode';
+import {TextDocument, TextEditor, window, workspace, SnippetString, Position, WorkspaceEdit} from 'vscode';
 
 import {JsdocBuilder} from './JsdocBuilder';
 import {LanguageServiceHost} from './LanguageServiceHost';
+import {TextFile} from './TextFile';
 import {TsFile} from './TsFile';
 
 /**
@@ -52,19 +53,66 @@ export class JsdocGenerator {
   }
 
   /**
-   * Generate and insert JSDoc for the given textEditor for all the supported nodes.
+   * Generate and insert JSDoc for all supported textFiles in the workspace. 
    * Displays error messages in case of failure in generating the JSDoc.
    *
-   * @param {TextEditor} textEditor
+   * @public
    */
-  public generateJsdocFile(textEditor: TextEditor) {
-    if (this.isLanguageSupported(textEditor.document)) {
-      const tsFile = this.retrieveTsFile(textEditor.document);
+  public generateJsdocWorkspace() {
+    workspace.findFiles('**/*.{js,ts,jsx,tsx}').then(
+      async uris => {
+        if (uris.length > 0) {
+          const workspaceEdit = new WorkspaceEdit();
+          let jsdocExpectedNumber = 0;
+          for (const uri of uris) {
+            const textFile = new TextFile(workspaceEdit, uri);
+            const textDocument = await textFile.document;
+            if (this.isLanguageSupported(textDocument)) {
+              const tsFile = this.retrieveTsFile(textDocument);
+              const {sourceFile} = tsFile;
+              if (sourceFile) {
+                jsdocExpectedNumber += await this.writeFileJsdoc(tsFile, sourceFile, textFile);
+              }
+            }
+          }
+          workspace.applyEdit(workspaceEdit).then(
+            success => {
+              if (success || !jsdocExpectedNumber) {
+                const jsdocNumber = workspaceEdit.entries().reduce((prev, curr) => prev + curr[1].length, 0);
+                if (jsdocNumber > 0) {
+                  window.showInformationMessage(`Correctly generated ${this.getPluralized(jsdocNumber, 'JSDoc')} for ${this.getPluralized(workspaceEdit.size, 'file')} in the current workspace!`);
+                } else {
+                  window.showWarningMessage('No JSDoc was generated.');
+                }
+              } else {
+                window.showErrorMessage('Unable to generate JSDoc for the current workspace.');
+              }
+            },
+            reason => window.showErrorMessage(`Unable to generate JSDoc for the current workspace: ${reason}`)
+          );
+        } else {
+          window.showWarningMessage('No supported file in the current workspace.');
+        }
+      },
+      reason => window.showErrorMessage(`Unable to generate JSDoc for the current workspace: ${reason}`)
+    );
+  }
+
+  /**
+   * Generate and insert JSDoc for the given textFile for all the supported nodes.
+   * Displays error messages in case of failure in generating the JSDoc.
+   *
+   * @param {TextFile<T>} textFile
+   */
+  public async generateJsdocFile<T extends TextEditor | WorkspaceEdit>(textFile: TextFile<T>) {
+    const textDocument = await textFile.document;
+    if (this.isLanguageSupported(textDocument)) {
+      const tsFile = this.retrieveTsFile(textDocument);
       const {sourceFile} = tsFile;
       if (sourceFile) {
-        this.writeFileJsdoc(tsFile, sourceFile, textEditor).then(jsdocNumber => {
+        this.writeFileJsdoc(tsFile, sourceFile, textFile).then(jsdocNumber => {
           if (jsdocNumber > 0) {
-            window.showInformationMessage(`Correctly generated ${jsdocNumber} JSDoc${(jsdocNumber > 1 ? 's' : '')}!`);
+            window.showInformationMessage(`Correctly generated ${this.getPluralized(jsdocNumber, 'JSDoc')}!`);
           } else {
             window.showWarningMessage('No JSDoc was generated.');
           }
@@ -73,7 +121,7 @@ export class JsdocGenerator {
         window.showErrorMessage('Unable to generate JSDoc for the current file.');
       }
     } else {
-      window.showErrorMessage(`Unable to generate JSDoc: ${textEditor.document.languageId} is not supported.`);
+      window.showErrorMessage(`Unable to generate JSDoc: ${textDocument.languageId} is not supported.`);
     }
   }
 
@@ -90,7 +138,7 @@ export class JsdocGenerator {
       const tsFile = this.retrieveTsFile(textEditor.document, caret);
       const {supportedNode} = tsFile;
       if (supportedNode) {
-        this.writeJsdoc(supportedNode, tsFile, textEditor).then(
+        this.writeJsdoc(supportedNode, tsFile, new TextFile(textEditor)).then(
           undefined,
           reason => window.showErrorMessage(`Unable to generate JSDoc at position (Ln ${caret.line}, Col ${caret.character}) because of ${reason}.`)
         );
@@ -148,15 +196,16 @@ export class JsdocGenerator {
    * Builds the JSDoc and inserts the JSDoc in the location retrieved.
    *
    * @private
+   * @template {TextEditor | WorkspaceEdit} T
    * @param {Node} node node for which generate the JSDoc.
    * @param {TsFile} tsFile object {@link TsFile} associated with the current file.
-   * @param {TextEditor} textEditor
+   * @param {TextFile<T>} textFile
    * @returns {Thenable<boolean>} promise that resolves with a value indicating if the snippet could be inserted.
    */
-  private writeJsdoc(node: Node, tsFile: TsFile, textEditor: TextEditor): Thenable<boolean> {
+  private writeJsdoc<T extends TextEditor | WorkspaceEdit>(node: Node, tsFile: TsFile, textFile: TextFile<T>): Thenable<boolean> {
     const jsdocLocation = this.getJsdocLocation(tsFile.sourceFile as SourceFile, node);
     const jsdoc = this.buildJsdoc(node, tsFile);
-    return this.insertJsdoc(jsdoc, jsdocLocation, textEditor);
+    return this.insertJsdoc(jsdoc, jsdocLocation, textFile);
   }
 
   /**
@@ -221,13 +270,14 @@ export class JsdocGenerator {
    * Inserts the JSDoc snipper at the given location for the given textEditor.
    *
    * @private
+   * @template {TextEditor | WorkspaceEdit} T
    * @param {SnippetString} jsdoc
    * @param {LineAndCharacter} location
-   * @param {TextEditor} textEditor
+   * @param {TextFile<T>} textFile
    * @returns {Thenable<boolean>} promise that resolves with a value indicating if the snippet could be inserted.
    */
-  private insertJsdoc(jsdoc: SnippetString, location: LineAndCharacter, textEditor: TextEditor): Thenable<boolean> {
-    return textEditor.insertSnippet(jsdoc, new Position(location.line, location.character));
+  private insertJsdoc<T extends TextEditor | WorkspaceEdit>(jsdoc: SnippetString, location: LineAndCharacter, textFile: TextFile<T>): Thenable<boolean> {
+    return textFile.insert(jsdoc, new Position(location.line, location.character));
   }
 
   /**
@@ -235,25 +285,25 @@ export class JsdocGenerator {
    *
    * @private
    * @async
+   * @template {TextEditor | WorkspaceEdit} T
    * @param {TsFile} tsFile
    * @param {SourceFile} sourceFile
-   * @param {TextEditor} textEditor
+   * @param {TextFile<T>} textFile
    * @returns {Promise<number>} {@link Promise} with the number of JSDocs generated.
    */
-  private async writeFileJsdoc(tsFile: TsFile, sourceFile: SourceFile, textEditor: TextEditor): Promise<number> {
+  private async writeFileJsdoc<T extends TextEditor | WorkspaceEdit>(tsFile: TsFile, sourceFile: SourceFile, textFile: TextFile<T>): Promise<number> {
     let jsdocNumber = 0;
     // Iterated bottom up to avoid shifting of start position of nodes.
     for (let c = sourceFile.statements.length - 1; c >= 0; c--) {
       const statement = sourceFile.statements[c];
       if (tsFile.isNodeSupported(statement)) {
-        // eslint-disable-next-line max-len
         if (statement.kind === SyntaxKind.ClassExpression || statement.kind === SyntaxKind.ClassDeclaration || statement.kind === SyntaxKind.InterfaceDeclaration) {
           const {members} = statement as ClassDeclaration;
           for (let k = members.length - 1; k >= 0; k--) {
-            jsdocNumber += +(await this.writeJsdocConditionally(members[k], tsFile, textEditor));
+            jsdocNumber += +(await this.writeJsdocConditionally(members[k], tsFile, textFile));
           }
         }
-        jsdocNumber += +(await this.writeJsdocConditionally(statement, tsFile, textEditor));
+        jsdocNumber += +(await this.writeJsdocConditionally(statement, tsFile, textFile));
       }
     }
     return jsdocNumber;
@@ -264,15 +314,29 @@ export class JsdocGenerator {
    *
    * @private
    * @async
+   * @template {TextEditor | WorkspaceEdit} T
    * @param {Node} node
    * @param {TsFile} tsFile
-   * @param {TextEditor} textEditor
+   * @param {TextFile<T>} textFile
    * @returns {Promise<boolean>} {@link Promise} with whether the JSDoc has been written.
    */
-  private async writeJsdocConditionally(node: Node, tsFile: TsFile, textEditor: TextEditor): Promise<boolean> {
+  private async writeJsdocConditionally<T extends TextEditor | WorkspaceEdit>(node: Node, tsFile: TsFile, textFile: TextFile<T>): Promise<boolean> {
     if (!tsFile.hasJsdoc(node)) {
-      return await this.writeJsdoc(node, tsFile, textEditor);
+      return await this.writeJsdoc(node, tsFile, textFile);
     }
     return false;
+  }
+
+  /**
+   * Returns the pluralized version of the `name` along with the `amount` prefixed.
+   *
+   * @private
+   * @param {number} amount
+   * @param {string} name
+   * @param {string} [suffix='s']
+   * @returns {string}
+   */
+  private getPluralized(amount: number, name: string, suffix = 's'): string {
+    return `${amount} ${name}${(amount > 1 ? suffix : '')}`;
   }
 }

@@ -14,7 +14,7 @@ Nothing new
 ### Added
 
 - [#6](https://github.com/Nyphet/jsdoc-generator/issues/6) Vue.js files support (`.vue`).
-- [#9](https://github.com/Nyphet/jsdoc-generator/issues/9) Implementation for generateJsdocFiles.
+- [#9](https://github.com/Nyphet/jsdoc-generator/issues/9) Implementation for `generateJsdocFiles` and renamed it into `generateJsdocWorkspace`.
 - [#10](https://github.com/Nyphet/jsdoc-generator/issues/10) ChatGPT integration to automatically generate JSDoc descriptions.
 
 ### Fixed
