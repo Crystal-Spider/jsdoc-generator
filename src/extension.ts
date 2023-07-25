@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import {CompletionItem, TextDocument, Position, CancellationToken, ExtensionContext, Range, CompletionItemKind} from 'vscode';
+import {CompletionItem, TextDocument, Position, CancellationToken, ExtensionContext, Range, CompletionItemKind, Uri} from 'vscode';
 
 import {JsdocGenerator} from './JsdocGenerator';
 import {TextFile} from './TextFile';
@@ -138,12 +138,17 @@ export function activate(context: ExtensionContext) {
       vscode.window.showErrorMessage('Unable to generate JSDoc: no editor has been selected.');
     }
   });
-  // Generates JSDoc for every suitable element in every ts or js file.
+  // Generates JSDoc for every suitable element in every ts or js file in the selected folder.
+  const generateJsdocFolder = vscode.commands.registerCommand('jsdoc-generator.generateJsdocFolder', (folder?: Uri) => {
+    lazyInstantiateJsdocGenerator();
+    jsdocGenerator.generateJsdocWorkspace(folder);
+  });
+  // Generates JSDoc for every suitable element in every ts or js file in the workspace.
   const generateJsdocWorkspace = vscode.commands.registerCommand('jsdoc-generator.generateJsdocWorkspace', () => {
     lazyInstantiateJsdocGenerator();
     jsdocGenerator.generateJsdocWorkspace();
   });
-  context.subscriptions.push(generateJsdoc, generateJsdocFile, generateJsdocWorkspace, generateJsdocAutocompletion);
+  context.subscriptions.push(generateJsdoc, generateJsdocFile, generateJsdocFolder, generateJsdocWorkspace, generateJsdocAutocompletion);
 }
 
 /**

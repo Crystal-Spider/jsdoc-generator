@@ -1,5 +1,5 @@
 import {LanguageService, createLanguageService, createDocumentRegistry, SourceFile, sys, Node, LineAndCharacter, getLineAndCharacterOfPosition, SyntaxKind, PropertyDeclaration, ConstructorDeclaration, AccessorDeclaration, MethodDeclaration, ClassDeclaration, InterfaceDeclaration, EnumDeclaration, VariableDeclarationList, TypeAliasDeclaration, VariableStatement} from 'typescript';
-import {TextDocument, TextEditor, window, workspace, SnippetString, Position, WorkspaceEdit} from 'vscode';
+import {TextDocument, TextEditor, window, workspace, SnippetString, Position, WorkspaceEdit, Uri, RelativePattern} from 'vscode';
 
 import {JsdocBuilder} from './JsdocBuilder';
 import {LanguageServiceHost} from './LanguageServiceHost';
@@ -57,9 +57,10 @@ export class JsdocGenerator {
    * Displays error messages in case of failure in generating the JSDoc.
    *
    * @public
+   * @param {?Uri} [folder]
    */
-  public generateJsdocWorkspace() {
-    workspace.findFiles('**/*.{js,ts,jsx,tsx}').then(
+  public generateJsdocWorkspace(folder?: Uri) {
+    workspace.findFiles(folder ? new RelativePattern(folder!, '**/*.{js,ts,jsx,tsx}') : '**/*.{js,ts,jsx,tsx}').then(
       async uris => {
         if (uris.length > 0) {
           const workspaceEdit = new WorkspaceEdit();
@@ -80,21 +81,21 @@ export class JsdocGenerator {
               if (success || !jsdocExpectedNumber) {
                 const jsdocNumber = workspaceEdit.entries().reduce((prev, curr) => prev + curr[1].length, 0);
                 if (jsdocNumber > 0) {
-                  window.showInformationMessage(`Correctly generated ${this.getPluralized(jsdocNumber, 'JSDoc')} for ${this.getPluralized(workspaceEdit.size, 'file')} in the current workspace!`);
+                  window.showInformationMessage(`Correctly generated ${this.getPluralized(jsdocNumber, 'JSDoc')} for ${this.getPluralized(workspaceEdit.size, 'file')} in the workspace!`);
                 } else {
                   window.showWarningMessage('No JSDoc was generated.');
                 }
               } else {
-                window.showErrorMessage('Unable to generate JSDoc for the current workspace.');
+                window.showErrorMessage('Unable to generate JSDoc for the workspace.');
               }
             },
-            reason => window.showErrorMessage(`Unable to generate JSDoc for the current workspace: ${reason}`)
+            reason => window.showErrorMessage(`Unable to generate JSDoc for the workspace: ${reason}`)
           );
         } else {
-          window.showWarningMessage('No supported file in the current workspace.');
+          window.showWarningMessage('No supported file in the workspace.');
         }
       },
-      reason => window.showErrorMessage(`Unable to generate JSDoc for the current workspace: ${reason}`)
+      reason => window.showErrorMessage(`Unable to generate JSDoc for the workspace: ${reason}`)
     );
   }
 

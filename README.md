@@ -8,10 +8,17 @@ Automatic JSDoc generator for JavaScript, TypeScript and Typescript/JavaScript R
 
 Generates specific JSDoc for any supported TypeScript/JavaScript node.
 
-It can be generated for a single node by explicitly calling the command `Generate JSDoc` or by using auto-completion:
-![Generate JSDoc demo](demos/jsdoc-generator.generateJsdoc.gif)
-Can also be generated for all supported TypeScript nodes in a single file that do not already have a JSDoc by calling the command `Generate JSDoc for the current file`:
-![Generate JSDoc demo](demos/jsdoc-generator.generateJsdocFile.gif)
+It can be generated for a single node by explicitly calling the command `Generate JSDoc` or by using auto-completion:  
+![Generate JSDoc (single node) demo](demos/jsdoc-generator.generateJsdoc.gif)
+
+Can also be generated for all supported TypeScript nodes in a single file that do not already have a JSDoc by calling the command `Generate JSDoc for the current file`:  
+![Generate JSDoc (single file) demo](demos/jsdoc-generator.generateJsdocFile.gif)
+
+It's possible to generate JSDocs for all supported TypeScript nodes in the whole workspace by calling the command `Generate JSDoc for the workspace`:  
+![Generate JSDoc (workspace) demo](demos/jsdoc-generator.generateJsdocWorkspace.gif)
+
+If the whole workspace is too much, it's also possible to generate JSDocs for a single folder (recursive) by clicking on `Generate JSDoc in Folder` in the Explorer view contextual menu:  
+![Generate JSDoc (folder) demo](demos/jsdoc-generator.generateJsdocFolder.gif)
 
 ## Extension Settings
 
@@ -57,7 +64,7 @@ This extension contributes the following settings:
 - `jsdoc-generator.customTags`:  
   When configured, will add custom tags by default.  
   Example:
-  ```javascript
+  ```json
   "jsdoc-generator.customTags": [
     {
       "tag": "example",
@@ -76,9 +83,12 @@ This extension contributes the following settings:
 - `Generate JSDoc for the current file`\
   Generates JSDoc for the currently open file for all TypeScript/JavaScript nodes that do not have one.\
   Eventually choosing a keyboard shortcut is left to the user.
-- `Generate JSDoc for all TypeScript files`\
-  Currently only prompts a message saying `This function is not available yet.`\
+- `Generate JSDoc for the workspace`\
+  Generates JSDoc for all TypeScript/JavaScript nodes that do not have one for each TypeScript/JavaScript file in the workspace.\
   Eventually choosing a keyboard shortcut is left to the user.
+- `Generate JSDoc in Folder`\
+  Generates JSDoc for all TypeScript/JavaScript nodes that do not have one for each TypeScript/JavaScript file in the selected folder.\
+  This command is available in the contextual menu that appears when right-clicking on a folder in the Explorer view.
 
 ---
 
@@ -90,6 +100,10 @@ Some non [everyday types](https://www.typescriptlang.org/docs/handbook/2/everyda
 ---
 
 ## Release Notes
+
+### [2.0.0](https://github.com/Nyphet/jsdoc-generator/releases/tag/v2.0.0)
+
+Fixed an issue with type parameters, added support for `.vue` files, added new features `Generate JSDoc for the workspace` and `Generate JSDoc in Folder`, integrated ChatGPT to automatically generate descriptions.
 
 ### [1.3.0](https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.3.0)
 

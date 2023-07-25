@@ -13,6 +13,8 @@
     "Programming Languages"
   ],
   "activationEvents": [
+    "onCommand:jsdoc-generator.generateJsdocWorkspace",
+    "onCommand:jsdoc-generator.generateJsdocFolder",
     "onLanguage:typescript",
     "onLanguage:typescriptreact",
     "onLanguage:javascript",
@@ -23,7 +25,11 @@
     "commands": [
       {
         "command": "jsdoc-generator.generateJsdocWorkspace",
-        "title": "Generate JSDoc for the current workspace"
+        "title": "Generate JSDoc for the workspace"
+      },
+      {
+        "command": "jsdoc-generator.generateJsdocFolder",
+        "title": "Generate JSDoc in Folder"
       },
       {
         "command": "jsdoc-generator.generateJsdocFile",
@@ -34,6 +40,13 @@
         "title": "Generate JSDoc"
       }
     ],
+    "menus": {
+      "explorer/context": [{
+        "command": "jsdoc-generator.generateJsdocFolder",
+        "when": "explorerResourceIsFolder",
+        "group": "2_workspace"
+      }]
+    },
     "configuration": {
       "title": "JSDoc Generator configuration",
       "properties": {
