@@ -1,4 +1,4 @@
-import {getTextOfJSDocComment, Node, SyntaxKind, NodeArray, TypeNode, ExpressionWithTypeArguments, TypeParameterDeclaration, HeritageClause, ModifiersArray, AccessorDeclaration, ClassDeclaration, ClassLikeDeclaration, ConstructorDeclaration, EnumDeclaration, InterfaceDeclaration, MethodDeclaration, ParameterDeclaration, PropertyDeclaration, TypeAliasDeclaration, VariableDeclaration} from 'typescript';
+import {getTextOfJSDocComment, Node, SyntaxKind, NodeArray, TypeNode, ExpressionWithTypeArguments, TypeParameterDeclaration, HeritageClause, AccessorDeclaration, ClassDeclaration, ClassLikeDeclaration, ConstructorDeclaration, EnumDeclaration, InterfaceDeclaration, MethodDeclaration, ParameterDeclaration, PropertyDeclaration, TypeAliasDeclaration, VariableDeclaration, ModifierLike} from 'typescript';
 import {SnippetString} from 'vscode';
 
 import {getConfig} from './extension';
@@ -112,7 +112,7 @@ export class JsdocBuilder {
       this.getClassLikeDeclarationJsdoc(classAssigned as ClassDeclaration);
     } else {
       this.buildJsdocHeader();
-      this.buildJsdocModifiers(node.modifiers);
+      this.buildJsdocModifiers('modifiers' in node ? node.modifiers : undefined);
       if (this.includeTypes) {
         this.buildJsdocLine('type', this.retrieveType(node));
       }
@@ -230,7 +230,7 @@ export class JsdocBuilder {
    * @private
    * @param {?ModifiersArray} [modifiers]
    */
-  private buildJsdocModifiers(modifiers?: ModifiersArray) {
+  private buildJsdocModifiers(modifiers?: NodeArray<ModifierLike>) {
     if (modifiers && modifiers.length > 0) {
       modifiers.forEach(modifier => {
         switch (modifier.kind) {

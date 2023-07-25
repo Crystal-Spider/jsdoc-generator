@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Nothing new
 
+## [2.0.0] - 2023/0x/xx
+
+### Added
+
+- [#6](https://github.com/Nyphet/jsdoc-generator/issues/6) Vue.js files support (`.vue`).
+- [#9](https://github.com/Nyphet/jsdoc-generator/issues/9) Implementation for generateJsdocFiles.
+- [#10](https://github.com/Nyphet/jsdoc-generator/issues/10) ChatGPT integration to automatically generate JSDoc descriptions.
+
+### Fixed
+
+- [#8](https://github.com/Nyphet/jsdoc-generator/issues/8) Type parameters documentation.
+
 ## [1.3.0] - 2023/07/21
 
 ### Added
@@ -65,6 +77,7 @@ Nothing new
 - This [CHANGELOG] file.
 
 [unreleased]: https://github.com/Nyphet/jsdoc-generator
+[2.0.0]: https://github.com/Nyphet/jsdoc-generator/releases/tag/v2.0.0
 [1.3.0]: https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.3.0
 [1.2.0]: https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.2.0
 [1.1.1]: https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.1.1

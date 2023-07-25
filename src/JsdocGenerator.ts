@@ -41,14 +41,14 @@ export class JsdocGenerator {
    * @private
    * @type {LanguageService}
    */
-  private languageServices: LanguageService;
+  private languageService: LanguageService;
 
   /**
    * @constructor
    */
   constructor() {
     this.languageServiceHost = new LanguageServiceHost();
-    this.languageServices = createLanguageService(this.languageServiceHost, createDocumentRegistry());
+    this.languageService = createLanguageService(this.languageServiceHost, createDocumentRegistry());
   }
 
   /**
@@ -127,8 +127,8 @@ export class JsdocGenerator {
     const fileText = document.getText();
     const fileName = this.getDocumentFileName(document);
     this.languageServiceHost.updateFile(fileName, fileText);
-    this.languageServices.getSyntacticDiagnostics(fileName);
-    const program = this.languageServices.getProgram();
+    this.languageService.getSyntacticDiagnostics(fileName);
+    const program = this.languageService.getProgram();
     return new TsFile(fileName, document.getText(), caret, program);
   }
 

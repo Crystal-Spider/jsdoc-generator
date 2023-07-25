@@ -556,7 +556,6 @@
 				"singleLineTags": []
 			}
 		],
-		"jsdoc/newline-after-description": "warn",
 		"jsdoc/no-multi-asterisks": "warn",
 		"jsdoc/require-description": [
 			"warn",
