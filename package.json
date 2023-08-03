@@ -13,8 +13,6 @@
     "Programming Languages"
   ],
   "activationEvents": [
-    "onCommand:jsdoc-generator.generateJsdocWorkspace",
-    "onCommand:jsdoc-generator.generateJsdocFolder",
     "onLanguage:typescript",
     "onLanguage:typescriptreact",
     "onLanguage:javascript",
@@ -41,11 +39,13 @@
       }
     ],
     "menus": {
-      "explorer/context": [{
-        "command": "jsdoc-generator.generateJsdocFolder",
-        "when": "explorerResourceIsFolder",
-        "group": "2_workspace"
-      }]
+      "explorer/context": [
+        {
+          "command": "jsdoc-generator.generateJsdocFolder",
+          "when": "explorerResourceIsFolder",
+          "group": "2_workspace"
+        }
+      ]
     },
     "configuration": {
       "title": "JSDoc Generator configuration",
@@ -118,6 +118,11 @@
           },
           "default": [],
           "description": "Set custom tags."
+        },
+        "jsdoc-generator.chatgptApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Set your own API key for ChatGPT (see https://platform.openai.com/account/api-keys).\nIt's required only if you wish to use the automatic generation of descriptions.\nEmpty to disable automatic descriptions generation.\nNote that jsdoc-generator.descriptionPlaceholder will take precedence."
         }
       }
     }
@@ -149,7 +154,6 @@
     "@types/vscode": "^1.57.0",
     "@typescript-eslint/eslint-plugin": "^6.2.0",
     "@typescript-eslint/parser": "^6.2.0",
-    "chatgpt": "^5.2.5",
     "esbuild": "^0.18.16",
     "eslint": "^8.45.0",
     "eslint-plugin-import": "^2.24.2",
@@ -157,6 +161,7 @@
     "eslint-plugin-unused-imports": "^3.0.0",
     "glob": "^7.1.4",
     "mocha": "^10.2.0",
+    "openai": "^3.3.0",
     "typescript": "^5.1.6",
     "vsce": "^2.15.0",
     "vscode-test": "^1.5.2"

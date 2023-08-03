@@ -1,6 +1,7 @@
 import {getTextOfJSDocComment, Node, SyntaxKind, NodeArray, TypeNode, ExpressionWithTypeArguments, TypeParameterDeclaration, HeritageClause, AccessorDeclaration, ClassDeclaration, ClassLikeDeclaration, ConstructorDeclaration, EnumDeclaration, InterfaceDeclaration, MethodDeclaration, ParameterDeclaration, PropertyDeclaration, TypeAliasDeclaration, VariableDeclaration, ModifierLike} from 'typescript';
 import {SnippetString} from 'vscode';
 
+import {ChatGPT} from './ChatGPT';
 import {getConfig} from './extension';
 import {TsFile} from './TsFile';
 
@@ -34,22 +35,15 @@ export class JsdocBuilder {
   private readonly jsdoc: SnippetString = new SnippetString();
 
   /**
-   * Object representing the TypeScript File currently working on.
-   *
-   * @private
-   * @type {TsFile}
-   */
-  private tsFile: TsFile;
-
-  /**
    * Snippet string with an empty JSDoc.
    *
    * @public
-   * @readonly
-   * @type {SnippetString}
+   * @async
+   * @param {Node} node
+   * @returns {Promise<SnippetString>}
    */
-  public get emptyJsdoc(): SnippetString {
-    this.buildJsdocHeader();
+  public async emptyJsdoc(node: Node): Promise<SnippetString> {
+    await this.buildJsdocHeader(node.getFullText());
     this.buildJsdocEnd();
     return this.jsdoc;
   }
@@ -69,19 +63,18 @@ export class JsdocBuilder {
    * @constructor
    * @param {TsFile} tsFile
    */
-  constructor(tsFile: TsFile) {
-    this.tsFile = tsFile;
-  }
+  constructor(private readonly tsFile: TsFile) {}
 
   /**
    * Builds and returns the JSDoc for classes and interfaces.
    *
    * @public
-   * @param {ClassDeclaration | InterfaceDeclaration} node
-   * @returns {SnippetString} JSDoc.
+   * @async
+   * @param {(ClassDeclaration | InterfaceDeclaration)} node
+   * @returns {Promise<SnippetString>} promise that resolves with the JSDoc.
    */
-  public getClassLikeDeclarationJsdoc(node: ClassDeclaration | InterfaceDeclaration): SnippetString {
-    this.buildJsdocHeader();
+  public async getClassLikeDeclarationJsdoc(node: ClassDeclaration | InterfaceDeclaration): Promise<SnippetString> {
+    await this.buildJsdocHeader(node.getFullText());
     this.buildJsdocModifiers(node.modifiers);
     if (node.name) {
       this.buildJsdocLine(node.kind === SyntaxKind.InterfaceDeclaration ? 'interface' : 'class', this.includeTypes ? node.name.getText() : '', '');
@@ -100,10 +93,11 @@ export class JsdocBuilder {
    * Builds and returns the JSDoc for property declarations.
    *
    * @public
-   * @param {PropertyDeclaration} node
-   * @returns {SnippetString} JSDoc.
+   * @async
+   * @param {(PropertyDeclaration | VariableDeclaration)} node
+   * @returns {Promise<SnippetString>} promise that resolves with the JSDoc.
    */
-  public getPropertyDeclarationJsdoc(node: PropertyDeclaration | VariableDeclaration): SnippetString {
+  public async getPropertyDeclarationJsdoc(node: PropertyDeclaration | VariableDeclaration): Promise<SnippetString> {
     const functionAssigned = node.getChildren().find(child => this.isFunctionKind(child.kind));
     const classAssigned = node.getChildren().find(child => child.kind === SyntaxKind.ClassExpression);
     if (getConfig('functionVariablesAsFunctions', true) && functionAssigned) {
@@ -111,7 +105,7 @@ export class JsdocBuilder {
     } else if (classAssigned) {
       this.getClassLikeDeclarationJsdoc(classAssigned as ClassDeclaration);
     } else {
-      this.buildJsdocHeader();
+      await this.buildJsdocHeader(node.getFullText());
       this.buildJsdocModifiers('modifiers' in node ? node.modifiers : undefined);
       if (this.includeTypes) {
         this.buildJsdocLine('type', this.retrieveType(node));
@@ -125,10 +119,12 @@ export class JsdocBuilder {
   /**
    * Builds and returns the JSDoc for accessor declarations.
    *
+   * @public
+   * @async
    * @param {AccessorDeclaration} node
-   * @returns {SnippetString} JSDoc.
+   * @returns {Promise<SnippetString>} promise that resolves with the JSDoc.
    */
-  public getAccessorDeclarationJsdoc(node: AccessorDeclaration): SnippetString {
+  public async getAccessorDeclarationJsdoc(node: AccessorDeclaration): Promise<SnippetString> {
     const otherAccessorKind = node.kind === SyntaxKind.GetAccessor ? SyntaxKind.SetAccessor : SyntaxKind.GetAccessor;
     const accessorName = node.name.getText();
     const pairedAccessor = (node.parent as ClassLikeDeclaration).members.find(member =>
@@ -136,9 +132,9 @@ export class JsdocBuilder {
     if (pairedAccessor && this.tsFile.hasJsdoc(pairedAccessor)) {
       this.jsdoc.appendText('/**\n');
       const pairedDescription = getTextOfJSDocComment(this.tsFile.getJsdoc(pairedAccessor).comment);
-      this.buildDescription(pairedDescription ? pairedDescription : '');
+      await this.buildDescription(pairedDescription ? pairedDescription : '');
     } else {
-      this.buildJsdocHeader();
+      await this.buildJsdocHeader(node.getFullText());
       this.buildJsdocModifiers(node.modifiers);
       if (node.kind === SyntaxKind.GetAccessor && !pairedAccessor) {
         this.buildJsdocLine('readonly');
@@ -155,11 +151,13 @@ export class JsdocBuilder {
   /**
    * Builds and returns the JSDoc for enum declarations.
    *
+   * @public
+   * @async
    * @param {EnumDeclaration} node
-   * @returns {SnippetString} JSDoc.
+   * @returns {Promise<SnippetString>} promise that resolves with the JSDoc.
    */
-  public getEnumDeclarationJsdoc(node: EnumDeclaration): SnippetString {
-    this.buildJsdocHeader();
+  public async getEnumDeclarationJsdoc(node: EnumDeclaration): Promise<SnippetString> {
+    await this.buildJsdocHeader(node.getFullText());
     this.buildJsdocModifiers(node.modifiers);
     this.buildJsdocLine('enum', this.includeTypes ? 'number' : '');
     this.buildCustomTags();
@@ -170,11 +168,13 @@ export class JsdocBuilder {
   /**
    * Builds and returns the JSDoc for method declarations.
    *
+   * @public
+   * @async
    * @param {MethodDeclaration} node
-   * @returns {SnippetString} the JSDoc for method declaration.
+   * @returns {SnippetString} promise that resolves with the JSDoc for method declaration.
    */
-  public getMethodDeclarationJsdoc(node: MethodDeclaration): SnippetString {
-    this.buildJsdocHeader();
+  public async getMethodDeclarationJsdoc(node: MethodDeclaration): Promise<SnippetString> {
+    await this.buildJsdocHeader(node.getFullText());
     this.buildJsdocModifiers(node.modifiers);
     this.buildTypeParameters(node.typeParameters);
     this.buildJsdocParameters(node.parameters);
@@ -187,15 +187,17 @@ export class JsdocBuilder {
   /**
    * Builds and returns the JSDoc for constructor declarations.
    *
+   * @public
+   * @async
    * @param {ConstructorDeclaration} node
-   * @returns {SnippetString} the JSDoc for constructor declaration.
+   * @returns {SnippetString} promise that resolves with the JSDoc for constructor declaration.
    */
-  public getConstructorJsdoc(node: ConstructorDeclaration): SnippetString {
+  public async getConstructorJsdoc(node: ConstructorDeclaration): Promise<SnippetString> {
     this.jsdoc.appendText('/**\n');
     const constructorDescription = getConfig<string>('descriptionForConstructors', '');
     const className = node.parent.name;
     if (constructorDescription && className) {
-      this.buildDescription(constructorDescription.replace('{Object}', className.getText()));
+      await this.buildDescription(constructorDescription.replace('{Object}', className.getText()));
     }
     this.buildDate();
     this.buildAuthor();
@@ -211,11 +213,13 @@ export class JsdocBuilder {
   /**
    * Builds and returns the JSDoc for type aliases, union types and intersection types.
    *
+   * @public
+   * @async
    * @param {TypeAliasDeclaration} node
-   * @returns {SnippetString} the JSDoc for type alias.
+   * @returns {SnippetString} promise that resolves with the JSDoc for type alias.
    */
-  public getTypeAliasJsdoc(node: TypeAliasDeclaration): SnippetString {
-    this.buildJsdocHeader();
+  public async getTypeAliasJsdoc(node: TypeAliasDeclaration): Promise<SnippetString> {
+    await this.buildJsdocHeader(node.getFullText());
     this.buildJsdocModifiers(node.modifiers);
     this.buildJsdocLine('typedef', node.name.getText());
     this.buildTypeParameters(node.typeParameters);
@@ -367,10 +371,12 @@ export class JsdocBuilder {
    * Builds a JSDoc header including the starting line.
    *
    * @private
+   * @async
+   * @param {string} nodeText
    */
-  private buildJsdocHeader() {
+  private async buildJsdocHeader(nodeText: string) {
     this.jsdoc.appendText('/**\n');
-    this.buildDescription();
+    await this.buildDescription(nodeText);
     this.buildDate();
     this.buildAuthor();
     this.buildJsdocLine();
@@ -380,15 +386,25 @@ export class JsdocBuilder {
    * Builds a line starting with a space and a configurable placeholder for a JSDoc description.
    *
    * @private
+   * @async
+   * @param {string} nodeText
    * @param {string} [description='']
    */
-  private buildDescription(description: string = '') {
+  private async buildDescription(nodeText: string, description: string = '') {
     this.jsdoc.appendText(' * ');
     const placeholder = getConfig('descriptionPlaceholder', '');
     if (description) {
       this.jsdoc.appendText(description);
     } else if (placeholder) {
       this.jsdoc.appendPlaceholder(placeholder);
+    } else if (ChatGPT.tryInit()) {
+      const message = 'Provide a short description of this function that I will later insert into a JSDoc.\n' +
+      'Very important: only text, no \'*\', no function name, and no word "function".\n' +
+      `${nodeText.trim()}`;
+      const gptDescription = await ChatGPT.chat(message);
+      if (gptDescription) {
+        this.jsdoc.appendText(gptDescription);
+      }
     }
     this.jsdoc.appendText('\n');
   }

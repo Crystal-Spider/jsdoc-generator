@@ -251,7 +251,7 @@
 		"keyword-spacing": "warn",
 		"max-depth": [
 			"warn",
-			4
+			6
 		],
 		"max-len": [
 			"warn",

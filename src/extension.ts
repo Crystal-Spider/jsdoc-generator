@@ -27,7 +27,9 @@ type ConfigurationItem =
   'functionVariablesAsFunctions' |
   'includeExport' |
   'includeAsync' |
-  'customTags';
+  'customTags' |
+  'chatgptApiKey' |
+  'chatgpt4';
 
 /**
  * JSDoc Autocompletion item.
@@ -122,31 +124,67 @@ export function activate(context: ExtensionContext) {
   );
   // Generates JSDoc for the current selection.
   const generateJsdoc = vscode.commands.registerCommand('jsdoc-generator.generateJsdoc', () => {
-    lazyInstantiateJsdocGenerator();
-    if (vscode.window.activeTextEditor) {
-      jsdocGenerator.generateJsdoc(vscode.window.activeTextEditor);
-    } else {
-      vscode.window.showErrorMessage('Unable to generate JSDoc: no editor has been selected.');
-    }
+    vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: 'JSDocGen (node)',
+        cancellable: true
+      },
+      (progress, token) => {
+        lazyInstantiateJsdocGenerator();
+        if (vscode.window.activeTextEditor) {
+          return jsdocGenerator.generateJsdoc(progress, token, vscode.window.activeTextEditor);
+        }
+        vscode.window.showErrorMessage('Unable to generate JSDoc: no editor has been selected.');
+        return Promise.resolve();
+      }
+    );
   });
   // Generates JSDoc for every suitable element in the current file.
   const generateJsdocFile = vscode.commands.registerCommand('jsdoc-generator.generateJsdocFile', () => {
-    lazyInstantiateJsdocGenerator();
-    if (vscode.window.activeTextEditor) {
-      jsdocGenerator.generateJsdocFile(new TextFile(vscode.window.activeTextEditor));
-    } else {
-      vscode.window.showErrorMessage('Unable to generate JSDoc: no editor has been selected.');
-    }
+    vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: 'JSDocGen (file)',
+        cancellable: true
+      },
+      (progress, token) => {
+        lazyInstantiateJsdocGenerator();
+        if (vscode.window.activeTextEditor) {
+          return jsdocGenerator.generateJsdocFile(progress, token, new TextFile(vscode.window.activeTextEditor));
+        }
+        vscode.window.showErrorMessage('Unable to generate JSDoc: no editor has been selected.');
+        return Promise.resolve();
+      }
+    );
   });
   // Generates JSDoc for every suitable element in every ts or js file in the selected folder.
   const generateJsdocFolder = vscode.commands.registerCommand('jsdoc-generator.generateJsdocFolder', (folder?: Uri) => {
-    lazyInstantiateJsdocGenerator();
-    jsdocGenerator.generateJsdocWorkspace(folder);
+    vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: 'JSDocGen (folder)',
+        cancellable: true
+      },
+      (progress, token) => {
+        lazyInstantiateJsdocGenerator();
+        return jsdocGenerator.generateJsdocWorkspace(progress, token, folder);
+      }
+    );
   });
   // Generates JSDoc for every suitable element in every ts or js file in the workspace.
   const generateJsdocWorkspace = vscode.commands.registerCommand('jsdoc-generator.generateJsdocWorkspace', () => {
-    lazyInstantiateJsdocGenerator();
-    jsdocGenerator.generateJsdocWorkspace();
+    vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: 'JSDocGen (workspace)',
+        cancellable: true
+      },
+      (progress, token) => {
+        lazyInstantiateJsdocGenerator();
+        return jsdocGenerator.generateJsdocWorkspace(progress, token);
+      }
+    );
   });
   context.subscriptions.push(generateJsdoc, generateJsdocFile, generateJsdocFolder, generateJsdocWorkspace, generateJsdocAutocompletion);
 }

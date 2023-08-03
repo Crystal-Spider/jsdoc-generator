@@ -1,10 +1,18 @@
 import {LanguageService, createLanguageService, createDocumentRegistry, SourceFile, sys, Node, LineAndCharacter, getLineAndCharacterOfPosition, SyntaxKind, PropertyDeclaration, ConstructorDeclaration, AccessorDeclaration, MethodDeclaration, ClassDeclaration, InterfaceDeclaration, EnumDeclaration, VariableDeclarationList, TypeAliasDeclaration, VariableStatement} from 'typescript';
-import {TextDocument, TextEditor, window, workspace, SnippetString, Position, WorkspaceEdit, Uri, RelativePattern} from 'vscode';
+import {TextDocument, TextEditor, window, workspace, SnippetString, Position, WorkspaceEdit, Uri, RelativePattern, CancellationToken} from 'vscode';
 
 import {JsdocBuilder} from './JsdocBuilder';
 import {LanguageServiceHost} from './LanguageServiceHost';
+import {Progress} from './Progress';
 import {TextFile} from './TextFile';
 import {TsFile} from './TsFile';
+
+/**
+ * Glob pattern for supported files.
+ *
+ * @type {string}
+ */
+const supportedFilesGlob = '**/*.{js,ts,jsx,tsx}';
 
 /**
  * JSDoc Generator.
@@ -57,73 +65,116 @@ export class JsdocGenerator {
    * Displays error messages in case of failure in generating the JSDoc.
    *
    * @public
+   * @async
+   * @param {Progress} progress
+   * @param {CancellationToken} token
    * @param {?Uri} [folder]
+   * @returns {Promise<void>}
    */
-  public generateJsdocWorkspace(folder?: Uri) {
-    workspace.findFiles(folder ? new RelativePattern(folder!, '**/*.{js,ts,jsx,tsx}') : '**/*.{js,ts,jsx,tsx}').then(
-      async uris => {
-        if (uris.length > 0) {
-          const workspaceEdit = new WorkspaceEdit();
-          let jsdocExpectedNumber = 0;
-          for (const uri of uris) {
-            const textFile = new TextFile(workspaceEdit, uri);
-            const textDocument = await textFile.document;
-            if (this.isLanguageSupported(textDocument)) {
-              const tsFile = this.retrieveTsFile(textDocument);
-              const {sourceFile} = tsFile;
-              if (sourceFile) {
-                jsdocExpectedNumber += await this.writeFileJsdoc(tsFile, sourceFile, textFile);
+  public async generateJsdocWorkspace(progress: Progress, token: CancellationToken, folder?: Uri): Promise<void> {
+    const scope = folder ? 'folder' : 'the workspace';
+    token.onCancellationRequested(() => window.showWarningMessage(`JSDoc generation for ${scope} canceled`));
+    try {
+      const uris = await workspace.findFiles(folder ? new RelativePattern(folder!, supportedFilesGlob) : supportedFilesGlob);
+      // Cancellation check
+      if (token.isCancellationRequested) {
+        return Promise.resolve();
+      }
+      if (uris.length > 0) {
+        const workspaceEdit = new WorkspaceEdit();
+        let jsdocExpectedNumber = 0;
+        for (const uri of uris) {
+          // Cancellation check
+          if (token.isCancellationRequested) {
+            return Promise.resolve();
+          }
+          const textFile = new TextFile(workspaceEdit, uri);
+          const textDocument = await textFile.document;
+          // Cancellation check
+          if (token.isCancellationRequested) {
+            return Promise.resolve();
+          }
+          if (this.isLanguageSupported(textDocument)) {
+            const tsFile = this.retrieveTsFile(textDocument);
+            const {sourceFile} = tsFile;
+            if (sourceFile) {
+              jsdocExpectedNumber += await this.writeFileJsdoc(tsFile, sourceFile, textFile, progress, token);
+              // Cancellation check
+              if (token.isCancellationRequested) {
+                return Promise.resolve();
               }
+              progress.report({increment: -99.9});
             }
           }
-          workspace.applyEdit(workspaceEdit).then(
-            success => {
-              if (success || !jsdocExpectedNumber) {
-                const jsdocNumber = workspaceEdit.entries().reduce((prev, curr) => prev + curr[1].length, 0);
-                if (jsdocNumber > 0) {
-                  window.showInformationMessage(`Correctly generated ${this.getPluralized(jsdocNumber, 'JSDoc')} for ${this.getPluralized(workspaceEdit.size, 'file')} in the workspace!`);
-                } else {
-                  window.showWarningMessage('No JSDoc was generated.');
-                }
-              } else {
-                window.showErrorMessage('Unable to generate JSDoc for the workspace.');
-              }
-            },
-            reason => window.showErrorMessage(`Unable to generate JSDoc for the workspace: ${reason}`)
-          );
-        } else {
-          window.showWarningMessage('No supported file in the workspace.');
         }
-      },
-      reason => window.showErrorMessage(`Unable to generate JSDoc for the workspace: ${reason}`)
-    );
+        try {
+          // Cancellation check
+          if (token.isCancellationRequested) {
+            return Promise.resolve();
+          }
+          const success = await workspace.applyEdit(workspaceEdit);
+          if (success || !jsdocExpectedNumber) {
+            const jsdocNumber = workspaceEdit.entries().reduce((prev, curr) => prev + curr[1].length, 0);
+            if (jsdocNumber > 0) {
+              window.showInformationMessage(`Correctly generated ${this.getPluralized(jsdocNumber, 'JSDoc')} for ${this.getPluralized(workspaceEdit.size, 'file')} in ${scope}!`);
+            } else {
+              window.showWarningMessage('No JSDoc was generated.');
+            }
+          } else {
+            window.showErrorMessage(`Unable to generate JSDoc for ${scope}.`);
+          }
+        } catch (error) {
+          window.showErrorMessage(`Unable to generate JSDoc for ${scope}: ${error}`);
+        }
+      } else {
+        window.showWarningMessage(`No supported file in ${scope}.`);
+      }
+    } catch (error) {
+      window.showErrorMessage(`Unable to generate JSDoc for ${scope}: ${error}`);
+    }
+    return Promise.resolve();
   }
 
   /**
    * Generate and insert JSDoc for the given textFile for all the supported nodes.
    * Displays error messages in case of failure in generating the JSDoc.
    *
+   * @public
+   * @async
+   * @template {TextEditor | WorkspaceEdit} T
+   * @param {Progress} progress
+   * @param {CancellationToken} token
    * @param {TextFile<T>} textFile
+   * @returns {Promise<void>}
    */
-  public async generateJsdocFile<T extends TextEditor | WorkspaceEdit>(textFile: TextFile<T>) {
+  public async generateJsdocFile<T extends TextEditor | WorkspaceEdit>(progress: Progress, token: CancellationToken, textFile: TextFile<T>): Promise<void> {
+    token.onCancellationRequested(() => window.showWarningMessage('JSDoc generation for the current file canceled'));
     const textDocument = await textFile.document;
     if (this.isLanguageSupported(textDocument)) {
       const tsFile = this.retrieveTsFile(textDocument);
       const {sourceFile} = tsFile;
       if (sourceFile) {
-        this.writeFileJsdoc(tsFile, sourceFile, textFile).then(jsdocNumber => {
-          if (jsdocNumber > 0) {
-            window.showInformationMessage(`Correctly generated ${this.getPluralized(jsdocNumber, 'JSDoc')}!`);
-          } else {
-            window.showWarningMessage('No JSDoc was generated.');
-          }
-        });
+        // Cancellation check
+        if (token.isCancellationRequested) {
+          return Promise.resolve();
+        }
+        const jsdocNumber = await this.writeFileJsdoc(tsFile, sourceFile, textFile, progress, token);
+        // Cancellation check
+        if (token.isCancellationRequested) {
+          return Promise.resolve();
+        }
+        if (jsdocNumber > 0) {
+          window.showInformationMessage(`Correctly generated ${this.getPluralized(jsdocNumber, 'JSDoc')}!`);
+        } else {
+          window.showWarningMessage('No JSDoc was generated.');
+        }
       } else {
         window.showErrorMessage('Unable to generate JSDoc for the current file.');
       }
     } else {
       window.showErrorMessage(`Unable to generate JSDoc: ${textDocument.languageId} is not supported.`);
     }
+    return Promise.resolve();
   }
 
   /**
@@ -131,16 +182,21 @@ export class JsdocGenerator {
    * Displays error messages in case of failure in generating the JSDoc.
    *
    * @public
+   * @async
+   * @param {Progress} progress
+   * @param {CancellationToken} token
    * @param {TextEditor} textEditor
+   * @returns {Promise<void>}
    */
-  public generateJsdoc(textEditor: TextEditor) {
+  public async generateJsdoc(progress: Progress, token: CancellationToken, textEditor: TextEditor): Promise<void> {
+    token.onCancellationRequested(() => window.showWarningMessage('JSDoc generation canceled'));
+    progress.report({message: 'Generating JSDoc...'});
     if (this.isLanguageSupported(textEditor.document)) {
       const caret = textEditor.selection.start;
       const tsFile = this.retrieveTsFile(textEditor.document, caret);
       const {supportedNode} = tsFile;
       if (supportedNode) {
-        this.writeJsdoc(supportedNode, tsFile, new TextFile(textEditor)).then(
-          undefined,
+        await this.writeJsdoc(supportedNode, tsFile, new TextFile(textEditor), token).catch(
           reason => window.showErrorMessage(`Unable to generate JSDoc at position (Ln ${caret.line}, Col ${caret.character}) because of ${reason}.`)
         );
       } else {
@@ -149,6 +205,7 @@ export class JsdocGenerator {
     } else {
       window.showErrorMessage(`Unable to generate JSDoc: ${textEditor.document.languageId} is not supported.`);
     }
+    return Promise.resolve();
   }
 
   /**
@@ -197,15 +254,25 @@ export class JsdocGenerator {
    * Builds the JSDoc and inserts the JSDoc in the location retrieved.
    *
    * @private
+   * @async
    * @template {TextEditor | WorkspaceEdit} T
    * @param {Node} node node for which generate the JSDoc.
    * @param {TsFile} tsFile object {@link TsFile} associated with the current file.
    * @param {TextFile<T>} textFile
-   * @returns {Thenable<boolean>} promise that resolves with a value indicating if the snippet could be inserted.
+   * @param {CancellationToken} token
+   * @returns {Promise<boolean>} promise that resolves with a value indicating if the snippet could be inserted.
    */
-  private writeJsdoc<T extends TextEditor | WorkspaceEdit>(node: Node, tsFile: TsFile, textFile: TextFile<T>): Thenable<boolean> {
+  private async writeJsdoc<T extends TextEditor | WorkspaceEdit>(node: Node, tsFile: TsFile, textFile: TextFile<T>, token: CancellationToken): Promise<boolean> {
     const jsdocLocation = this.getJsdocLocation(tsFile.sourceFile as SourceFile, node);
-    const jsdoc = this.buildJsdoc(node, tsFile);
+    // Cancellation check
+    if (token.isCancellationRequested) {
+      return Promise.resolve(false);
+    }
+    const jsdoc = await this.buildJsdoc(node, tsFile);
+    // Cancellation check
+    if (token.isCancellationRequested) {
+      return Promise.resolve(false);
+    }
     return this.insertJsdoc(jsdoc, jsdocLocation, textFile);
   }
 
@@ -226,44 +293,44 @@ export class JsdocGenerator {
    * calls the appropriate JSDoc building method.
    *
    * @private
+   * @async
    * @param {Node} node
    * @param {TsFile} tsFile
-   * @returns {SnippetString} JSDoc built.
+   * @returns {Promise<SnippetString>} promise that resolves with the JSDoc built.
    */
-  private buildJsdoc(node: Node, tsFile: TsFile): SnippetString {
+  private async buildJsdoc(node: Node, tsFile: TsFile) {
     const jsdocBuilder = new JsdocBuilder(tsFile);
-
     switch (node.kind) {
       case SyntaxKind.PropertySignature:
       case SyntaxKind.PropertyDeclaration:
-        return jsdocBuilder.getPropertyDeclarationJsdoc(node as PropertyDeclaration);
+        return await jsdocBuilder.getPropertyDeclarationJsdoc(node as PropertyDeclaration);
       case SyntaxKind.Constructor:
-        return jsdocBuilder.getConstructorJsdoc(node as ConstructorDeclaration);
+        return await jsdocBuilder.getConstructorJsdoc(node as ConstructorDeclaration);
       case SyntaxKind.GetAccessor:
       case SyntaxKind.SetAccessor:
-        return jsdocBuilder.getAccessorDeclarationJsdoc(node as AccessorDeclaration);
+        return await jsdocBuilder.getAccessorDeclarationJsdoc(node as AccessorDeclaration);
       case SyntaxKind.MethodSignature:
       case SyntaxKind.MethodDeclaration:
       case SyntaxKind.CallSignature:
       case SyntaxKind.FunctionExpression:
       case SyntaxKind.ArrowFunction:
       case SyntaxKind.FunctionDeclaration:
-        return jsdocBuilder.getMethodDeclarationJsdoc(node as MethodDeclaration);
+        return await jsdocBuilder.getMethodDeclarationJsdoc(node as MethodDeclaration);
       case SyntaxKind.ClassDeclaration:
-        return jsdocBuilder.getClassLikeDeclarationJsdoc(node as ClassDeclaration);
+        return await jsdocBuilder.getClassLikeDeclarationJsdoc(node as ClassDeclaration);
       case SyntaxKind.InterfaceDeclaration:
-        return jsdocBuilder.getClassLikeDeclarationJsdoc(node as InterfaceDeclaration);
+        return await jsdocBuilder.getClassLikeDeclarationJsdoc(node as InterfaceDeclaration);
       case SyntaxKind.TypeAliasDeclaration:
-        return jsdocBuilder.getTypeAliasJsdoc(node as TypeAliasDeclaration);
+        return await jsdocBuilder.getTypeAliasJsdoc(node as TypeAliasDeclaration);
       case SyntaxKind.EnumDeclaration:
-        return jsdocBuilder.getEnumDeclarationJsdoc(node as EnumDeclaration);
+        return await jsdocBuilder.getEnumDeclarationJsdoc(node as EnumDeclaration);
       case SyntaxKind.VariableStatement:
-        return jsdocBuilder.getPropertyDeclarationJsdoc(((node as VariableStatement).declarationList as VariableDeclarationList).declarations[0]);
+        return await jsdocBuilder.getPropertyDeclarationJsdoc(((node as VariableStatement).declarationList as VariableDeclarationList).declarations[0]);
       case SyntaxKind.VariableDeclarationList:
-        return jsdocBuilder.getPropertyDeclarationJsdoc((node as VariableDeclarationList).declarations[0]);
+        return await jsdocBuilder.getPropertyDeclarationJsdoc((node as VariableDeclarationList).declarations[0]);
       case SyntaxKind.EnumMember:
       default:
-        return jsdocBuilder.emptyJsdoc;
+        return await jsdocBuilder.emptyJsdoc(node);
     }
   }
 
@@ -290,9 +357,11 @@ export class JsdocGenerator {
    * @param {TsFile} tsFile
    * @param {SourceFile} sourceFile
    * @param {TextFile<T>} textFile
+   * @param {Progress} progress
+   * @param {CancellationToken} token
    * @returns {Promise<number>} {@link Promise} with the number of JSDocs generated.
    */
-  private async writeFileJsdoc<T extends TextEditor | WorkspaceEdit>(tsFile: TsFile, sourceFile: SourceFile, textFile: TextFile<T>): Promise<number> {
+  private async writeFileJsdoc<T extends TextEditor | WorkspaceEdit>(tsFile: TsFile, sourceFile: SourceFile, textFile: TextFile<T>, progress: Progress, token: CancellationToken): Promise<number> {
     let jsdocNumber = 0;
     // Iterated bottom up to avoid shifting of start position of nodes.
     for (let c = sourceFile.statements.length - 1; c >= 0; c--) {
@@ -301,10 +370,34 @@ export class JsdocGenerator {
         if (statement.kind === SyntaxKind.ClassExpression || statement.kind === SyntaxKind.ClassDeclaration || statement.kind === SyntaxKind.InterfaceDeclaration) {
           const {members} = statement as ClassDeclaration;
           for (let k = members.length - 1; k >= 0; k--) {
-            jsdocNumber += +(await this.writeJsdocConditionally(members[k], tsFile, textFile));
+            // Cancellation check
+            if (token.isCancellationRequested) {
+              return Promise.resolve(jsdocNumber);
+            }
+            jsdocNumber += +(await this.writeJsdocConditionally(members[k], tsFile, textFile, token));
+            // Cancellation check
+            if (token.isCancellationRequested) {
+              return Promise.resolve(jsdocNumber);
+            }
+            progress.report({
+              message: `Generating JSDoc for ${tsFile.sourceFile?.fileName} file...`,
+              increment: 100 / sourceFile.statements.length / members.length
+            });
           }
         }
-        jsdocNumber += +(await this.writeJsdocConditionally(statement, tsFile, textFile));
+        // Cancellation check
+        if (token.isCancellationRequested) {
+          return Promise.resolve(jsdocNumber);
+        }
+        jsdocNumber += +(await this.writeJsdocConditionally(statement, tsFile, textFile, token));
+        // Cancellation check
+        if (token.isCancellationRequested) {
+          return Promise.resolve(jsdocNumber);
+        }
+        progress.report({
+          message: `Generating JSDoc for ${tsFile.sourceFile?.fileName} file...`,
+          increment: 100 / sourceFile.statements.length
+        });
       }
     }
     return jsdocNumber;
@@ -319,11 +412,12 @@ export class JsdocGenerator {
    * @param {Node} node
    * @param {TsFile} tsFile
    * @param {TextFile<T>} textFile
+   * @param {CancellationToken} token
    * @returns {Promise<boolean>} {@link Promise} with whether the JSDoc has been written.
    */
-  private async writeJsdocConditionally<T extends TextEditor | WorkspaceEdit>(node: Node, tsFile: TsFile, textFile: TextFile<T>): Promise<boolean> {
+  private async writeJsdocConditionally<T extends TextEditor | WorkspaceEdit>(node: Node, tsFile: TsFile, textFile: TextFile<T>, token: CancellationToken): Promise<boolean> {
     if (!tsFile.hasJsdoc(node)) {
-      return await this.writeJsdoc(node, tsFile, textFile);
+      return await this.writeJsdoc(node, tsFile, textFile, token);
     }
     return false;
   }
