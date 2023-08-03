@@ -3,7 +3,7 @@ import {OpenAI} from 'openai';
 import {getConfig} from './extension';
 
 /**
- * API Key: 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.
+ * ChatGPT functionalities wrapper.
  *
  * @export
  * @class ChatGPT
