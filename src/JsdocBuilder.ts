@@ -384,7 +384,7 @@ export class JsdocBuilder {
 
   /**
    * Builds a line starting with a space and a configurable placeholder for a JSDoc description.
-   *
+   * 
    * @private
    * @async
    * @param {string} nodeText

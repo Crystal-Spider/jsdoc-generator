@@ -197,7 +197,7 @@ export class JsdocGenerator {
       const {supportedNode} = tsFile;
       if (supportedNode) {
         await this.writeJsdoc(supportedNode, tsFile, new TextFile(textEditor), token).catch(
-          reason => window.showErrorMessage(`Unable to generate JSDoc at position (Ln ${caret.line}, Col ${caret.character}) because of ${reason}.`)
+          reason => { window.showErrorMessage(`Unable to generate JSDoc at position (Ln ${caret.line}, Col ${caret.character}) because of ${reason}.`); }
         );
       } else {
         window.showErrorMessage(`Unable to generate JSDoc at position (Ln ${caret.line}, Col ${caret.character}).`);
