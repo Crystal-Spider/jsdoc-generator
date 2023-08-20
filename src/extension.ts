@@ -12,24 +12,112 @@ import {TextFile} from './TextFile';
 let jsdocGenerator: JsdocGenerator;
 
 /**
- * Configuration item name.
+ * JSDoc custom tag.
  *
- * @typedef {ConfigurationItem}
+ * @interface CustomTag
+ * @typedef {CustomTag}
  */
-type ConfigurationItem =
-  'descriptionPlaceholder' |
-  'author' |
-  'includeDate' |
-  'includeTime' |
-  'includeTypes' |
-  'includeParenthesisForMultipleTypes' |
-  'descriptionForConstructors' |
-  'functionVariablesAsFunctions' |
-  'includeExport' |
-  'includeAsync' |
-  'customTags' |
-  'chatgptApiKey' |
-  'chatgpt4';
+interface CustomTag {
+  /**
+   * Tag name.
+   *
+   * @type {string}
+   */
+  tag: string;
+  /**
+   * Tag value placeholder.
+   *
+   * @type {string}
+   */
+  placeholder: string;
+}
+
+/**
+ * Configuration type map.
+ *
+ * @interface Configuration
+ * @typedef {Configuration}
+ */
+interface Configuration {
+  /**
+   * JSDoc description placeholder.
+   *
+   * @type {string}
+   */
+  'descriptionPlaceholder': string;
+  /**
+   * JSDoc Author.
+   *
+   * @type {string}
+   */
+  'author': string;
+  /**
+   * Whether to include the date in JSDocs.
+   *
+   * @type {boolean}
+   */
+  'includeDate': boolean;
+  /**
+   * Whether to include the time in JSDocs.
+   *
+   * @type {boolean}
+   */
+  'includeTime': boolean;
+  /**
+   * Whether to include types in JSDocs.
+   *
+   * @type {boolean}
+   */
+  'includeTypes': boolean;
+  /**
+   * Whether to include parenthesis for multiple types in JSDocs.
+   *
+   * @type {boolean}
+   */
+  'includeParenthesisForMultipleTypes': boolean;
+  /**
+   * JSDoc constructors decription.
+   *
+   * @type {string}
+   */
+  'descriptionForConstructors': string;
+  /**
+   * Whether to create JSDoc for function variables as for normal functions.
+   *
+   * @type {boolean}
+   */
+  'functionVariablesAsFunctions': boolean;
+  /**
+   * Whether to include the export tag in JSDocs.
+   *
+   * @type {boolean}
+   */
+  'includeExport': boolean;
+  /**
+   * Whether to include the async tag in JSDocs.
+   *
+   * @type {boolean}
+   */
+  'includeAsync': boolean;
+  /**
+   * JSDoc custom tags.
+   *
+   * @type {CustomTag[]}
+   */
+  'customTags': CustomTag[];
+  /**
+   * Generative AI API key.
+   *
+   * @type {string}
+   */
+  'generativeApiKey': string;
+  /**
+   * Generative AI model.
+   *
+   * @type {('' | 'gpt-3.5-turbo' | 'gpt-4' | 'bard')}
+   */
+  'generativeModel': '' | 'gpt-3.5-turbo' | 'gpt-4' | 'bard';
+}
 
 /**
  * JSDoc Autocompletion item.
@@ -202,11 +290,11 @@ export function deactivate() {
  * Returns the value of the specified configuration.
  *
  * @export
- * @template T
- * @param {ConfigurationItem} configurationName configuration name, supports dotted names.
- * @param {T} defaultValue a value should be returned when no value could be found.
- * @returns {T} The value from the configuration or the default.
+ * @template {keyof Configuration} K
+ * @param {K} property configuration property name, supports dotted names.
+ * @param {Configuration[K]} defaultValue a value should be returned when no value could be found.
+ * @returns {Configuration[K]} The value from the configuration or the default.
  */
-export function getConfig<T>(configurationName: ConfigurationItem, defaultValue: T): T {
-  return vscode.workspace.getConfiguration().get(`jsdoc-generator.${configurationName}`, defaultValue);
+export function getConfig<K extends keyof Configuration>(property: K, defaultValue: Configuration[K]): Configuration[K] {
+  return vscode.workspace.getConfiguration().get(`jsdoc-generator.${property}`, defaultValue);
 }

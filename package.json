@@ -123,6 +123,11 @@
           "type": "string",
           "default": "",
           "description": "Set your own API key for ChatGPT (see https://platform.openai.com/account/api-keys).\nIt's required only if you wish to use the automatic generation of descriptions.\nEmpty to disable automatic descriptions generation.\nNote that jsdoc-generator.descriptionPlaceholder will take precedence."
+        },
+        "jsdoc-generator.chatgpt4": {
+          "type": "boolean",
+          "default": "false",
+          "description": "When enabled, uses GPT 4 for generating descriptions.\nWhen disabled, uses GPT 3.5-Turbo."
         }
       }
     }
@@ -161,7 +166,8 @@
     "eslint-plugin-unused-imports": "^3.0.0",
     "glob": "^7.1.4",
     "mocha": "^10.2.0",
-    "openai": "^3.3.0",
+    "openai": "^4.0.0-beta.6",
+    "palm-api": "^1.0.5",
     "typescript": "^5.1.6",
     "vsce": "^2.15.0",
     "vscode-test": "^1.5.2"

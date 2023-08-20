@@ -78,7 +78,9 @@ export class JsdocBuilder {
     this.buildJsdocModifiers(node.modifiers);
     if (node.name) {
       this.buildJsdocLine(node.kind === SyntaxKind.InterfaceDeclaration ? 'interface' : 'class', this.includeTypes ? node.name.getText() : '', '');
-      this.buildJsdocLine('typedef', node.name.getText());
+      if (getConfig('includeTypes', true)) {
+        this.buildJsdocLine('typedef', node.name.getText());
+      }
     } else {
       this.buildJsdocLine(node.kind === SyntaxKind.InterfaceDeclaration ? 'interface' : 'class');
     }
@@ -194,7 +196,7 @@ export class JsdocBuilder {
    */
   public async getConstructorJsdoc(node: ConstructorDeclaration): Promise<SnippetString> {
     this.jsdoc.appendText('/**\n');
-    const constructorDescription = getConfig<string>('descriptionForConstructors', '');
+    const constructorDescription = getConfig('descriptionForConstructors', '');
     const className = node.parent.name;
     if (constructorDescription && className) {
       await this.buildDescription(constructorDescription.replace('{Object}', className.getText()));
@@ -221,7 +223,9 @@ export class JsdocBuilder {
   public async getTypeAliasJsdoc(node: TypeAliasDeclaration): Promise<SnippetString> {
     await this.buildJsdocHeader(node.getFullText());
     this.buildJsdocModifiers(node.modifiers);
-    this.buildJsdocLine('typedef', node.name.getText());
+    if (getConfig('includeTypes', true)) {
+      this.buildJsdocLine('typedef', node.name.getText());
+    }
     this.buildTypeParameters(node.typeParameters);
     this.buildCustomTags();
     this.buildJsdocEnd();
