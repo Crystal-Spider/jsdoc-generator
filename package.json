@@ -119,15 +119,16 @@
           "default": [],
           "description": "Set custom tags."
         },
-        "jsdoc-generator.chatgptApiKey": {
+        "jsdoc-generator.generativeApiKey": {
           "type": "string",
           "default": "",
-          "description": "Set your own API key for ChatGPT (see https://platform.openai.com/account/api-keys).\nIt's required only if you wish to use the automatic generation of descriptions.\nEmpty to disable automatic descriptions generation.\nNote that jsdoc-generator.descriptionPlaceholder will take precedence."
+          "description": "Set your own API key for ChatGPT (see https://platform.openai.com/account/api-keys) or Bard (see https://developers.generativeai.google/products/palm).\nIt's required only if you wish to use the automatic generation of descriptions.\nNote that jsdoc-generator.descriptionPlaceholder will take precedence."
         },
-        "jsdoc-generator.chatgpt4": {
-          "type": "boolean",
-          "default": "false",
-          "description": "When enabled, uses GPT 4 for generating descriptions.\nWhen disabled, uses GPT 3.5-Turbo."
+        "jsdoc-generator.generativeModel": {
+          "type": "string",
+          "enum": ["", "gpt-3.5-turbo", "gpt-4", "bard"],
+          "default": "",
+          "description": "Generative AI model to use to generate JSDoc decriptions.\nEmpty to disable.\nNote that jsdoc-generator.descriptionPlaceholder will take precedence."
         }
       }
     }

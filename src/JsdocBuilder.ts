@@ -1,8 +1,8 @@
 import {getTextOfJSDocComment, Node, SyntaxKind, NodeArray, TypeNode, ExpressionWithTypeArguments, TypeParameterDeclaration, HeritageClause, AccessorDeclaration, ClassDeclaration, ClassLikeDeclaration, ConstructorDeclaration, EnumDeclaration, InterfaceDeclaration, MethodDeclaration, ParameterDeclaration, PropertyDeclaration, TypeAliasDeclaration, VariableDeclaration, ModifierLike} from 'typescript';
 import {SnippetString} from 'vscode';
 
-import {ChatGPT} from './ChatGPT';
 import {getConfig} from './extension';
+import {GenerativeAPI} from './GenerativeAPI';
 import {TsFile} from './TsFile';
 
 /**
@@ -401,13 +401,13 @@ export class JsdocBuilder {
       this.jsdoc.appendText(description);
     } else if (placeholder) {
       this.jsdoc.appendPlaceholder(placeholder);
-    } else if (ChatGPT.tryInit()) {
+    } else if (GenerativeAPI.tryInit()) {
       const message = 'Provide a short description of this function that I will later insert into a JSDoc.\n' +
       'Very important: only text, no \'*\', no function name, and no word "function".\n' +
       `${nodeText.trim()}`;
-      const gptDescription = await ChatGPT.chat(message);
-      if (gptDescription) {
-        this.jsdoc.appendText(gptDescription);
+      const autoDescription = await GenerativeAPI.chat(message);
+      if (autoDescription) {
+        this.jsdoc.appendText(autoDescription);
       }
     }
     this.jsdoc.appendText('\n');
