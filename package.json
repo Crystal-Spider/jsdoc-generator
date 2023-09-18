@@ -126,9 +126,37 @@
         },
         "jsdoc-generator.generativeModel": {
           "type": "string",
-          "enum": ["", "gpt-3.5-turbo", "gpt-4", "bard"],
+          "enum": [
+            "",
+            "gpt-3.5-turbo",
+            "gpt-4",
+            "bard"
+          ],
           "default": "",
           "description": "Generative AI model to use to generate JSDoc decriptions.\nEmpty to disable.\nNote that jsdoc-generator.descriptionPlaceholder will take precedence."
+        },
+        "jsdoc-generator.generativeLang": {
+          "type": "string",
+          "enum": [
+            "English",
+            "Mandarin Chinese",
+            "Spanish",
+            "Hindi",
+            "Portuguese",
+            "Russian",
+            "Japanese",
+            "Yue Chinese",
+            "Turkish",
+            "Wu Chinese",
+            "Korean",
+            "French",
+            "German",
+            "Italian",
+            "Arabic",
+            "Greek"
+          ],
+          "default": "English",
+          "description": "Language of the automatic generated descriptions.\nNote that all automatic descriptions are generated in English, and then they are translated into the specified language using the same generative model."
         }
       }
     }
@@ -168,7 +196,7 @@
     "glob": "^7.1.4",
     "mocha": "^10.2.0",
     "openai": "^4.0.0-beta.6",
-    "palm-api": "^1.0.5",
+    "palm-api": "^1.1.0",
     "typescript": "^5.1.6",
     "vsce": "^2.15.0",
     "vscode-test": "^1.5.2"

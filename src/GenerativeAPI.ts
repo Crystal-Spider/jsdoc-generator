@@ -1,5 +1,6 @@
 import {OpenAI} from 'openai';
-import {PaLM} from 'palm-api';
+import PaLM from 'palm-api';
+import {Example} from 'palm-api/out/google-ai-types';
 
 import {getConfig} from './extension';
 
@@ -22,7 +23,7 @@ abstract class GenerativeModel<T> {
 
   protected abstract init(): T;
 
-  public abstract chat(content: string, examples?: [string, string][]): Promise<string | null | undefined>;
+  public abstract chat(content: string, examples?: Example[]): Promise<string | null | undefined>;
 }
 
 class GenerativeOpenAI extends GenerativeModel<OpenAI> {
@@ -51,8 +52,7 @@ class GenerativePaLM extends GenerativeModel<PaLM> {
     return new PaLM(this.apiKey);
   }
 
-  // TODO: replace [string, string][] with the Example[] type from PaLM.
-  public async chat(content: string, examples?: [string, string][]): Promise<string | null | undefined> {
+  public async chat(content: string, examples?: Example[]): Promise<string | null | undefined> {
     if (this.api) {
       this.api.ask(content, {
         context: 'context',
@@ -98,7 +98,7 @@ export class GenerativeAPI {
     return !!GenerativeAPI.generator;
   }
 
-  public static async chat(content: string, examples?: [string, string][]) {
+  public static async chat(content: string, examples?: Example[]) {
     if (GenerativeAPI.generator) {
       return (await GenerativeAPI.generator.chat(content, examples));
     }
