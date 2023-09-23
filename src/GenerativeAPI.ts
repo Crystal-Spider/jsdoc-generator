@@ -63,6 +63,13 @@ class GenerativePaLM extends GenerativeModel<PaLM> {
     }
     return null;
   }
+
+  public newChat() {
+    if (this.api) {
+      return this.api.createChat({examples: []});
+    }
+    return null;
+  }
 }
 
 /**
@@ -78,6 +85,10 @@ export class GenerativeAPI {
 
   private static get model() {
     return getConfig('generativeModel', '');
+  }
+
+  private static get language() {
+    return getConfig('generativeLang', 'English');
   }
 
   /**
@@ -100,7 +111,11 @@ export class GenerativeAPI {
 
   public static async chat(content: string, examples?: Example[]) {
     if (GenerativeAPI.generator) {
-      return (await GenerativeAPI.generator.chat(content, examples));
+      const description = ''; // Await GenerativeAPI.generator.chat(content, examples);
+      if (GenerativeAPI.language !== 'English') {
+        return await GenerativeAPI.generator.chat(`Translate the following text in ${GenerativeAPI.language}:\n${description}`);
+      }
+      return description;
     }
     return null;
   }
