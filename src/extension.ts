@@ -12,6 +12,28 @@ import {TextFile} from './TextFile';
 let jsdocGenerator: JsdocGenerator;
 
 /**
+ * Available languages.
+ *
+ * @typedef {Language}
+ */
+type Language = 'English'
+  | 'Mandarin Chinese'
+  | 'Spanish'
+  | 'Hindi'
+  | 'Portuguese'
+  | 'Russian'
+  | 'Japanese'
+  | 'Yue Chinese'
+  | 'Turkish'
+  | 'Wu Chinese'
+  | 'Korean'
+  | 'French'
+  | 'German'
+  | 'Italian'
+  | 'Arabic'
+  | 'Greek';
+
+/**
  * JSDoc custom tag.
  *
  * @interface CustomTag
@@ -44,79 +66,85 @@ interface Configuration {
    *
    * @type {string}
    */
-  'descriptionPlaceholder': string;
+  descriptionPlaceholder: string;
   /**
    * JSDoc Author.
    *
    * @type {string}
    */
-  'author': string;
+  author: string;
   /**
    * Whether to include the date in JSDocs.
    *
    * @type {boolean}
    */
-  'includeDate': boolean;
+  includeDate: boolean;
   /**
    * Whether to include the time in JSDocs.
    *
    * @type {boolean}
    */
-  'includeTime': boolean;
+  includeTime: boolean;
   /**
    * Whether to include types in JSDocs.
    *
    * @type {boolean}
    */
-  'includeTypes': boolean;
+  includeTypes: boolean;
   /**
    * Whether to include parenthesis for multiple types in JSDocs.
    *
    * @type {boolean}
    */
-  'includeParenthesisForMultipleTypes': boolean;
+  includeParenthesisForMultipleTypes: boolean;
   /**
    * JSDoc constructors decription.
    *
    * @type {string}
    */
-  'descriptionForConstructors': string;
+  descriptionForConstructors: string;
   /**
    * Whether to create JSDoc for function variables as for normal functions.
    *
    * @type {boolean}
    */
-  'functionVariablesAsFunctions': boolean;
+  functionVariablesAsFunctions: boolean;
   /**
    * Whether to include the export tag in JSDocs.
    *
    * @type {boolean}
    */
-  'includeExport': boolean;
+  includeExport: boolean;
   /**
    * Whether to include the async tag in JSDocs.
    *
    * @type {boolean}
    */
-  'includeAsync': boolean;
+  includeAsync: boolean;
   /**
    * JSDoc custom tags.
    *
    * @type {CustomTag[]}
    */
-  'customTags': CustomTag[];
+  customTags: CustomTag[];
   /**
    * Generative AI API key.
    *
    * @type {string}
    */
-  'generativeApiKey': string;
+  generativeApiKey: string;
   /**
    * Generative AI model.
    *
-   * @type {('' | 'gpt-3.5-turbo' | 'gpt-4' | 'bard')}
+   * @type {('' | | 'gpt-3.5-turbo' | 'gpt-4' | 'bard')}
    */
-  'generativeModel': '' | 'gpt-3.5-turbo' | 'gpt-4' | 'bard';
+  generativeModel: '' | 'gpt-3.5-turbo' | 'gpt-4' | 'bard';
+  /**
+   * Language of the generated descriptions.
+   *
+   * @type {Language}
+   */
+  generativeLang: Language;
 }
 
 /**

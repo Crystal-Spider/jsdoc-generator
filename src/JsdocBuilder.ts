@@ -18,6 +18,13 @@ type TypedNode =
   | VariableDeclaration;
 
 /**
+ * Possible wrappers for types.
+ *
+ * @typedef {Wrapper}
+ */
+type Wrapper = '' | '()' | '[]' | '{}';
+
+/**
  * JSDoc builder.
  *
  * @export
@@ -490,11 +497,8 @@ export class JsdocBuilder {
    * @param {string} [wrapper='{}'] a string used to wrap the tagValue. Should be of even elements and symmetrical.
    * @param {string[]} [extraValues=[]] extra values for each tag line.
    */
-  private buildJsdocLines(tag: string = '', tagValues: string[] = [''], wrapper: string = '{}', extraValues: string[] = []) {
-    tagValues.forEach((tagValue, index) => {
-      const extraValue = extraValues[index] ? extraValues[index] : '';
-      this.buildJsdocLine(tag, tagValue, wrapper, extraValue);
-    });
+  private buildJsdocLines(tag: string = '', tagValues: string[] = [''], wrapper: Wrapper = '{}', extraValues: string[] = []) {
+    tagValues.forEach((tagValue, index) => this.buildJsdocLine(tag, tagValue, wrapper, extraValues[index] ? extraValues[index] : ''));
   }
 
   /**
@@ -508,7 +512,7 @@ export class JsdocBuilder {
    * @param {string} [wrapper='{}'] a string used to wrap the tagValue. Should be of even elements and symmetrical.
    * @param {string} [extraValue=''] an extra value to add to the line.
    */
-  private buildJsdocLine(tag: string = '', tagValue: string = '', wrapper: string = '{}', extraValue: string = '') {
+  private buildJsdocLine(tag: string = '', tagValue: string = '', wrapper: Wrapper = '{}', extraValue: string | null = '') {
     let open = '', close = '', line = '';
     if (wrapper) {
       const middle = wrapper.length / 2;
