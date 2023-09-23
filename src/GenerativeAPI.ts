@@ -111,7 +111,7 @@ export class GenerativeAPI {
 
   public static async chat(content: string, examples?: Example[]) {
     if (GenerativeAPI.generator) {
-      const description = ''; // Await GenerativeAPI.generator.chat(content, examples);
+      const description = await GenerativeAPI.generator.chat(content, examples);
       if (GenerativeAPI.language !== 'English') {
         return await GenerativeAPI.generator.chat(`Translate the following text in ${GenerativeAPI.language}:\n${description}`);
       }
