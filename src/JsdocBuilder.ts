@@ -1,5 +1,4 @@
-// eslint-disable-next-line no-redeclare
-import {getTextOfJSDocComment, Node, SyntaxKind, NodeArray, TypeNode, ExpressionWithTypeArguments, TypeParameterDeclaration, HeritageClause, AccessorDeclaration, ClassDeclaration, ClassLikeDeclaration, ConstructorDeclaration, EnumDeclaration, InterfaceDeclaration, MethodDeclaration, ParameterDeclaration, PropertyDeclaration, TypeAliasDeclaration, VariableDeclaration, ModifierLike} from 'typescript';
+import {getTextOfJSDocComment, Node, SyntaxKind, NodeArray, TypeNode, ExpressionWithTypeArguments, TypeParameterDeclaration, HeritageClause, AccessorDeclaration, ClassDeclaration, ClassLikeDeclaration, ConstructorDeclaration, EnumDeclaration, InterfaceDeclaration, MethodDeclaration, ParameterDeclaration, PropertyDeclaration, TypeAliasDeclaration, VariableDeclaration, ModifierLike, BindingPattern} from 'typescript';
 import {SnippetString} from 'vscode';
 
 import {getConfig} from './extension';
@@ -26,17 +25,33 @@ type TypedNode =
 type Wrapper = '' | '{}';
 
 /**
+ * Summarized infos of a parameter.
+ *
+ * @interface SummarizedParameter
+ * @typedef {SummarizedParameter}
+ */
+interface SummarizedParameter {
+  /**
+   * Parameter name.
+   *
+   * @type {string}
+   */
+  name: string;
+  /**
+   * Parameter type.
+   *
+   * @type {string}
+   */
+  type: string;
+}
+
+/**
  * JSDoc line data.
  *
+ * @interface JSDocLine
  * @typedef {JSDocLine}
  */
-type JSDocLine = {
-  /**
-   * Tag key.
-   *
-   * @type {?string}
-   */
-  tag?: string;
+interface JSDocLine {
   /**
    * Tag value.
    *
@@ -67,7 +82,7 @@ type JSDocLine = {
    * @type {?boolean}
    */
   align?: boolean;
-};
+}
 
 /**
  * JSDoc builder.
@@ -129,12 +144,12 @@ export class JsdocBuilder {
     await this.buildJsdocHeader(node.getFullText());
     this.buildJsdocModifiers(node.modifiers);
     if (node.name) {
-      this.buildJsdocLine({tag: node.kind === SyntaxKind.InterfaceDeclaration ? 'interface' : 'class', value: this.includeTypes ? node.name.getText() : '', wrapper: ''});
+      this.buildJsdocLine(node.kind === SyntaxKind.InterfaceDeclaration ? 'interface' : 'class', {value: this.includeTypes ? node.name.getText() : '', wrapper: ''});
       if (getConfig('includeTypes', true)) {
-        this.buildJsdocLine({tag: 'typedef', value: node.name.getText()});
+        this.buildJsdocLine('typedef', {value: node.name.getText()});
       }
     } else {
-      this.buildJsdocLine({tag: node.kind === SyntaxKind.InterfaceDeclaration ? 'interface' : 'class'});
+      this.buildJsdocLine(node.kind === SyntaxKind.InterfaceDeclaration ? 'interface' : 'class');
     }
     this.buildTypeParameters(node.typeParameters);
     this.buildJsdocHeritage(node.heritageClauses);
@@ -162,7 +177,7 @@ export class JsdocBuilder {
       await this.buildJsdocHeader(node.getFullText());
       this.buildJsdocModifiers('modifiers' in node ? node.modifiers : undefined);
       if (this.includeTypes) {
-        this.buildJsdocLine({tag: 'type', value: this.retrieveType(node)});
+        this.buildJsdocLine('type', {value: this.retrieveType(node)});
       }
       this.buildCustomTags();
       this.buildJsdocEnd();
@@ -191,10 +206,10 @@ export class JsdocBuilder {
       await this.buildJsdocHeader(node.getFullText());
       this.buildJsdocModifiers(node.modifiers);
       if (node.kind === SyntaxKind.GetAccessor && !pairedAccessor) {
-        this.buildJsdocLine({tag: 'readonly'});
+        this.buildJsdocLine('readonly');
       }
       if (this.includeTypes) {
-        this.buildJsdocLine({tag: 'type', value: this.retrieveType(node)});
+        this.buildJsdocLine('type', {value: this.retrieveType(node)});
       }
     }
     this.buildCustomTags();
@@ -213,7 +228,7 @@ export class JsdocBuilder {
   public async getEnumDeclarationJsdoc(node: EnumDeclaration): Promise<SnippetString> {
     await this.buildJsdocHeader(node.getFullText());
     this.buildJsdocModifiers(node.modifiers);
-    this.buildJsdocLine({tag: 'enum', value: this.includeTypes ? 'number' : ''});
+    this.buildJsdocLine('enum', {value: this.includeTypes ? 'number' : ''});
     this.buildCustomTags();
     this.buildJsdocEnd();
     return this.jsdoc;
@@ -256,7 +271,7 @@ export class JsdocBuilder {
     this.buildDate();
     this.buildAuthor();
     this.buildJsdocLine();
-    this.buildJsdocLine({tag: 'constructor'});
+    this.buildJsdocLine('constructor');
     this.buildJsdocModifiers(node.modifiers);
     this.buildJsdocParameters(node.parameters);
     this.buildCustomTags();
@@ -276,7 +291,7 @@ export class JsdocBuilder {
     await this.buildJsdocHeader(node.getFullText());
     this.buildJsdocModifiers(node.modifiers);
     if (getConfig('includeTypes', true)) {
-      this.buildJsdocLine({tag: 'typedef', value: node.name.getText()});
+      this.buildJsdocLine('typedef', {value: node.name.getText()});
     }
     this.buildTypeParameters(node.typeParameters);
     this.buildCustomTags();
@@ -296,34 +311,34 @@ export class JsdocBuilder {
         switch (modifier.kind) {
           case SyntaxKind.ExportKeyword:
             if (getConfig('includeExport', true)) {
-              this.buildJsdocLine({tag: 'export'});
+              this.buildJsdocLine('export');
             }
             break;
           case SyntaxKind.PrivateKeyword:
-            this.buildJsdocLine({tag: 'private'});
+            this.buildJsdocLine('private');
             break;
           case SyntaxKind.ProtectedKeyword:
-            this.buildJsdocLine({tag: 'protected'});
+            this.buildJsdocLine('protected');
             break;
           case SyntaxKind.PublicKeyword:
-            this.buildJsdocLine({tag: 'public'});
+            this.buildJsdocLine('public');
             break;
           case SyntaxKind.StaticKeyword:
-            this.buildJsdocLine({tag: 'static'});
+            this.buildJsdocLine('static');
             break;
           case SyntaxKind.AbstractKeyword:
-            this.buildJsdocLine({tag: 'abstract'});
+            this.buildJsdocLine('abstract');
             break;
           case SyntaxKind.AsyncKeyword:
             if (getConfig('includeAsync', true)) {
-              this.buildJsdocLine({tag: 'async'});
+              this.buildJsdocLine('async');
             }
             break;
           case SyntaxKind.ReadonlyKeyword:
-            this.buildJsdocLine({tag: 'readonly'});
+            this.buildJsdocLine('readonly');
             break;
           case SyntaxKind.OverrideKeyword:
-            this.buildJsdocLine({tag: 'override'});
+            this.buildJsdocLine('override');
             break;
           default: break;
         }
@@ -383,18 +398,28 @@ export class JsdocBuilder {
    * @param {NodeArray<ParameterDeclaration>} parameters
    */
   private buildJsdocParameters(parameters: NodeArray<ParameterDeclaration>) {
-    const mappedParameters = parameters.map(parameter => {
+    let bindingPatterns = 0;
+    const mappedParameters: SummarizedParameter[] = parameters.map(parameter => {
+      const bindingElements: SummarizedParameter[] = [];
       let name = parameter.name.getText();
       const type = this.retrieveType(parameter);
       const initializer = parameter.initializer ? (`=${parameter.initializer.getText()}`) : '';
+      if ([SyntaxKind.ObjectBindingPattern, SyntaxKind.ArrayBindingPattern].includes(parameter.name.kind)) {
+        name = `param${bindingPatterns++}`;
+        (parameter.name as BindingPattern).elements.forEach(element => {
+          if (element.kind !== SyntaxKind.OmittedExpression) {
+            bindingElements.push({
+              type: this.retrieveType(element),
+              name: `${element.initializer ? '[' : ''}${name}.${element.getText()}${element.initializer ? ']' : ''}`.replace(' = ', '=')
+            });
+          }
+        });
+      }
       if (parameter.questionToken || initializer) {
         name = `[${name}${initializer}]`;
       }
-      return {
-        type,
-        name
-      };
-    });
+      return bindingElements.length ? [{type, name}, ...bindingElements] : {type, name};
+    }).flat();
     this.buildJsdocLines('param', mappedParameters.map(param => param.type), '{}', mappedParameters.map(param => param.name));
   }
 
@@ -419,7 +444,7 @@ export class JsdocBuilder {
       if (this.checkParenthesisUse(returnType)) {
         returnType = `(${returnType})`;
       }
-      this.buildJsdocLine({tag: 'returns', value: this.includeTypes ? returnType : ''});
+      this.buildJsdocLine('returns', {value: this.includeTypes ? returnType : ''});
     }
   }
 
@@ -478,7 +503,7 @@ export class JsdocBuilder {
         this.jsdoc.appendPlaceholder(author);
         this.jsdoc.appendText('\n');
       } else {
-        this.buildJsdocLine({tag: 'author', value: author, wrapper: '', align: false});
+        this.buildJsdocLine('author', {value: author, wrapper: '', align: false});
       }
     }
   }
@@ -495,7 +520,7 @@ export class JsdocBuilder {
       if (getConfig('includeTime', true)) {
         value += ` - ${date.toLocaleTimeString()}`;
       }
-      this.buildJsdocLine({tag: 'date', value, wrapper: '', align: false});
+      this.buildJsdocLine('date', {value, wrapper: '', align: false});
     }
   }
 
@@ -508,7 +533,7 @@ export class JsdocBuilder {
     const customTags = getConfig('customTags', []);
     for (const customTag of customTags) {
       const {tag, placeholder = ''} = customTag;
-      this.buildJsdocLine({tag, value: placeholder, wrapper: ''});
+      this.buildJsdocLine(tag, {value: placeholder, wrapper: ''});
     }
   }
 
@@ -542,7 +567,7 @@ export class JsdocBuilder {
    * @param {string[]} [descriptions=[]] description values for each tag line.
    */
   private buildJsdocLines(tag: string = '', values: string[] = [''], wrapper: Wrapper = '{}', names: string[] = [], descriptions: string[] = []) {
-    values.forEach((value, index) => this.buildJsdocLine({tag, value, wrapper, name: names[index], description: descriptions[index]}));
+    values.forEach((value, index) => this.buildJsdocLine(tag, {value, wrapper, name: names[index], description: descriptions[index]}));
   }
 
   /**
@@ -551,15 +576,15 @@ export class JsdocBuilder {
    * When setting wrapper to '', the value is not wrapped.
    *
    * @private
+   * @param {string} [tag=''] the JSDoc tag to insert.
    * @param {JSDocLine} [line={}] data for the JSDoc line.
-   * @param {string} [line.tag=''] the JSDoc tag to insert.
    * @param {string} [line.value=''] the JSDoc tag value to insert.
    * @param {string} [line.wrapper='{}'] a string used to wrap the value. Should be of even elements and symmetrical.
    * @param {string} [line.name=''] an extra value to add to the line.
    * @param {string} [line.description=''] description value to add to the line.
    * @param {boolean} [line.align=true] whether to align `tag`, `value`, `name`, and `description`.
    */
-  private buildJsdocLine({tag = '', value = '', wrapper = '{}', name = '', description = '', align = true}: JSDocLine = {}) {
+  private buildJsdocLine(tag = '', {value = '', wrapper = '{}', name = '', description = '', align = true}: JSDocLine = {}) {
     let open = '', close = '', line = '';
     if (wrapper) {
       const middle = wrapper.length / 2;
@@ -613,14 +638,14 @@ export class JsdocBuilder {
    * Returns '' if {@link JsdocBuilder.includeTypes} is false.
    *
    * @private
-   * @param {TypedNode} node
+   * @param {(TypedNode | Node)} node
    * @returns {string} string representing the node type.
    */
-  private retrieveType(node: TypedNode): string {
+  private retrieveType(node: TypedNode | Node): string {
     if (this.includeTypes) {
       let type;
       const prefix = this.getTypePrefix(node);
-      if (!node.type) {
+      if (!('type' in node) || !node.type) {
         type = this.inferType(node);
       } else if (node.type.getText() === 'any') {
         type = '*';
@@ -639,26 +664,28 @@ export class JsdocBuilder {
    * Check if the type of the node has a modifier and returns it.
    *
    * @private
-   * @param {TypedNode} node
+   * @param {(TypedNode | Node)} node
    * @returns {string} type modifier [?, !, ..., *], empty if none.
    */
-  private getTypePrefix(node: TypedNode): '?' | '!' | '...' | '*' | '' {
-    if (node.kind !== SyntaxKind.VariableDeclaration && node.questionToken) {
-      return '?';
-    }
-    if (node.kind !== SyntaxKind.Parameter && node.exclamationToken) {
-      return '!';
-    }
-    if (node.kind === SyntaxKind.Parameter && node.dotDotDotToken) {
-      return '...';
-    }
-    if (
-      node.kind !== SyntaxKind.PropertyDeclaration &&
-      node.kind !== SyntaxKind.Parameter &&
-      node.kind !== SyntaxKind.VariableDeclaration &&
-      node.asteriskToken
-    ) {
-      return '*';
+  private getTypePrefix(node: TypedNode | Node): '?' | '!' | '...' | '*' | '' {
+    if ('type' in node) {
+      if (node.kind !== SyntaxKind.VariableDeclaration && node.questionToken) {
+        return '?';
+      }
+      if (node.kind !== SyntaxKind.Parameter && node.exclamationToken) {
+        return '!';
+      }
+      if (node.kind === SyntaxKind.Parameter && node.dotDotDotToken) {
+        return '...';
+      }
+      if (
+        node.kind !== SyntaxKind.PropertyDeclaration &&
+        node.kind !== SyntaxKind.Parameter &&
+        node.kind !== SyntaxKind.VariableDeclaration &&
+        node.asteriskToken
+      ) {
+        return '*';
+      }
     }
     return '';
   }

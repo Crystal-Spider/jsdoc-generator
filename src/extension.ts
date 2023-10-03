@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-// eslint-disable-next-line no-redeclare
 import {CompletionItem, TextDocument, Position, CancellationToken, ExtensionContext, Range, CompletionItemKind, Uri} from 'vscode';
 
 import {JsdocGenerator} from './JsdocGenerator';
