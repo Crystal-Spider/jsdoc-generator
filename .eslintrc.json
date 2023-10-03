@@ -179,7 +179,6 @@
 			}
 		],
 		"no-proto": "error",
-		"no-redeclare": "error",
 		"no-return-assign": [
 			"error",
 			"always"

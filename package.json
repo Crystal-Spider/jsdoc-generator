@@ -44,6 +44,11 @@
           "command": "jsdoc-generator.generateJsdocFolder",
           "when": "explorerResourceIsFolder",
           "group": "2_workspace"
+        },
+        {
+          "command": "jsdoc-generator.generateJsdocFile",
+          "when": "!explorerResourceIsFolder && resourceLangId in ext.supportedLanguages",
+          "group": "1_workspace"
         }
       ]
     },

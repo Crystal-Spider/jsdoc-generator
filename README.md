@@ -103,7 +103,14 @@ Some non [everyday types](https://www.typescriptlang.org/docs/handbook/2/everyda
 
 ### [2.0.0](https://github.com/Nyphet/jsdoc-generator/releases/tag/v2.0.0)
 
-Fixed an issue with type parameters, added support for `.vue` files, added new features `Generate JSDoc for the workspace` and `Generate JSDoc in Folder`, integrated ChatGPT to automatically generate descriptions.
+- WIP: Fixed [#17](https://github.com/Nyphet/jsdoc-generator/issues/17), JSDoc generation for functions that deconstruct parameters.
+- Fixed [#12](https://github.com/Nyphet/jsdoc-generator/issues/12), prevent adding `@typedef` when `includeTypes` is false.
+- Fixed [#8](https://github.com/Nyphet/jsdoc-generator/issues/8), corrected and improved template tags.
+- Implemented [#16](https://github.com/Nyphet/jsdoc-generator/issues/16), added alignment options.
+- Finally implemented the command to generate JSDoc for all suitable files in the current workspace (recursive).
+- Added command in folder contextual menu to generate JSDoc for all TS and JS files in the folder (recursive).
+- Added command in file contextual menu to generate JSDoc for that file.
+- WIP: Integrated ChatGPT and Bard to automatically generate JSDoc descriptions. Note that you need to have your own API key to make it work.
 
 ### [1.3.0](https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.3.0)
 

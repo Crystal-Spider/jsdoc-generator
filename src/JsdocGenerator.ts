@@ -1,11 +1,19 @@
 import {LanguageService, createLanguageService, createDocumentRegistry, SourceFile, sys, Node, LineAndCharacter, getLineAndCharacterOfPosition, SyntaxKind, PropertyDeclaration, ConstructorDeclaration, AccessorDeclaration, MethodDeclaration, ClassDeclaration, InterfaceDeclaration, EnumDeclaration, VariableDeclarationList, TypeAliasDeclaration, VariableStatement} from 'typescript';
 import {TextDocument, TextEditor, window, workspace, SnippetString, Position, WorkspaceEdit, Uri, RelativePattern, CancellationToken} from 'vscode';
 
+import {SUPPORTED_LANGUAGES} from './extension';
 import {JsdocBuilder} from './JsdocBuilder';
 import {LanguageServiceHost} from './LanguageServiceHost';
 import {Progress} from './Progress';
 import {TextFile} from './TextFile';
 import {TsFile} from './TsFile';
+
+/**
+ * Possible scopes when generating JSDocs.
+ *
+ * @typedef {Scope}
+ */
+type Scope = 'folder' | 'the workspace';
 
 /**
  * Glob pattern for supported files.
@@ -22,20 +30,6 @@ const supportedFilesGlob = '**/*.{js,ts,jsx,tsx}';
  * @typedef {JsdocGenerator}
  */
 export class JsdocGenerator {
-  /**
-   * Supported languages.
-   *
-   * @private
-   * @readonly
-   * @type {string[]}
-   */
-  private readonly languages: string[] = [
-    'javascript',
-    'javascriptreact',
-    'typescript',
-    'typescriptreact'
-  ];
-
   /**
    * Handles all interactions between the Language Service and the external world.
    *
@@ -72,7 +66,7 @@ export class JsdocGenerator {
    * @returns {Promise<void>}
    */
   public async generateJsdocWorkspace(progress: Progress, token: CancellationToken, folder?: Uri): Promise<void> {
-    const scope = folder ? 'folder' : 'the workspace';
+    const scope: Scope = folder ? 'folder' : 'the workspace';
     token.onCancellationRequested(() => window.showWarningMessage(`JSDoc generation for ${scope} canceled`));
     try {
       const uris = await workspace.findFiles(folder ? new RelativePattern(folder!, supportedFilesGlob) : supportedFilesGlob);
@@ -163,7 +157,11 @@ export class JsdocGenerator {
         if (token.isCancellationRequested) {
           return Promise.resolve();
         }
-        if (jsdocNumber > 0) {
+        let success = jsdocNumber > 0;
+        if (textFile.workspaceEdit) {
+          success = success && await workspace.applyEdit(textFile.workspaceEdit);
+        }
+        if (success) {
           window.showInformationMessage(`Correctly generated ${this.getPluralized(jsdocNumber, 'JSDoc')}!`);
         } else {
           window.showWarningMessage('No JSDoc was generated.');
@@ -216,7 +214,7 @@ export class JsdocGenerator {
    * @returns {boolean} whether the document language is supported.
    */
   private isLanguageSupported(document: TextDocument): boolean {
-    return this.languages.some(language => language === document.languageId);
+    return SUPPORTED_LANGUAGES.some(language => language === document.languageId);
   }
 
   /**

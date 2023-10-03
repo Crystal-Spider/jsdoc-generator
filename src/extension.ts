@@ -216,14 +216,28 @@ function lazyInstantiateJsdocGenerator() {
 }
 
 /**
+ * Supported languages.
+ *
+ * @type {string[]}
+ */
+const SUPPORTED_LANGUAGES: string[] = [
+  'javascript',
+  'javascriptreact',
+  'typescript',
+  'typescriptreact'
+];
+
+// Set in this extension context the supported languages.
+vscode.commands.executeCommand('setContext', 'ext.supportedLanguages', SUPPORTED_LANGUAGES);
+
+/**
  * Called when the extension is activated.
  * Subscribes the autocompletion item and the commands in the context.
  * Lazy initializes the JsdocGenerator object.
  *
- * @export
  * @param {ExtensionContext} context
  */
-export function activate(context: ExtensionContext) {
+function activate(context: ExtensionContext) {
   // Generates JSDoc with auto completion.
   const generateJsdocAutocompletion = vscode.languages.registerCompletionItemProvider(
     [
@@ -276,7 +290,7 @@ export function activate(context: ExtensionContext) {
     );
   });
   // Generates JSDoc for every suitable element in the current file.
-  const generateJsdocFile = vscode.commands.registerCommand('jsdoc-generator.generateJsdocFile', () => {
+  const generateJsdocFile = vscode.commands.registerCommand('jsdoc-generator.generateJsdocFile', (file?: Uri) => {
     vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
@@ -285,10 +299,13 @@ export function activate(context: ExtensionContext) {
       },
       (progress, token) => {
         lazyInstantiateJsdocGenerator();
+        if (file) {
+          return jsdocGenerator.generateJsdocFile(progress, token, new TextFile(new vscode.WorkspaceEdit(), file));
+        }
         if (vscode.window.activeTextEditor) {
           return jsdocGenerator.generateJsdocFile(progress, token, new TextFile(vscode.window.activeTextEditor));
         }
-        vscode.window.showErrorMessage('Unable to generate JSDoc: no editor has been selected.');
+        vscode.window.showErrorMessage('Unable to generate JSDoc: no valid file has been selected.');
         return Promise.resolve();
       }
     );
@@ -326,22 +343,21 @@ export function activate(context: ExtensionContext) {
 
 /**
  * This method is called when the extension is deactivated.
- *
- * @export
  */
-export function deactivate() {
+function deactivate() {
   // Empty on purpose.
 }
 
 /**
  * Returns the value of the specified configuration.
  *
- * @export
  * @template {keyof Configuration} K
  * @param {K} property configuration property name, supports dotted names.
  * @param {Configuration[K]} defaultValue a value should be returned when no value could be found.
  * @returns {Configuration[K]} The value from the configuration or the default.
  */
-export function getConfig<K extends keyof Configuration>(property: K, defaultValue: Configuration[K]): Configuration[K] {
+function getConfig<K extends keyof Configuration>(property: K, defaultValue: Configuration[K]): Configuration[K] {
   return vscode.workspace.getConfiguration().get(`jsdoc-generator.${property}`, defaultValue);
 }
+
+export {SUPPORTED_LANGUAGES, activate, deactivate, getConfig};
