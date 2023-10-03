@@ -437,7 +437,7 @@
 				"minItems": 3
 			}
 		],
-		"object-property-newline": "warn",
+		"object-property-newline": ["warn", {"allowAllPropertiesOnSameLine": true}],
 		"object-curly-spacing": [
 			"warn",
 			"never",
@@ -451,11 +451,11 @@
 			{
 				"ObjectExpression": {
 					"consistent": true,
-					"minProperties": 3
+					"minProperties": 6
 				},
 				"ObjectPattern": {
 					"consistent": false,
-					"minProperties": 5
+					"minProperties": 10
 				},
 				"ImportDeclaration": "never",
 				"ExportDeclaration": "never"

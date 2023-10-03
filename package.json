@@ -119,6 +119,21 @@
           "default": [],
           "description": "Set custom tags."
         },
+        "jsdoc-generator.tagValueColumnStart": {
+          "type": "integer",
+          "default": 0,
+          "description": "Starting point of the column containing the tag value (if any, e.g. type).\n0 to make it adaptive (default, no alignment), a positive number to fix the starting point.\nNote that if the tag previous values take over the specified starting point, the column will be shifted."
+        },
+        "jsdoc-generator.tagNameColumnStart": {
+          "type": "integer",
+          "default": 0,
+          "description": "Starting point of the column containing the tag name value (if any, e.g. parameter name).\n0 to make it adaptive (default, no alignment), a positive number to fix the starting point.\nNote that if the tag previous values take over the specified starting point, the column will be shifted."
+        },
+        "jsdoc-generator.tagDescColumnStart": {
+          "type": "integer",
+          "default": 0,
+          "description": "Starting point of the column containing the tag description (if any, e.g. AI-generated).\n0 to make it adaptive (default, no alignment), a positive number to fix the starting point.\nNote that if the tag previous values take over the specified starting point, the column will be shifted."
+        },
         "jsdoc-generator.generativeApiKey": {
           "type": "string",
           "default": "",
@@ -127,13 +142,12 @@
         "jsdoc-generator.generativeModel": {
           "type": "string",
           "enum": [
-            "",
             "gpt-3.5-turbo",
             "gpt-4",
             "bard"
           ],
-          "default": "",
-          "description": "Generative AI model to use to generate JSDoc decriptions.\nEmpty to disable.\nNote that jsdoc-generator.descriptionPlaceholder will take precedence."
+          "default": "bard",
+          "description": "Generative AI model to use to generate JSDoc decriptions.\nEnable the model with an API key.\nNote that jsdoc-generator.descriptionPlaceholder will take precedence."
         },
         "jsdoc-generator.generativeLang": {
           "type": "string",

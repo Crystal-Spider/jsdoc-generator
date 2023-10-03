@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-redeclare
 import {getTextOfJSDocComment, Node, SyntaxKind, NodeArray, TypeNode, ExpressionWithTypeArguments, TypeParameterDeclaration, HeritageClause, AccessorDeclaration, ClassDeclaration, ClassLikeDeclaration, ConstructorDeclaration, EnumDeclaration, InterfaceDeclaration, MethodDeclaration, ParameterDeclaration, PropertyDeclaration, TypeAliasDeclaration, VariableDeclaration, ModifierLike} from 'typescript';
 import {SnippetString} from 'vscode';
 
@@ -22,7 +23,51 @@ type TypedNode =
  *
  * @typedef {Wrapper}
  */
-type Wrapper = '' | '()' | '[]' | '{}';
+type Wrapper = '' | '{}';
+
+/**
+ * JSDoc line data.
+ *
+ * @typedef {JSDocLine}
+ */
+type JSDocLine = {
+  /**
+   * Tag key.
+   *
+   * @type {?string}
+   */
+  tag?: string;
+  /**
+   * Tag value.
+   *
+   * @type {?string}
+   */
+  value?: string;
+  /**
+   * Tag value wrapper.
+   *
+   * @type {?Wrapper}
+   */
+  wrapper?: Wrapper;
+  /**
+   * Tag name value.
+   *
+   * @type {?string}
+   */
+  name?: string;
+  /**
+   * Tag description.
+   *
+   * @type {?string}
+   */
+  description?: string;
+  /**
+   * Whether to align the tag columns.
+   *
+   * @type {?boolean}
+   */
+  align?: boolean;
+};
 
 /**
  * JSDoc builder.
@@ -84,12 +129,12 @@ export class JsdocBuilder {
     await this.buildJsdocHeader(node.getFullText());
     this.buildJsdocModifiers(node.modifiers);
     if (node.name) {
-      this.buildJsdocLine(node.kind === SyntaxKind.InterfaceDeclaration ? 'interface' : 'class', this.includeTypes ? node.name.getText() : '', '');
+      this.buildJsdocLine({tag: node.kind === SyntaxKind.InterfaceDeclaration ? 'interface' : 'class', value: this.includeTypes ? node.name.getText() : '', wrapper: ''});
       if (getConfig('includeTypes', true)) {
-        this.buildJsdocLine('typedef', node.name.getText());
+        this.buildJsdocLine({tag: 'typedef', value: node.name.getText()});
       }
     } else {
-      this.buildJsdocLine(node.kind === SyntaxKind.InterfaceDeclaration ? 'interface' : 'class');
+      this.buildJsdocLine({tag: node.kind === SyntaxKind.InterfaceDeclaration ? 'interface' : 'class'});
     }
     this.buildTypeParameters(node.typeParameters);
     this.buildJsdocHeritage(node.heritageClauses);
@@ -117,7 +162,7 @@ export class JsdocBuilder {
       await this.buildJsdocHeader(node.getFullText());
       this.buildJsdocModifiers('modifiers' in node ? node.modifiers : undefined);
       if (this.includeTypes) {
-        this.buildJsdocLine('type', this.retrieveType(node));
+        this.buildJsdocLine({tag: 'type', value: this.retrieveType(node)});
       }
       this.buildCustomTags();
       this.buildJsdocEnd();
@@ -146,10 +191,10 @@ export class JsdocBuilder {
       await this.buildJsdocHeader(node.getFullText());
       this.buildJsdocModifiers(node.modifiers);
       if (node.kind === SyntaxKind.GetAccessor && !pairedAccessor) {
-        this.buildJsdocLine('readonly');
+        this.buildJsdocLine({tag: 'readonly'});
       }
       if (this.includeTypes) {
-        this.buildJsdocLine('type', this.retrieveType(node));
+        this.buildJsdocLine({tag: 'type', value: this.retrieveType(node)});
       }
     }
     this.buildCustomTags();
@@ -168,7 +213,7 @@ export class JsdocBuilder {
   public async getEnumDeclarationJsdoc(node: EnumDeclaration): Promise<SnippetString> {
     await this.buildJsdocHeader(node.getFullText());
     this.buildJsdocModifiers(node.modifiers);
-    this.buildJsdocLine('enum', this.includeTypes ? 'number' : '');
+    this.buildJsdocLine({tag: 'enum', value: this.includeTypes ? 'number' : ''});
     this.buildCustomTags();
     this.buildJsdocEnd();
     return this.jsdoc;
@@ -211,7 +256,7 @@ export class JsdocBuilder {
     this.buildDate();
     this.buildAuthor();
     this.buildJsdocLine();
-    this.buildJsdocLine('constructor');
+    this.buildJsdocLine({tag: 'constructor'});
     this.buildJsdocModifiers(node.modifiers);
     this.buildJsdocParameters(node.parameters);
     this.buildCustomTags();
@@ -231,7 +276,7 @@ export class JsdocBuilder {
     await this.buildJsdocHeader(node.getFullText());
     this.buildJsdocModifiers(node.modifiers);
     if (getConfig('includeTypes', true)) {
-      this.buildJsdocLine('typedef', node.name.getText());
+      this.buildJsdocLine({tag: 'typedef', value: node.name.getText()});
     }
     this.buildTypeParameters(node.typeParameters);
     this.buildCustomTags();
@@ -251,34 +296,34 @@ export class JsdocBuilder {
         switch (modifier.kind) {
           case SyntaxKind.ExportKeyword:
             if (getConfig('includeExport', true)) {
-              this.buildJsdocLine('export');
+              this.buildJsdocLine({tag: 'export'});
             }
             break;
           case SyntaxKind.PrivateKeyword:
-            this.buildJsdocLine('private');
+            this.buildJsdocLine({tag: 'private'});
             break;
           case SyntaxKind.ProtectedKeyword:
-            this.buildJsdocLine('protected');
+            this.buildJsdocLine({tag: 'protected'});
             break;
           case SyntaxKind.PublicKeyword:
-            this.buildJsdocLine('public');
+            this.buildJsdocLine({tag: 'public'});
             break;
           case SyntaxKind.StaticKeyword:
-            this.buildJsdocLine('static');
+            this.buildJsdocLine({tag: 'static'});
             break;
           case SyntaxKind.AbstractKeyword:
-            this.buildJsdocLine('abstract');
+            this.buildJsdocLine({tag: 'abstract'});
             break;
           case SyntaxKind.AsyncKeyword:
             if (getConfig('includeAsync', true)) {
-              this.buildJsdocLine('async');
+              this.buildJsdocLine({tag: 'async'});
             }
             break;
           case SyntaxKind.ReadonlyKeyword:
-            this.buildJsdocLine('readonly');
+            this.buildJsdocLine({tag: 'readonly'});
             break;
           case SyntaxKind.OverrideKeyword:
-            this.buildJsdocLine('override');
+            this.buildJsdocLine({tag: 'override'});
             break;
           default: break;
         }
@@ -374,7 +419,7 @@ export class JsdocBuilder {
       if (this.checkParenthesisUse(returnType)) {
         returnType = `(${returnType})`;
       }
-      this.buildJsdocLine('returns', this.includeTypes ? returnType : '');
+      this.buildJsdocLine({tag: 'returns', value: this.includeTypes ? returnType : ''});
     }
   }
 
@@ -433,7 +478,7 @@ export class JsdocBuilder {
         this.jsdoc.appendPlaceholder(author);
         this.jsdoc.appendText('\n');
       } else {
-        this.buildJsdocLine('author', author, '');
+        this.buildJsdocLine({tag: 'author', value: author, wrapper: '', align: false});
       }
     }
   }
@@ -446,11 +491,11 @@ export class JsdocBuilder {
   private buildDate() {
     if (getConfig('includeDate', false)) {
       const date = new Date();
-      let tagValue = date.toLocaleDateString();
+      let value = date.toLocaleDateString();
       if (getConfig('includeTime', true)) {
-        tagValue += ` - ${date.toLocaleTimeString()}`;
+        value += ` - ${date.toLocaleTimeString()}`;
       }
-      this.buildJsdocLine('date', tagValue, '');
+      this.buildJsdocLine({tag: 'date', value, wrapper: '', align: false});
     }
   }
 
@@ -463,9 +508,7 @@ export class JsdocBuilder {
     const customTags = getConfig('customTags', []);
     for (const customTag of customTags) {
       const {tag, placeholder = ''} = customTag;
-      if (tag) {
-        this.buildJsdocLine(`${tag}`, `${placeholder}`, '');
-      }
+      this.buildJsdocLine({tag, value: placeholder, wrapper: ''});
     }
   }
 
@@ -487,32 +530,36 @@ export class JsdocBuilder {
   /**
    * Builds multiple lines for a JSDoc.
    * When using all the default values, an empty JSDoc line is built.
-   * It is possible to create several empty JSDoc lines by setting tagValues as an array with several empty strings.
-   * The same tag and wrapper will be used for all tagValues in separate lines.
-   * tagValues and extraValues are used in order as found in the array.
+   * It is possible to create several empty JSDoc lines by setting values as an array with several empty strings.
+   * The same `tag` and `wrapper` will be used for all values in separate lines.
+   * `values` and `names` are used in order as found in the array.
    *
    * @private
    * @param {string} [tag=''] the JSDoc tag to insert.
-   * @param {string[]} [tagValues=['']] the JSDoc tag values to insert.
-   * @param {string} [wrapper='{}'] a string used to wrap the tagValue. Should be of even elements and symmetrical.
-   * @param {string[]} [extraValues=[]] extra values for each tag line.
+   * @param {string[]} [values=['']] the JSDoc tag values to insert.
+   * @param {string} [wrapper='{}'] a string used to wrap the tag value. Should be of even elements and symmetrical.
+   * @param {string[]} [names=[]] name values for each tag line.
+   * @param {string[]} [descriptions=[]] description values for each tag line.
    */
-  private buildJsdocLines(tag: string = '', tagValues: string[] = [''], wrapper: Wrapper = '{}', extraValues: string[] = []) {
-    tagValues.forEach((tagValue, index) => this.buildJsdocLine(tag, tagValue, wrapper, extraValues[index] ? extraValues[index] : ''));
+  private buildJsdocLines(tag: string = '', values: string[] = [''], wrapper: Wrapper = '{}', names: string[] = [], descriptions: string[] = []) {
+    values.forEach((value, index) => this.buildJsdocLine({tag, value, wrapper, name: names[index], description: descriptions[index]}));
   }
 
   /**
    * Builds a single line for a JSDoc.
    * When using all the default values, an empty JSDoc line is built.
-   * When setting wrapper to '', the tagValue is not wrapped.
+   * When setting wrapper to '', the value is not wrapped.
    *
    * @private
-   * @param {string} [tag=''] the JSDoc tag to insert.
-   * @param {string} [tagValue=''] the JSDoc tag value to insert.
-   * @param {string} [wrapper='{}'] a string used to wrap the tagValue. Should be of even elements and symmetrical.
-   * @param {string} [extraValue=''] an extra value to add to the line.
+   * @param {JSDocLine} [line={}] data for the JSDoc line.
+   * @param {string} [line.tag=''] the JSDoc tag to insert.
+   * @param {string} [line.value=''] the JSDoc tag value to insert.
+   * @param {string} [line.wrapper='{}'] a string used to wrap the value. Should be of even elements and symmetrical.
+   * @param {string} [line.name=''] an extra value to add to the line.
+   * @param {string} [line.description=''] description value to add to the line.
+   * @param {boolean} [line.align=true] whether to align `tag`, `value`, `name`, and `description`.
    */
-  private buildJsdocLine(tag: string = '', tagValue: string = '', wrapper: Wrapper = '{}', extraValue: string | null = '') {
+  private buildJsdocLine({tag = '', value = '', wrapper = '{}', name = '', description = '', align = true}: JSDocLine = {}) {
     let open = '', close = '', line = '';
     if (wrapper) {
       const middle = wrapper.length / 2;
@@ -521,15 +568,18 @@ export class JsdocBuilder {
     }
     if (tag) {
       line += ` @${tag}`;
-      if (tagValue) {
-        line += ` ${open}${tagValue}${close}`;
+      if (value) {
+        line += ` ${this.repeat(+align && getConfig('tagValueColumnStart', 0) - line.length)}${open}${value}${close}`;
       }
-      if (extraValue) {
-        line += ` ${extraValue}`;
+      if (name) {
+        line += ` ${this.repeat(+align && getConfig('tagNameColumnStart', 0) - line.length)}${name}`;
+      }
+      if (description) {
+        line += ` ${this.repeat(+align && getConfig('tagDescColumnStart', 0) - line.length)}${description}`;
       }
     }
     this.jsdoc.appendText(` *${line}\n`);
-    if (tagValue && wrapper === '{}') {
+    if (value && wrapper === '{}') {
       // Remove '\' that comes from .appendText() escaping '}'.
       const backslashIndex = this.jsdoc.value.indexOf('\\');
       this.jsdoc.value = this.jsdoc.value.substring(0, backslashIndex) + this.jsdoc.value.substring(backslashIndex + 1);
@@ -653,5 +703,28 @@ export class JsdocBuilder {
       kind === SyntaxKind.FunctionExpression ||
       kind === SyntaxKind.FunctionDeclaration
     );
+  }
+
+  /**
+   * Repeats the given pattern for the given times.
+   *
+   * @private
+   * @param {number} times
+   * @param {string} [pattern=' ']
+   * @returns {string}
+   */
+  private repeat(times: number, pattern = ' ') {
+    if (times >= 1) {
+      let count = times, sequence = pattern, result = '';
+      while (count > 1) {
+        if (count & 1) {
+          result += sequence;
+        }
+        count >>= 1;
+        sequence += sequence;
+      }
+      return result + sequence;
+    }
+    return '';
   }
 }

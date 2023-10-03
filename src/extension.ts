@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+// eslint-disable-next-line no-redeclare
 import {CompletionItem, TextDocument, Position, CancellationToken, ExtensionContext, Range, CompletionItemKind, Uri} from 'vscode';
 
 import {JsdocGenerator} from './JsdocGenerator';
@@ -49,9 +50,9 @@ interface CustomTag {
   /**
    * Tag value placeholder.
    *
-   * @type {string}
+   * @type {?string}
    */
-  placeholder: string;
+  placeholder?: string;
 }
 
 /**
@@ -127,6 +128,24 @@ interface Configuration {
    * @type {CustomTag[]}
    */
   customTags: CustomTag[];
+  /**
+   * Starting point of the column containing the tag value.
+   *
+   * @type {number}
+   */
+  tagValueColumnStart: number;
+  /**
+   * Starting point of the column containing the tag name value.
+   *
+   * @type {number}
+   */
+  tagNameColumnStart: number;
+  /**
+   * Starting point of the column containing the tag description.
+   *
+   * @type {number}
+   */
+  tagDescColumnStart: number;
   /**
    * Generative AI API key.
    *
