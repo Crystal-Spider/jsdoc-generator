@@ -7,20 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Nothing new
+- WIP: Integrating ChatGPT (maybe) and Bard to automatically generate JSDoc descriptions. Note that ownership of an API key is required to make it work.
 
-## [2.0.0] - 2023/0x/xx
+## [2.0.0] - 2023/10/xx
 
 ### Added
 
-- [#6](https://github.com/Nyphet/jsdoc-generator/issues/6) Vue.js files support (`.vue`).
-- [#9](https://github.com/Nyphet/jsdoc-generator/issues/9) Implementation for `generateJsdocFiles` and renamed it into `generateJsdocWorkspace`.
-- [#10](https://github.com/Nyphet/jsdoc-generator/issues/10) ChatGPT integration to automatically generate JSDoc descriptions.
-- New contribution `generateJsdocFolder` to generate JSDocs for all files in a folder, available with the contextual menu in the Explorer view.
+- Implemented [#16](https://github.com/Nyphet/jsdoc-generator/issues/16), added alignment options.
+- Finally implemented the command to generate JSDoc for all suitable files in the current workspace (recursive).
+- Added command in folder contextual menu to generate JSDoc for all TS and JS files in the folder (recursive).
+- Added command in file contextual menu to generate JSDoc for that file.
+- Added progress loader to keep track of the generating JSDocs or interrupt the generation.
 
 ### Fixed
 
-- [#8](https://github.com/Nyphet/jsdoc-generator/issues/8) Type parameters documentation.
+- Fixed [#8](https://github.com/Nyphet/jsdoc-generator/issues/8), corrected and improved template tags.
+- Fixed [#12](https://github.com/Nyphet/jsdoc-generator/issues/12), prevent adding `@typedef` when `includeTypes` is false.
+- Fixed [#17](https://github.com/Nyphet/jsdoc-generator/issues/17), JSDoc generation for functions that deconstruct parameters.
 
 ## [1.3.0] - 2023/07/21
 

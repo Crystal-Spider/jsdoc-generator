@@ -740,7 +740,7 @@ export class JsdocBuilder {
    * @param {string} [pattern=' ']
    * @returns {string}
    */
-  private repeat(times: number, pattern = ' ') {
+  private repeat(times: number, pattern = ' '): string {
     if (times >= 1) {
       let count = times, sequence = pattern, result = '';
       while (count > 1) {
