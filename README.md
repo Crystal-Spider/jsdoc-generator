@@ -11,7 +11,7 @@ Generates specific JSDoc for any supported TypeScript/JavaScript node.
 It can be generated for a single node by explicitly calling the command `Generate JSDoc` or by using auto-completion:  
 ![Generate JSDoc (single node) demo](demos/jsdoc-generator.generateJsdoc.gif)
 
-Can also be generated for all supported TypeScript nodes in a single file that do not already have a JSDoc by calling the command `Generate JSDoc for the current file`:  
+Can also be generated for all supported TypeScript nodes in a single file that do not already have a JSDoc by calling the command `Generate JSDoc for the current file` either via the command menu or by right clicking in the explorer view:  
 ![Generate JSDoc (single file) demo](demos/jsdoc-generator.generateJsdocFile.gif)
 
 It's possible to generate JSDocs for all supported TypeScript nodes in the whole workspace by calling the command `Generate JSDoc for the workspace`:  
@@ -62,32 +62,113 @@ This extension contributes the following settings:
   Disable to exclude it from the generated JSDoc.  
   Default: `true`
 - `jsdoc-generator.customTags`:  
-  When configured, will add custom tags by default.  
-  Example:
+  When configured, will add the specified custom tags.  
+  For example this:
   ```json
   "jsdoc-generator.customTags": [
     {
       "tag": "example",
-      "placeholder": "Example placeholder"
+      "placeholder": "Example placeholder."
     },
   ]
   ```
+  Will result in:
+  ```typescript
+  /**
+   * Description placeholder.
+   *
+   * @param {number} n
+   * @example Example placeholder.
+   * @returns {string}
+   */
+  function foo(n: number): string {
+    return `${n}`;
+  }
+  ```
+- `jsdoc-generator.tagValueColumnStart`:  
+  Starting point of the column containing the tag value (if any, e.g. type).  
+  0 to make it adaptive (default, no alignment), a positive number to fix the starting point.  
+  Note that if the tag previous values take over the specified starting point, the column will be shifted.  
+  It can be combined with the other `ColumnStart` settings.  
+  For example, a value of 10 results in:
+  ```typescript
+  /**
+   * AI generated function description.
+   * @author Crystal Spider
+   *
+   * @param    {number} num AI generated parameter description.
+   * @param    {boolean} bool AI generated parameter description.
+   * @returns  {string} AI generated return description.
+   */
+  function foo(num: number, bool: number): string {
+    return `${num}-${bool}`;
+  }
+  ```
+- `jsdoc-generator.tagNameColumnStart`:  
+  Starting point of the column containing the tag name value (if any, e.g. parameter name).  
+  0 to make it adaptive (default, no alignment), a positive number to fix the starting point.  
+  Note that if the tag previous values take over the specified starting point, the column will be shifted.  
+  It can be combined with the other `ColumnStart` settings.  
+  For example, a value of 20 results in:
+  ```typescript
+  /**
+   * AI generated function description.
+   * @author Crystal Spider
+   *
+   * @param {number}     num AI generated parameter description.
+   * @param {boolean}    bool AI generated parameter description.
+   * @returns {string} AI generated return description.
+   */
+  function foo(num: number, bool: number): string {
+    return `${num}-${bool}`;
+  }
+  ```
+- `jsdoc-generator.tagDescColumnStart`:  
+  Starting point of the column containing the tag description (if any, e.g. AI-generated).  
+  0 to make it adaptive (default, no alignment), a positive number to fix the starting point.  
+  Note that if the tag previous values take over the specified starting point, the column will be shifted.  
+  It can be combined with the other `ColumnStart` settings.  
+  For example, a value of 25 results in:
+  ```typescript
+  /**
+   * AI generated function description.
+   * @author Crystal Spider
+   *
+   * @param {number} num      AI generated parameter description.
+   * @param {boolean} bool    AI generated parameter description.
+   * @returns {string}        AI generated return description.
+   */
+  function foo(num: number, bool: number): string {
+    return `${num}-${bool}`;
+  }
+  ```
+- `jsdoc-generator.generativeApiKey`:  
+  Set your own API key for ChatGPT (see https://platform.openai.com/account/api-keys) or Bard (see https://developers.generativeai.google/products/palm).  
+  It's required only if you wish to use the automatic generation of descriptions.  
+  Note that jsdoc-generator.descriptionPlaceholder will take precedence.
+- `jsdoc-generator.generativeModel`:  
+  Generative AI model to use to generate JSDoc decriptions.  
+  Enable the model with an API key.  
+  Note that jsdoc-generator.descriptionPlaceholder will take precedence.
+- `jsdoc-generator.generativeLang`:  
+  Language of the automatic generated descriptions.  
+  Note that all automatic descriptions are generated in English, and then they are translated into the specified language using the same generative model.
 
 ---
 
 ## Commands
 
-- `Generate JSDoc`\
-  Generates JSDoc for the TypeScript/JavaScript node the caret is in or on.
+- `Generate JSDoc`  
+  Generates JSDoc for the TypeScript/JavaScript node the caret is in or on.  
   Available also for auto-completion by typing `/**` at the start of a line.
-- `Generate JSDoc for the current file`\
-  Generates JSDoc for the currently open file for all TypeScript/JavaScript nodes that do not have one.\
+- `Generate JSDoc for the current file`  
+  Generates JSDoc for the currently open file for all TypeScript/JavaScript nodes that do not have one.  
   Eventually choosing a keyboard shortcut is left to the user.
-- `Generate JSDoc for the workspace`\
-  Generates JSDoc for all TypeScript/JavaScript nodes that do not have one for each TypeScript/JavaScript file in the workspace.\
+- `Generate JSDoc for the workspace`  
+  Generates JSDoc for all TypeScript/JavaScript nodes that do not have one for each TypeScript/JavaScript file in the workspace.  
   Eventually choosing a keyboard shortcut is left to the user.
-- `Generate JSDoc in Folder`\
-  Generates JSDoc for all TypeScript/JavaScript nodes that do not have one for each TypeScript/JavaScript file in the selected folder.\
+- `Generate JSDoc in Folder`  
+  Generates JSDoc for all TypeScript/JavaScript nodes that do not have one for each TypeScript/JavaScript file in the selected folder.  
   This command is available in the contextual menu that appears when right-clicking on a folder in the Explorer view.
 
 ---
@@ -103,7 +184,14 @@ Some non [everyday types](https://www.typescriptlang.org/docs/handbook/2/everyda
 
 ### [2.0.0](https://github.com/Nyphet/jsdoc-generator/releases/tag/v2.0.0)
 
-Fixed an issue with type parameters, added support for `.vue` files, added new features `Generate JSDoc for the workspace` and `Generate JSDoc in Folder`, integrated ChatGPT to automatically generate descriptions.
+- Fixed [#8](https://github.com/Nyphet/jsdoc-generator/issues/8), corrected and improved template tags.
+- Fixed [#12](https://github.com/Nyphet/jsdoc-generator/issues/12), prevent adding `@typedef` when `includeTypes` is false.
+- Fixed [#17](https://github.com/Nyphet/jsdoc-generator/issues/17), JSDoc generation for functions that deconstruct parameters.
+- Implemented [#16](https://github.com/Nyphet/jsdoc-generator/issues/16), added alignment options.
+- Finally implemented the command to generate JSDoc for all suitable files in the current workspace (recursive).
+- Added command in folder contextual menu to generate JSDoc for all TS and JS files in the folder (recursive).
+- Added command in file contextual menu to generate JSDoc for that file.
+- Added progress loader to keep track of the generating JSDocs or interrupt the generation.
 
 ### [1.3.0](https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.3.0)
 

@@ -32,6 +32,20 @@ export class TextFile<T extends TextEditor | WorkspaceEdit> {
   }
 
   /**
+   * The workspace edit instance, `null` if none.
+   *
+   * @public
+   * @readonly
+   * @type {WorkspaceEdit | null}
+   */
+  public get workspaceEdit(): WorkspaceEdit | null {
+    if ('document' in this.instance) {
+      return null;
+    }
+    return this.instance;
+  }
+
+  /**
    * @constructor
    * @param {T} instance
    * @param {?Uri} [uri]
