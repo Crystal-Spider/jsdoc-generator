@@ -123,7 +123,7 @@ This extension contributes the following settings:
     return `${num}-${bool}`;
   }
   ```
-- `jsdoc-generator.tagDescColumnStart`:  
+- `jsdoc-generator.tagDescriptionColumnStart`:  
   Starting point of the column containing the tag description (if any, e.g. AI-generated).  
   0 to make it adaptive (default, no alignment), a positive number to fix the starting point.  
   Note that if the tag previous values take over the specified starting point, the column will be shifted.  
@@ -150,16 +150,16 @@ This extension contributes the following settings:
   Generative AI model to use to generate JSDoc decriptions.  
   Enable the model with an API key.  
   Note that jsdoc-generator.descriptionPlaceholder will take precedence.
-- `jsdoc-generator.generativeLang`:  
+- `jsdoc-generator.generativeLanguage`:  
   Language of the automatic generated descriptions.  
-  Note that all automatic descriptions are generated in English, and then they are translated into the specified language using the same generative model.
-- `jsdoc-generator.generateDescForTypeParameters`:  
+  Note that all queries are in English, but the generative model will reply in the specified language.
+- `jsdoc-generator.generateDescriptionForTypeParameters`:  
   When using AI generation, generate descriptions for type parameters (generics) too.  
   When enabled, makes JSDoc generation slower and use more API calls.
-- `jsdoc-generator.generateDescForParameters`:  
+- `jsdoc-generator.generateDescriptionForParameters`:  
   When using AI generation, generate descriptions for method parameters too.  
   When enabled, makes JSDoc generation slower and use more API calls.
-- `jsdoc-generator.generateDescForReturns`:  
+- `jsdoc-generator.generateDescriptionForReturns`:  
   When using AI generation, generate descriptions for method return values too.  
   When enabled, makes JSDoc generation slower and use more API calls.
 
@@ -197,6 +197,7 @@ Some non [everyday types](https://www.typescriptlang.org/docs/handbook/2/everyda
 - Fixed [#12](https://github.com/Nyphet/jsdoc-generator/issues/12), prevent adding `@typedef` when `includeTypes` is false.
 - Fixed [#17](https://github.com/Nyphet/jsdoc-generator/issues/17), JSDoc generation for functions that deconstruct parameters.
 - Implemented [#16](https://github.com/Nyphet/jsdoc-generator/issues/16), added alignment options.
+- Implemented [#10](https://github.com/Nyphet/jsdoc-generator/issues/10), integration of ChatGPT and Bard to automatically generate descriptions.
 - Finally implemented the command to generate JSDoc for all suitable files in the current workspace (recursive).
 - Added command in folder contextual menu to generate JSDoc for all TS and JS files in the folder (recursive).
 - Added command in file contextual menu to generate JSDoc for that file.

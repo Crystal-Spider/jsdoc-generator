@@ -117,7 +117,6 @@ export class JsdocBuilder {
    *
    * @public
    * @async
-   * @param {Node} node
    * @returns {Promise<SnippetString>}
    */
   public async emptyJsdoc(): Promise<SnippetString> {
@@ -152,7 +151,7 @@ export class JsdocBuilder {
     } else {
       this.buildJsdocLine(type);
     }
-    await this.buildTypeParameters(node.typeParameters);
+    await this.buildTypeParameters(node.getFullText().trim(), type, node.typeParameters);
     this.buildJsdocHeritage(node.heritageClauses);
     this.buildCustomTags();
     this.buildJsdocEnd();
@@ -244,8 +243,8 @@ export class JsdocBuilder {
   public async getMethodDeclarationJsdoc(node: MethodDeclaration): Promise<SnippetString> {
     await this.buildJsdocHeader(node.getFullText(), 'function');
     this.buildJsdocModifiers(node.modifiers);
-    await this.buildTypeParameters(node.typeParameters);
-    await this.buildJsdocParameters(node.parameters);
+    await this.buildTypeParameters(node.getFullText().trim(), 'function', node.typeParameters);
+    await this.buildJsdocParameters(node.getFullText().trim(), node.parameters);
     await this.buildJsdocReturn(node);
     this.buildCustomTags();
     this.buildJsdocEnd();
@@ -272,10 +271,7 @@ export class JsdocBuilder {
     this.buildJsdocLine();
     this.buildJsdocLine('constructor');
     this.buildJsdocModifiers(node.modifiers);
-    // Start a chat by givin the method body
-
-    // For each parameter, ask for a textual description
-    await this.buildJsdocParameters(node.parameters);
+    await this.buildJsdocParameters(node.getFullText().trim(), node.parameters);
     this.buildCustomTags();
     this.buildJsdocEnd();
     return this.jsdoc;
@@ -295,7 +291,7 @@ export class JsdocBuilder {
     if (getConfig('includeTypes', true)) {
       this.buildJsdocLine('typedef', {value: node.name.getText()});
     }
-    await this.buildTypeParameters(node.typeParameters);
+    await this.buildTypeParameters(node.getFullText().trim(), 'type', node.typeParameters);
     this.buildCustomTags();
     this.buildJsdocEnd();
     return this.jsdoc;
@@ -352,9 +348,11 @@ export class JsdocBuilder {
    * Builds a new JSDoc line for each type parameter.
    *
    * @private
+   * @param nodeText
+   * @param type
    * @param {?NodeArray<TypeParameterDeclaration>} [typeParameters]
    */
-  private async buildTypeParameters(typeParameters?: NodeArray<TypeParameterDeclaration>) {
+  private async buildTypeParameters(nodeText: string, type: NodeType, typeParameters?: NodeArray<TypeParameterDeclaration>) {
     if (typeParameters) {
       const mappedTypeParameters = typeParameters.map(typeParameter => {
         let name = typeParameter.name.getText();
@@ -367,7 +365,7 @@ export class JsdocBuilder {
           name
         };
       });
-      this.buildJsdocLines('template', mappedTypeParameters.map(param => param.type), '{}', mappedTypeParameters.map(param => param.name));
+      this.buildJsdocLines('template', mappedTypeParameters.map(param => param.type), '{}', mappedTypeParameters.map(param => param.name), await GenerativeAPI.describeParameters(nodeText.trim(), type, true, mappedTypeParameters));
     }
   }
 
@@ -397,9 +395,10 @@ export class JsdocBuilder {
    * Builds a new JSDoc line for each parameter.
    *
    * @private
+   * @param nodeText
    * @param {NodeArray<ParameterDeclaration>} parameters
    */
-  private async buildJsdocParameters(parameters: NodeArray<ParameterDeclaration>) {
+  private async buildJsdocParameters(nodeText: string, parameters: NodeArray<ParameterDeclaration>) {
     let bindingPatterns = 0;
     const mappedParameters: SummarizedParameter[] = parameters.map(parameter => {
       const bindingElements: SummarizedParameter[] = [];
@@ -422,7 +421,7 @@ export class JsdocBuilder {
       }
       return bindingElements.length ? [{type, name}, ...bindingElements] : {type, name};
     }).flat();
-    this.buildJsdocLines('param', mappedParameters.map(param => param.type), '{}', mappedParameters.map(param => param.name));
+    this.buildJsdocLines('param', mappedParameters.map(param => param.type), '{}', mappedParameters.map(param => param.name), await GenerativeAPI.describeParameters(nodeText.trim(), 'function', false, mappedParameters));
   }
 
   /**
@@ -446,7 +445,7 @@ export class JsdocBuilder {
       if (this.checkParenthesisUse(returnType)) {
         returnType = `(${returnType})`;
       }
-      this.buildJsdocLine('returns', {value: this.includeTypes ? returnType : ''});
+      this.buildJsdocLine('returns', {value: this.includeTypes ? returnType : '', description: await GenerativeAPI.describeReturn(node.getFullText().trim())});
     }
   }
 
@@ -483,7 +482,7 @@ export class JsdocBuilder {
     } else if (placeholder) {
       this.jsdoc.appendPlaceholder(placeholder);
     } else if (nodeText && type && GenerativeAPI.tryInit()) {
-      const autoDescription = await GenerativeAPI.chat(`Generate a JSDoc for this TypeScript ${type}:\n${nodeText.trim()}`, type);
+      const autoDescription = await GenerativeAPI.describeSnippet(nodeText.trim(), type);
       if (autoDescription) {
         this.jsdoc.appendText(autoDescription);
       }
@@ -601,7 +600,7 @@ export class JsdocBuilder {
         line += ` ${this.repeat(+align && getConfig('tagNameColumnStart', 0) - line.length)}${name}`;
       }
       if (description) {
-        line += ` ${this.repeat(+align && getConfig('tagDescColumnStart', 0) - line.length)}${description}`;
+        line += ` ${this.repeat(+align && getConfig('tagDescriptionColumnStart', 0) - line.length)}${description}`;
       }
     }
     this.jsdoc.appendText(` *${line}\n`);

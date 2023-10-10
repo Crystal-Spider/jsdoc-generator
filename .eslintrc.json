@@ -255,8 +255,8 @@
 		"max-len": [
 			"warn",
 			{
-				"code": 200,
-				"comments": 200,
+				"code": 255,
+				"comments": 255,
 				"tabWidth": 2,
         "ignorePattern": "^import"
 			}

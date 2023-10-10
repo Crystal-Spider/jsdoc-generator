@@ -134,7 +134,7 @@
           "default": 0,
           "description": "Starting point of the column containing the tag name value (if any, e.g. parameter name).\n0 to make it adaptive (default, no alignment), a positive number to fix the starting point.\nNote that if the tag previous values take over the specified starting point, the column will be shifted."
         },
-        "jsdoc-generator.tagDescColumnStart": {
+        "jsdoc-generator.tagDescriptionColumnStart": {
           "type": "integer",
           "default": 0,
           "description": "Starting point of the column containing the tag description (if any, e.g. AI-generated).\n0 to make it adaptive (default, no alignment), a positive number to fix the starting point.\nNote that if the tag previous values take over the specified starting point, the column will be shifted."
@@ -154,7 +154,7 @@
           "default": "bard",
           "description": "Generative AI model to use to generate JSDoc decriptions.\nEnable the model with an API key.\nNote that jsdoc-generator.descriptionPlaceholder will take precedence."
         },
-        "jsdoc-generator.generativeLang": {
+        "jsdoc-generator.generativeLanguage": {
           "type": "string",
           "enum": [
             "English",
@@ -175,19 +175,19 @@
             "Greek"
           ],
           "default": "English",
-          "description": "Language of the automatic generated descriptions.\nNote that all automatic descriptions are generated in English, and then they are translated into the specified language using the same generative model."
+          "description": "Language of the automatic generated descriptions.\nNote that all queries are in English, but the generative model will reply in the specified language."
         },
-        "jsdoc-generator.generateDescForTypeParameters": {
+        "jsdoc-generator.generateDescriptionForTypeParameters": {
           "type": "boolean",
           "default": false,
           "description": "When using AI generation, generate descriptions for type parameters (generics) too.\nWhen enabled, makes JSDoc generation slower and use more API calls."
         },
-        "jsdoc-generator.generateDescForParameters": {
+        "jsdoc-generator.generateDescriptionForParameters": {
           "type": "boolean",
           "default": false,
           "description": "When using AI generation, generate descriptions for method parameters too.\nWhen enabled, makes JSDoc generation slower and use more API calls."
         },
-        "jsdoc-generator.generateDescForReturns": {
+        "jsdoc-generator.generateDescriptionForReturns": {
           "type": "boolean",
           "default": false,
           "description": "When using AI generation, generate descriptions for method return values too.\nWhen enabled, makes JSDoc generation slower and use more API calls."

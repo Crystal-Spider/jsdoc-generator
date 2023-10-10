@@ -144,7 +144,7 @@ interface Configuration {
    *
    * @type {number}
    */
-  tagDescColumnStart: number;
+  tagDescriptionColumnStart: number;
   /**
    * Generative AI API key.
    *
@@ -162,28 +162,28 @@ interface Configuration {
    *
    * @type {Language}
    */
-  generativeLang: Language;
+  generativeLanguage: Language;
   /**
    * When using AI generation, generate descriptions for type parameters (generics) too.  
    * When enabled, makes JSDoc generation slower and use more API calls.
    *
    * @type {boolean}
    */
-  generateDescForTypeParameters: boolean;
+  generateDescriptionForTypeParameters: boolean;
   /**
    * When using AI generation, generate descriptions for method parameters too.  
    * When enabled, makes JSDoc generation slower and use more API calls.
    *
    * @type {boolean}
    */
-  generateDescForParameters: boolean;
+  generateDescriptionForParameters: boolean;
   /**
    * When using AI generation, generate descriptions for method return values too.  
    * When enabled, makes JSDoc generation slower and use more API calls.
    *
    * @type {boolean}
    */
-  generateDescForReturns: boolean;
+  generateDescriptionForReturns: boolean;
 }
 
 /**

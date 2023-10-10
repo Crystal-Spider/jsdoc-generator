@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Implemented [#16](https://github.com/Nyphet/jsdoc-generator/issues/16), added alignment options.
+- Implemented [#10](https://github.com/Nyphet/jsdoc-generator/issues/10), integration of ChatGPT and Bard to automatically generate descriptions.
 - Finally implemented the command to generate JSDoc for all suitable files in the current workspace (recursive).
 - Added command in folder contextual menu to generate JSDoc for all TS and JS files in the folder (recursive).
 - Added command in file contextual menu to generate JSDoc for that file.
