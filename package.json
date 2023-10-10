@@ -176,6 +176,21 @@
           ],
           "default": "English",
           "description": "Language of the automatic generated descriptions.\nNote that all automatic descriptions are generated in English, and then they are translated into the specified language using the same generative model."
+        },
+        "jsdoc-generator.generateDescForTypeParameters": {
+          "type": "boolean",
+          "default": false,
+          "description": "When using AI generation, generate descriptions for type parameters (generics) too.\nWhen enabled, makes JSDoc generation slower and use more API calls."
+        },
+        "jsdoc-generator.generateDescForParameters": {
+          "type": "boolean",
+          "default": false,
+          "description": "When using AI generation, generate descriptions for method parameters too.\nWhen enabled, makes JSDoc generation slower and use more API calls."
+        },
+        "jsdoc-generator.generateDescForReturns": {
+          "type": "boolean",
+          "default": false,
+          "description": "When using AI generation, generate descriptions for method return values too.\nWhen enabled, makes JSDoc generation slower and use more API calls."
         }
       }
     }

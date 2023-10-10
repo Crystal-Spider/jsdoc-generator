@@ -154,15 +154,36 @@ interface Configuration {
   /**
    * Generative AI model.
    *
-   * @type {('' | | 'gpt-3.5-turbo' | 'gpt-4' | 'bard')}
+   * @type {('gpt-3.5-turbo' | 'gpt-4' | 'bard')}
    */
-  generativeModel: '' | 'gpt-3.5-turbo' | 'gpt-4' | 'bard';
+  generativeModel: 'gpt-3.5-turbo' | 'gpt-4' | 'bard';
   /**
    * Language of the generated descriptions.
    *
    * @type {Language}
    */
   generativeLang: Language;
+  /**
+   * When using AI generation, generate descriptions for type parameters (generics) too.  
+   * When enabled, makes JSDoc generation slower and use more API calls.
+   *
+   * @type {boolean}
+   */
+  generateDescForTypeParameters: boolean;
+  /**
+   * When using AI generation, generate descriptions for method parameters too.  
+   * When enabled, makes JSDoc generation slower and use more API calls.
+   *
+   * @type {boolean}
+   */
+  generateDescForParameters: boolean;
+  /**
+   * When using AI generation, generate descriptions for method return values too.  
+   * When enabled, makes JSDoc generation slower and use more API calls.
+   *
+   * @type {boolean}
+   */
+  generateDescForReturns: boolean;
 }
 
 /**

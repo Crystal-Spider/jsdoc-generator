@@ -328,7 +328,7 @@ export class JsdocGenerator {
         return await jsdocBuilder.getPropertyDeclarationJsdoc((node as VariableDeclarationList).declarations[0]);
       case SyntaxKind.EnumMember:
       default:
-        return await jsdocBuilder.emptyJsdoc(node);
+        return await jsdocBuilder.emptyJsdoc();
     }
   }
 

@@ -153,6 +153,15 @@ This extension contributes the following settings:
 - `jsdoc-generator.generativeLang`:  
   Language of the automatic generated descriptions.  
   Note that all automatic descriptions are generated in English, and then they are translated into the specified language using the same generative model.
+- `jsdoc-generator.generateDescForTypeParameters`:  
+  When using AI generation, generate descriptions for type parameters (generics) too.  
+  When enabled, makes JSDoc generation slower and use more API calls.
+- `jsdoc-generator.generateDescForParameters`:  
+  When using AI generation, generate descriptions for method parameters too.  
+  When enabled, makes JSDoc generation slower and use more API calls.
+- `jsdoc-generator.generateDescForReturns`:  
+  When using AI generation, generate descriptions for method return values too.  
+  When enabled, makes JSDoc generation slower and use more API calls.
 
 ---
 

@@ -1,14 +1,17 @@
+/* eslint-disable jsdoc/require-jsdoc */
 import {OpenAI} from 'openai';
 import PaLM from 'palm-api';
 import {Example} from 'palm-api/out/google-ai-types';
 
 import {getConfig} from './extension';
 
+type NodeType = 'function' | 'class' | 'interface' | 'type' | 'enum' | 'property';
+
 abstract class GenerativeModel<T> {
   protected api?: T;
 
   protected get model() {
-    return getConfig('generativeModel', '');
+    return getConfig('generativeModel', 'bard');
   }
 
   protected get apiKey() {
@@ -23,45 +26,106 @@ abstract class GenerativeModel<T> {
 
   protected abstract init(): T;
 
-  public abstract chat(content: string, examples?: Example[]): Promise<string | null | undefined>;
+  public abstract chat(content: string, type: NodeType, examples?: Example[]): Promise<string | undefined>;
+
+  public abstract translate(content: string): Promise<string | undefined>;
 }
 
 class GenerativeOpenAI extends GenerativeModel<OpenAI> {
-  protected init(): OpenAI {
+  protected override init(): OpenAI {
     return new OpenAI({apiKey: this.apiKey});
   }
 
-  public async chat(content: string): Promise<string | null | undefined> {
+  public override async chat(content: string, type: NodeType): Promise<string | undefined> {
+    if (this.api) {
+      const args = (await this.api.chat.completions.create({
+        model: this.model,
+        functions: [
+          {
+            name: 'generate_jsdoc',
+            description: `Given the ${type} description, generates its JSDoc`,
+            parameters: {
+              type: 'object',
+              properties: {
+                description: {
+                  type: 'string',
+                  description: `The ${type} description`
+                }
+              },
+              required: ['description']
+            }
+          }
+        ],
+        // eslint-disable-next-line @typescript-eslint/naming-convention, camelcase
+        function_call: {
+          name: 'generate_jsdoc'
+        },
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a TypeScript description generator'
+          }, {
+            role: 'user',
+            content
+          }
+        ]
+      })).choices[0].message.function_call?.arguments;
+      if (args) {
+        try {
+          return JSON.parse(args).description;
+        } catch (error) {
+          // Return undefined below.
+        }
+      }
+    }
+    return undefined;
+  }
+
+  public override async translate(content: string): Promise<string | undefined> {
     if (this.api) {
       return (await this.api.chat.completions.create({
         model: this.model,
         messages: [
           {
+            role: 'system',
+            content: 'You are a helpful translator assistant.'
+          }, {
             role: 'user',
             content
           }
         ]
-      })).choices[0].message.content;
+      })).choices[0].message.content ?? '';
     }
-    return null;
+    return undefined;
   }
 }
 
 class GenerativePaLM extends GenerativeModel<PaLM> {
-  protected init(): PaLM {
+  protected override init(): PaLM {
     return new PaLM(this.apiKey);
   }
 
-  public async chat(content: string, examples?: Example[]): Promise<string | null | undefined> {
+  public override async chat(content: string, type: NodeType, examples?: Example[]): Promise<string | undefined> {
     if (this.api) {
-      this.api.ask(content, {
+      return this.api.ask(content, {
         context: 'context',
         examples: examples || [],
         // Or PaLM.FORMATS.JSON
         format: PaLM.FORMATS.MD
       });
     }
-    return null;
+    return undefined;
+  }
+
+  public override async translate(content: string): Promise<string | undefined> {
+    if (this.api) {
+      return this.api.ask(content, {
+        context: 'context',
+        // Or PaLM.FORMATS.JSON
+        format: PaLM.FORMATS.MD
+      });
+    }
+    return undefined;
   }
 
   public newChat() {
@@ -80,13 +144,29 @@ class GenerativePaLM extends GenerativeModel<PaLM> {
  * @class GenerativeAPI
  * @typedef {GenerativeAPI}
  */
-export class GenerativeAPI {
+class GenerativeAPI {
   private static generator?: GenerativeModel<OpenAI | PaLM>;
 
+  /**
+   * Selected model.
+   *
+   * @private
+   * @static
+   * @readonly
+   * @type {'gpt-3.5-turbo' | 'gpt-4' | 'bard'}
+   */
   private static get model() {
-    return getConfig('generativeModel', '');
+    return getConfig('generativeModel', 'bard');
   }
 
+  /**
+   * Selected language.
+   *
+   * @private
+   * @static
+   * @readonly
+   * @type {Language}
+   */
   private static get language() {
     return getConfig('generativeLang', 'English');
   }
@@ -109,14 +189,16 @@ export class GenerativeAPI {
     return !!GenerativeAPI.generator;
   }
 
-  public static async chat(content: string, examples?: Example[]) {
+  public static async chat(content: string, type: NodeType, examples?: Example[]) {
     if (GenerativeAPI.generator) {
-      const description = await GenerativeAPI.generator.chat(content, examples);
-      if (GenerativeAPI.language !== 'English') {
-        return await GenerativeAPI.generator.chat(`Translate the following text in ${GenerativeAPI.language}:\n${description}`);
+      const description = await GenerativeAPI.generator.chat(content, type, examples);
+      if (description && GenerativeAPI.language !== 'English') {
+        return await GenerativeAPI.generator.translate(`Translate the following text in ${GenerativeAPI.language}:\n${description}`);
       }
       return description;
     }
-    return null;
+    return undefined;
   }
 }
+
+export {NodeType, GenerativeAPI};
