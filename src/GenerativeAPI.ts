@@ -1,6 +1,5 @@
 import {OpenAI} from 'openai';
 import PaLM from 'palm-api';
-import {Example} from 'palm-api/out/google-ai-types';
 
 import {SummarizedParameter, getConfig} from './extension';
 
@@ -88,10 +87,9 @@ abstract class GenerativeModel<T> {
    * @abstract
    * @param {string} content
    * @param {NodeType} type
-   * @param {?Example[]} [examples]
    * @returns {Promise<string | undefined>}
    */
-  public abstract describeSnippet(content: string, type: NodeType, examples?: Example[]): Promise<string | undefined>;
+  public abstract describeSnippet(content: string, type: NodeType): Promise<string | undefined>;
 
   /**
    * Describes parameters or type parameters.
@@ -102,10 +100,9 @@ abstract class GenerativeModel<T> {
    * @param {NodeType} type
    * @param {boolean} generics
    * @param {SummarizedParameter[]} parameters
-   * @param {?Example[]} [examples]
    * @returns {Promise<string[] | undefined>} list of parameter descriptions, in the same order as the {@code parameters} parameter.
    */
-  public abstract describeParameters(content: string, type: NodeType, generics: boolean, parameters: SummarizedParameter[], examples?: Example[]): Promise<string[] | undefined>;
+  public abstract describeParameters(content: string, type: NodeType, generics: boolean, parameters: SummarizedParameter[]): Promise<string[] | undefined>;
 
   /**
    * Describes a function return value.
@@ -113,10 +110,9 @@ abstract class GenerativeModel<T> {
    * @public
    * @abstract
    * @param {string} content
-   * @param {?Example[]} [examples]
    * @returns {Promise<string | undefined>}
    */
-  public abstract describeReturn(content: string, examples?: Example[]): Promise<string | undefined>;
+  public abstract describeReturn(content: string): Promise<string | undefined>;
 }
 
 /**
@@ -129,6 +125,7 @@ abstract class GenerativeModel<T> {
 class GenerativeOpenAI extends GenerativeModel<OpenAI> {
   /**
    * @inheritdoc
+   * 
    * @override
    */
   protected override init(): OpenAI {
@@ -137,6 +134,7 @@ class GenerativeOpenAI extends GenerativeModel<OpenAI> {
 
   /**
    * @inheritdoc
+   * 
    * @override
    */
   public override async describeSnippet(content: string, type: NodeType): Promise<string | undefined> {
@@ -186,6 +184,7 @@ class GenerativeOpenAI extends GenerativeModel<OpenAI> {
 
   /**
    * @inheritdoc
+   * 
    * @override
    */
   public override async describeParameters(content: string, type: NodeType, generics: boolean, parameters: SummarizedParameter[]): Promise<string[] | undefined> {
@@ -237,6 +236,7 @@ class GenerativeOpenAI extends GenerativeModel<OpenAI> {
 
   /**
    * @inheritdoc
+   * 
    * @override
    */
   public override async describeReturn(content: string): Promise<string | undefined> {
@@ -294,32 +294,24 @@ class GenerativeOpenAI extends GenerativeModel<OpenAI> {
  */
 class GenerativePaLM extends GenerativeModel<PaLM> {
   /**
+   * @inheritdoc
    * 
-   *
-   * @protected
    * @override
-   * @returns {PaLM}
    */
   protected override init(): PaLM {
     return new PaLM(this.apiKey);
   }
 
   /**
+   * @inheritdoc
    * 
-   *
-   * @public
    * @override
-   * @async
-   * @param {string} content
-   * @param {NodeType} type
-   * @param {?Example[]} [examples]
-   * @returns {Promise<string | undefined>}
    */
-  public override async describeSnippet(content: string, type: NodeType, examples?: Example[]): Promise<string | undefined> {
+  public override async describeSnippet(content: string, type: NodeType): Promise<string | undefined> {
     if (this.api) {
       return this.api.ask(content, {
         context: 'context',
-        examples: examples || [],
+        examples: [],
         // Or PaLM.FORMATS.JSON
         format: PaLM.FORMATS.MD
       });
@@ -328,47 +320,21 @@ class GenerativePaLM extends GenerativeModel<PaLM> {
   }
 
   /**
+   * @inheritdoc
    * 
-   *
-   * @public
    * @override
-   * @async
-   * @param {string} content
-   * @param {NodeType} type
-   * @param {boolean} generics
-   * @param {SummarizedParameter[]} parameters
-   * @param {?(Example[] | undefined)} [examples]
-   * @returns {Promise<string[] | undefined>}
    */
-  public override async describeParameters(content: string, type: NodeType, generics: boolean, parameters: SummarizedParameter[], examples?: Example[] | undefined): Promise<string[] | undefined> {
+  public override async describeParameters(content: string, type: NodeType, generics: boolean, parameters: SummarizedParameter[] | undefined): Promise<string[] | undefined> {
     return undefined;
   }
 
   /**
+   * @inheritdoc
    * 
-   *
-   * @public
    * @override
-   * @async
-   * @param {string} content
-   * @param {?(Example[] | undefined)} [examples]
-   * @returns {Promise<string | undefined>}
    */
-  public override async describeReturn(content: string, examples?: Example[] | undefined): Promise<string | undefined> {
+  public override async describeReturn(content: string | undefined): Promise<string | undefined> {
     return undefined;
-  }
-
-  /**
-   * 
-   *
-   * @public
-   * @returns {*}
-   */
-  public newChat() {
-    if (this.api) {
-      return this.api.createChat({examples: []});
-    }
-    return null;
   }
 }
 
@@ -410,7 +376,7 @@ class GenerativeAPI {
    * @returns {boolean} whether the {@link GenerativeModel} instance is loaded.
    */
   public static tryInit(): boolean {
-    if (!GenerativeAPI.generator && getConfig('generativeApiKey', '')) {
+    if (getConfig('generativeApiKey', '')) {
       if (this.model === 'bard') {
         GenerativeAPI.generator = new GenerativePaLM();
       } else {
@@ -428,11 +394,10 @@ class GenerativeAPI {
    * @async
    * @param {string} content
    * @param {NodeType} type
-   * @param {?Example[]} [examples]
    * @returns {Promise<string | undefined>}
    */
-  public static async describeSnippet(content: string, type: NodeType, examples?: Example[]): Promise<string | undefined> {
-    return (GenerativeAPI.canGenerate() && await GenerativeAPI.generator?.describeSnippet(content.trim(), type, examples))?.replace(/\n+/g, '\n * ');
+  public static async describeSnippet(content: string, type: NodeType): Promise<string | undefined> {
+    return (GenerativeAPI.canGenerate() && await GenerativeAPI.generator?.describeSnippet(content.trim(), type))?.replace(/\n+/g, '\n * ');
   }
 
   /**
@@ -445,11 +410,10 @@ class GenerativeAPI {
    * @param {NodeType} type
    * @param {boolean} generics
    * @param {SummarizedParameter[]} parameters
-   * @param {?Example[]} [examples]
    * @returns {Promise<string[] | undefined>}
    */
-  public static async describeParameters(content: string, type: NodeType, generics: boolean, parameters: SummarizedParameter[], examples?: Example[]): Promise<string[] | undefined> {
-    return GenerativeAPI.canGenerate(getConfig(generics ? 'generateDescriptionForTypeParameters' : 'generateDescriptionForParameters', false)) && await GenerativeAPI.generator?.describeParameters(content.trim(), type, generics, parameters, examples);
+  public static async describeParameters(content: string, type: NodeType, generics: boolean, parameters: SummarizedParameter[]): Promise<string[] | undefined> {
+    return GenerativeAPI.canGenerate(getConfig(generics ? 'generateDescriptionForTypeParameters' : 'generateDescriptionForParameters', false)) && await GenerativeAPI.generator?.describeParameters(content.trim(), type, generics, parameters);
   }
 
   /**
@@ -459,11 +423,10 @@ class GenerativeAPI {
    * @static
    * @async
    * @param {string} content
-   * @param {?Example[]} [examples]
    * @returns {Promise<string | undefined>}
    */
-  public static async describeReturn(content: string, examples?: Example[]): Promise<string | undefined> {
-    return GenerativeAPI.canGenerate(getConfig('generateDescriptionForReturns', false)) && await GenerativeAPI.generator?.describeReturn(content.trim(), examples);
+  public static async describeReturn(content: string): Promise<string | undefined> {
+    return GenerativeAPI.canGenerate(getConfig('generateDescriptionForReturns', false)) && await GenerativeAPI.generator?.describeReturn(content.trim());
   }
 
   /**
