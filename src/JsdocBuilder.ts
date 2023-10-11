@@ -1,7 +1,7 @@
 import {getTextOfJSDocComment, Node, SyntaxKind, NodeArray, TypeNode, ExpressionWithTypeArguments, TypeParameterDeclaration, HeritageClause, AccessorDeclaration, ClassDeclaration, ClassLikeDeclaration, ConstructorDeclaration, EnumDeclaration, InterfaceDeclaration, MethodDeclaration, ParameterDeclaration, PropertyDeclaration, TypeAliasDeclaration, VariableDeclaration, ModifierLike, BindingPattern} from 'typescript';
 import {SnippetString} from 'vscode';
 
-import {getConfig} from './extension';
+import {getConfig, SummarizedParameter} from './extension';
 import {GenerativeAPI, NodeType} from './GenerativeAPI';
 import {TsFile} from './TsFile';
 
@@ -23,27 +23,6 @@ type TypedNode =
  * @typedef {Wrapper}
  */
 type Wrapper = '' | '{}';
-
-/**
- * Summarized infos of a parameter.
- *
- * @interface SummarizedParameter
- * @typedef {SummarizedParameter}
- */
-interface SummarizedParameter {
-  /**
-   * Parameter name.
-   *
-   * @type {string}
-   */
-  name: string;
-  /**
-   * Parameter type.
-   *
-   * @type {string}
-   */
-  type: string;
-}
 
 /**
  * JSDoc line data.
@@ -140,18 +119,18 @@ export class JsdocBuilder {
    * @returns {Promise<SnippetString>} promise that resolves with the JSDoc.
    */
   public async getClassLikeDeclarationJsdoc(node: ClassDeclaration | InterfaceDeclaration): Promise<SnippetString> {
-    const type: NodeType = node.kind === SyntaxKind.InterfaceDeclaration ? 'interface' : 'class';
-    await this.buildJsdocHeader(node.getFullText(), type);
+    const nodeType: NodeType = node.kind === SyntaxKind.InterfaceDeclaration ? 'interface' : 'class';
+    await this.buildJsdocHeader(node.getFullText(), nodeType);
     this.buildJsdocModifiers(node.modifiers);
     if (node.name) {
-      this.buildJsdocLine(type, {value: this.includeTypes ? node.name.getText() : '', wrapper: ''});
+      this.buildJsdocLine(nodeType, {value: this.includeTypes ? node.name.getText() : '', wrapper: ''});
       if (getConfig('includeTypes', true)) {
         this.buildJsdocLine('typedef', {value: node.name.getText()});
       }
     } else {
-      this.buildJsdocLine(type);
+      this.buildJsdocLine(nodeType);
     }
-    await this.buildTypeParameters(node.getFullText().trim(), type, node.typeParameters);
+    await this.buildTypeParameters(node.getFullText(), nodeType, node.typeParameters);
     this.buildJsdocHeritage(node.heritageClauses);
     this.buildCustomTags();
     this.buildJsdocEnd();
@@ -167,6 +146,8 @@ export class JsdocBuilder {
    * @returns {Promise<SnippetString>} promise that resolves with the JSDoc.
    */
   public async getPropertyDeclarationJsdoc(node: PropertyDeclaration | VariableDeclaration): Promise<SnippetString> {
+    const modifiers = 'modifiers' in node ? node.modifiers : undefined;
+    const override = this.checkOverride(modifiers);
     const functionAssigned = node.getChildren().find(child => this.isFunctionKind(child.kind));
     const classAssigned = node.getChildren().find(child => child.kind === SyntaxKind.ClassExpression);
     if (getConfig('functionVariablesAsFunctions', true) && functionAssigned) {
@@ -174,8 +155,8 @@ export class JsdocBuilder {
     } else if (classAssigned) {
       this.getClassLikeDeclarationJsdoc(classAssigned as ClassDeclaration);
     } else {
-      await this.buildJsdocHeader(node.getFullText(), 'property');
-      this.buildJsdocModifiers('modifiers' in node ? node.modifiers : undefined);
+      await this.buildJsdocHeader(node.getFullText(), 'property', override);
+      this.buildJsdocModifiers(modifiers);
       if (this.includeTypes) {
         this.buildJsdocLine('type', {value: this.retrieveType(node)});
       }
@@ -201,7 +182,8 @@ export class JsdocBuilder {
       this.jsdoc.appendText('/**\n');
       await this.buildDescription(node.getFullText(), getTextOfJSDocComment(this.tsFile.getJsdoc(pairedAccessor).comment) ?? '');
     } else {
-      await this.buildJsdocHeader(node.getFullText(), 'property');
+      const override = this.checkOverride(node.modifiers);
+      await this.buildJsdocHeader(node.getFullText(), 'property', override);
       this.buildJsdocModifiers(node.modifiers);
       if (node.kind === SyntaxKind.GetAccessor && !pairedAccessor) {
         this.buildJsdocLine('readonly');
@@ -241,10 +223,11 @@ export class JsdocBuilder {
    * @returns {SnippetString} promise that resolves with the JSDoc for method declaration.
    */
   public async getMethodDeclarationJsdoc(node: MethodDeclaration): Promise<SnippetString> {
-    await this.buildJsdocHeader(node.getFullText(), 'function');
+    const override = this.checkOverride(node.modifiers);
+    await this.buildJsdocHeader(node.getFullText(), 'function', override);
     this.buildJsdocModifiers(node.modifiers);
-    await this.buildTypeParameters(node.getFullText().trim(), 'function', node.typeParameters);
-    await this.buildJsdocParameters(node.getFullText().trim(), node.parameters);
+    await this.buildTypeParameters(node.getFullText(), 'function', node.typeParameters);
+    await this.buildJsdocParameters(node.getFullText(), node.parameters);
     await this.buildJsdocReturn(node);
     this.buildCustomTags();
     this.buildJsdocEnd();
@@ -271,7 +254,7 @@ export class JsdocBuilder {
     this.buildJsdocLine();
     this.buildJsdocLine('constructor');
     this.buildJsdocModifiers(node.modifiers);
-    await this.buildJsdocParameters(node.getFullText().trim(), node.parameters);
+    await this.buildJsdocParameters(node.getFullText(), node.parameters);
     this.buildCustomTags();
     this.buildJsdocEnd();
     return this.jsdoc;
@@ -291,70 +274,24 @@ export class JsdocBuilder {
     if (getConfig('includeTypes', true)) {
       this.buildJsdocLine('typedef', {value: node.name.getText()});
     }
-    await this.buildTypeParameters(node.getFullText().trim(), 'type', node.typeParameters);
+    await this.buildTypeParameters(node.getFullText(), 'type', node.typeParameters);
     this.buildCustomTags();
     this.buildJsdocEnd();
     return this.jsdoc;
   }
 
   /**
-   * Builds a new JSDoc line for each modifier.
-   *
-   * @private
-   * @param {?ModifiersArray} [modifiers]
-   */
-  private buildJsdocModifiers(modifiers?: NodeArray<ModifierLike>) {
-    if (modifiers && modifiers.length > 0) {
-      modifiers.forEach(modifier => {
-        switch (modifier.kind) {
-          case SyntaxKind.ExportKeyword:
-            if (getConfig('includeExport', true)) {
-              this.buildJsdocLine('export');
-            }
-            break;
-          case SyntaxKind.PrivateKeyword:
-            this.buildJsdocLine('private');
-            break;
-          case SyntaxKind.ProtectedKeyword:
-            this.buildJsdocLine('protected');
-            break;
-          case SyntaxKind.PublicKeyword:
-            this.buildJsdocLine('public');
-            break;
-          case SyntaxKind.StaticKeyword:
-            this.buildJsdocLine('static');
-            break;
-          case SyntaxKind.AbstractKeyword:
-            this.buildJsdocLine('abstract');
-            break;
-          case SyntaxKind.AsyncKeyword:
-            if (getConfig('includeAsync', true)) {
-              this.buildJsdocLine('async');
-            }
-            break;
-          case SyntaxKind.ReadonlyKeyword:
-            this.buildJsdocLine('readonly');
-            break;
-          case SyntaxKind.OverrideKeyword:
-            this.buildJsdocLine('override');
-            break;
-          default: break;
-        }
-      });
-    }
-  }
-
-  /**
    * Builds a new JSDoc line for each type parameter.
    *
    * @private
-   * @param nodeText
-   * @param type
+   * @async
+   * @param {string} nodeText
+   * @param {NodeType} nodeType
    * @param {?NodeArray<TypeParameterDeclaration>} [typeParameters]
    */
-  private async buildTypeParameters(nodeText: string, type: NodeType, typeParameters?: NodeArray<TypeParameterDeclaration>) {
+  private async buildTypeParameters(nodeText: string, nodeType: NodeType, typeParameters?: NodeArray<TypeParameterDeclaration>) {
     if (typeParameters) {
-      const mappedTypeParameters = typeParameters.map(typeParameter => {
+      const mappedTypeParameters: SummarizedParameter[] = typeParameters.map(typeParameter => {
         let name = typeParameter.name.getText();
         const type = this.includeTypes ? (typeParameter.constraint?.getText() ?? '') : '';
         if (typeParameter.default) {
@@ -365,7 +302,116 @@ export class JsdocBuilder {
           name
         };
       });
-      this.buildJsdocLines('template', mappedTypeParameters.map(param => param.type), '{}', mappedTypeParameters.map(param => param.name), await GenerativeAPI.describeParameters(nodeText.trim(), type, true, mappedTypeParameters));
+      this.buildJsdocLines('template', mappedTypeParameters.map(param => param.type), '{}', mappedTypeParameters.map(param => param.name), await GenerativeAPI.describeParameters(nodeText, nodeType, true, mappedTypeParameters));
+    }
+  }
+
+  /**
+   * Builds a new JSDoc line for each parameter.
+   *
+   * @private
+   * @async
+   * @param {string} nodeText
+   * @param {NodeArray<ParameterDeclaration>} parameters
+   */
+  private async buildJsdocParameters(nodeText: string, parameters: NodeArray<ParameterDeclaration>) {
+    let bindingPatterns = 0;
+    const mappedParameters: SummarizedParameter[] = parameters.map(parameter => {
+      const bindingElements: SummarizedParameter[] = [];
+      let name = parameter.name.getText();
+      const type = this.retrieveType(parameter);
+      const initializer = parameter.initializer ? (`=${parameter.initializer.getText()}`) : '';
+      if ([SyntaxKind.ObjectBindingPattern, SyntaxKind.ArrayBindingPattern].includes(parameter.name.kind)) {
+        name = `param${bindingPatterns++}`;
+        (parameter.name as BindingPattern).elements.forEach(element => {
+          if (element.kind !== SyntaxKind.OmittedExpression) {
+            bindingElements.push({
+              type: this.retrieveType(element),
+              name: `${element.initializer ? '[' : ''}${name}.${element.getText()}${element.initializer ? ']' : ''}`.replace(' = ', '=')
+            });
+          }
+        });
+      }
+      if (parameter.questionToken || initializer) {
+        name = `[${name}${initializer}]`;
+      }
+      return bindingElements.length ? [{type, name}, ...bindingElements] : {type, name};
+    }).flat();
+    this.buildJsdocLines('param', mappedParameters.map(param => param.type), '{}', mappedParameters.map(param => param.name), await GenerativeAPI.describeParameters(nodeText, 'function', false, mappedParameters));
+  }
+
+  /**
+   * Builds the return value, if present, for the given method.
+   *
+   * @private
+   * @async
+   * @param {MethodDeclaration} node
+   */
+  private async buildJsdocReturn(node: MethodDeclaration) {
+    let returnType;
+    if (node.type) {
+      returnType = node.type.getText();
+    } else {
+      const functionType = this.inferType(node);
+      returnType = functionType.substring(functionType.split('=> ')[0].length + 3);
+    }
+    if (returnType === 'any') {
+      returnType = '*';
+    }
+    if (returnType !== 'void') {
+      if (this.checkParenthesisUse(returnType)) {
+        returnType = `(${returnType})`;
+      }
+      this.buildJsdocLine('returns', {value: this.includeTypes ? returnType : '', description: await GenerativeAPI.describeReturn(node.getFullText())});
+    }
+  }
+
+  /**
+   * Builds a new JSDoc line for each modifier.
+   *
+   * @private
+   * @param {?NodeArray<ModifierLike>} [modifiers]
+   * @param {boolean} [override=false]
+   */
+  private buildJsdocModifiers(modifiers?: NodeArray<ModifierLike>, override: boolean = false) {
+    if (modifiers && modifiers.length > 0) {
+      if (override) {
+        this.buildJsdocLine('override');
+      } else {
+        modifiers.forEach(modifier => {
+          switch (modifier.kind) {
+            case SyntaxKind.ExportKeyword:
+              if (getConfig('includeExport', true)) {
+                this.buildJsdocLine('export');
+              }
+              break;
+            case SyntaxKind.PrivateKeyword:
+              this.buildJsdocLine('private');
+              break;
+            case SyntaxKind.ProtectedKeyword:
+              this.buildJsdocLine('protected');
+              break;
+            case SyntaxKind.PublicKeyword:
+              this.buildJsdocLine('public');
+              break;
+            case SyntaxKind.StaticKeyword:
+              this.buildJsdocLine('static');
+              break;
+            case SyntaxKind.AbstractKeyword:
+              this.buildJsdocLine('abstract');
+              break;
+            case SyntaxKind.AsyncKeyword:
+              if (getConfig('includeAsync', true)) {
+                this.buildJsdocLine('async');
+              }
+              break;
+            case SyntaxKind.ReadonlyKeyword:
+              this.buildJsdocLine('readonly');
+              break;
+            default: break;
+          }
+        });
+      }
     }
   }
 
@@ -392,74 +438,21 @@ export class JsdocBuilder {
   }
 
   /**
-   * Builds a new JSDoc line for each parameter.
-   *
-   * @private
-   * @param nodeText
-   * @param {NodeArray<ParameterDeclaration>} parameters
-   */
-  private async buildJsdocParameters(nodeText: string, parameters: NodeArray<ParameterDeclaration>) {
-    let bindingPatterns = 0;
-    const mappedParameters: SummarizedParameter[] = parameters.map(parameter => {
-      const bindingElements: SummarizedParameter[] = [];
-      let name = parameter.name.getText();
-      const type = this.retrieveType(parameter);
-      const initializer = parameter.initializer ? (`=${parameter.initializer.getText()}`) : '';
-      if ([SyntaxKind.ObjectBindingPattern, SyntaxKind.ArrayBindingPattern].includes(parameter.name.kind)) {
-        name = `param${bindingPatterns++}`;
-        (parameter.name as BindingPattern).elements.forEach(element => {
-          if (element.kind !== SyntaxKind.OmittedExpression) {
-            bindingElements.push({
-              type: this.retrieveType(element),
-              name: `${element.initializer ? '[' : ''}${name}.${element.getText()}${element.initializer ? ']' : ''}`.replace(' = ', '=')
-            });
-          }
-        });
-      }
-      if (parameter.questionToken || initializer) {
-        name = `[${name}${initializer}]`;
-      }
-      return bindingElements.length ? [{type, name}, ...bindingElements] : {type, name};
-    }).flat();
-    this.buildJsdocLines('param', mappedParameters.map(param => param.type), '{}', mappedParameters.map(param => param.name), await GenerativeAPI.describeParameters(nodeText.trim(), 'function', false, mappedParameters));
-  }
-
-  /**
-   * Builds the return value, if present, for the given method.
-   *
-   * @private
-   * @param {MethodDeclaration} node
-   */
-  private async buildJsdocReturn(node: MethodDeclaration) {
-    let returnType;
-    if (node.type) {
-      returnType = node.type.getText();
-    } else {
-      const functionType = this.inferType(node);
-      returnType = functionType.substring(functionType.split('=> ')[0].length + 3);
-    }
-    if (returnType === 'any') {
-      returnType = '*';
-    }
-    if (returnType !== 'void') {
-      if (this.checkParenthesisUse(returnType)) {
-        returnType = `(${returnType})`;
-      }
-      this.buildJsdocLine('returns', {value: this.includeTypes ? returnType : '', description: await GenerativeAPI.describeReturn(node.getFullText().trim())});
-    }
-  }
-
-  /**
    * Builds a JSDoc header including the starting line.
    *
    * @private
    * @async
-   * @param {?string} nodeText
-   * @param {?NodeType} type
+   * @param {?string} [nodeText]
+   * @param {?NodeType} [type]
+   * @param {boolean} [override=false]
    */
-  private async buildJsdocHeader(nodeText?: string, type?: NodeType) {
+  private async buildJsdocHeader(nodeText?: string, type?: NodeType, override: boolean = false) {
     this.jsdoc.appendText('/**\n');
-    await this.buildDescription(nodeText, '', type);
+    if (override) {
+      this.buildJsdocLine('inheritdoc');
+    } else {
+      await this.buildDescription(nodeText, '', type);
+    }
     this.buildDate();
     this.buildAuthor();
     this.buildJsdocLine();
@@ -481,8 +474,8 @@ export class JsdocBuilder {
       this.jsdoc.appendText(description);
     } else if (placeholder) {
       this.jsdoc.appendPlaceholder(placeholder);
-    } else if (nodeText && type && GenerativeAPI.tryInit()) {
-      const autoDescription = await GenerativeAPI.describeSnippet(nodeText.trim(), type);
+    } else if (nodeText && type) {
+      const autoDescription = await GenerativeAPI.describeSnippet(nodeText, type);
       if (autoDescription) {
         this.jsdoc.appendText(autoDescription);
       }
@@ -609,6 +602,17 @@ export class JsdocBuilder {
       const backslashIndex = this.jsdoc.value.indexOf('\\');
       this.jsdoc.value = this.jsdoc.value.substring(0, backslashIndex) + this.jsdoc.value.substring(backslashIndex + 1);
     }
+  }
+
+  /**
+   * Checks whether the list of modifiers includes the override keyword.
+   *
+   * @private
+   * @param {?NodeArray<ModifierLike>} [modifiers]
+   * @returns {boolean}
+   */
+  private checkOverride(modifiers?: NodeArray<ModifierLike>): boolean {
+    return !!(modifiers && modifiers.some(modifier => modifier.kind === SyntaxKind.OverrideKeyword));
   }
 
   /**

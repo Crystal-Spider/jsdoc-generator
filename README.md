@@ -202,6 +202,7 @@ Some non [everyday types](https://www.typescriptlang.org/docs/handbook/2/everyda
 - Added command in folder contextual menu to generate JSDoc for all TS and JS files in the folder (recursive).
 - Added command in file contextual menu to generate JSDoc for that file.
 - Added progress loader to keep track of the generating JSDocs or interrupt the generation.
+- Now explicitly overridden methods will only add the `@override` and `@inheritdoc` tags.
 
 ### [1.3.0](https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.3.0)
 

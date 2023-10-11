@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added command in file contextual menu to generate JSDoc for that file.
 - Added progress loader to keep track of the generating JSDocs or interrupt the generation.
 
+## Changed
+
+- Now explicitly overridden methods will only add the `@override` and `@inheritdoc` tags.
+
 ### Fixed
 
 - Fixed [#8](https://github.com/Nyphet/jsdoc-generator/issues/8), corrected and improved template tags.

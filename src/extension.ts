@@ -12,6 +12,27 @@ import {TextFile} from './TextFile';
 let jsdocGenerator: JsdocGenerator;
 
 /**
+ * Summarized infos of a parameter.
+ *
+ * @interface SummarizedParameter
+ * @typedef {SummarizedParameter}
+ */
+interface SummarizedParameter {
+  /**
+   * Parameter name.
+   *
+   * @type {string}
+   */
+  name: string;
+  /**
+   * Parameter type.
+   *
+   * @type {string}
+   */
+  type: string;
+}
+
+/**
  * Available languages.
  *
  * @typedef {Language}
@@ -380,4 +401,4 @@ function getConfig<K extends keyof Configuration>(property: K, defaultValue: Con
   return vscode.workspace.getConfiguration().get(`jsdoc-generator.${property}`, defaultValue);
 }
 
-export {SUPPORTED_LANGUAGES, activate, deactivate, getConfig};
+export {SUPPORTED_LANGUAGES, activate, deactivate, getConfig, SummarizedParameter};
