@@ -309,10 +309,9 @@ class GenerativePaLM extends GenerativeModel<PaLM> {
    */
   public override async describeSnippet(content: string, type: NodeType): Promise<string | undefined> {
     if (this.api) {
-      return this.api.ask(content, {
+      await this.api.ask(content, {
         context: 'context',
         examples: [],
-        // Or PaLM.FORMATS.JSON
         format: PaLM.FORMATS.MD
       });
     }
@@ -324,7 +323,14 @@ class GenerativePaLM extends GenerativeModel<PaLM> {
    * 
    * @override
    */
-  public override async describeParameters(content: string, type: NodeType, generics: boolean, parameters: SummarizedParameter[] | undefined): Promise<string[] | undefined> {
+  public override async describeParameters(content: string, type: NodeType, generics: boolean, parameters: SummarizedParameter[]): Promise<string[] | undefined> {
+    if (this.api) {
+      (await this.api.ask(content, {
+        context: 'context',
+        examples: [],
+        format: PaLM.FORMATS.JSON
+      }));
+    }
     return undefined;
   }
 
@@ -333,7 +339,34 @@ class GenerativePaLM extends GenerativeModel<PaLM> {
    * 
    * @override
    */
-  public override async describeReturn(content: string | undefined): Promise<string | undefined> {
+  public override async describeReturn(content: string): Promise<string | undefined> {
+    if (this.api) {
+      await this.describe(content, 'function');
+      return await this.api.ask(`Generate a short and concise textual description for this function's return value in ${GenerativeModel.language}:\n${content}`, {
+        context: 'You are generating a short and concise textual description of the return value of a function that will later be used to create a JSDoc.',
+        examples: [
+          ['Generate a short and concise textual description for this function\'s return value in English:\nfunction diff(x: number, y: number) {\n  return x - y;\n}', 'difference between the first and the second number.'],
+          ['Generate a short and concise textual description for this function\'s return value in English:\nfunction sum(...numbers: number[]): number {\n  return numbers.reduce((prev, acc) => prev + acc, 0);\n}', 'sum of all given numbers.'],
+          ['Generate a short and concise textual description for this function\'s return value in English:\nprivate stringify<T>(value: T): string {\n  return `${value}`;\n}', 'string version of the given value.'],
+          ['Generate a short and concise textual description for this function\'s return value in English:\nconst isEmpty = (container: Container) => container.hasElements()', 'whether the container is empty.'],
+          ['Generate a short and concise textual description for this function\'s return value in English:\nexport function wdoiwnjdo(a: string, i: number) { return a[i] < \'c\'; }', 'whether the i-th character in the string comes before `c`.']
+        ],
+        format: PaLM.FORMATS.MD
+      });
+    }
+    return undefined;
+  }
+
+  private async describe(content: string, type: NodeType) {
+    if (this.api) {
+      const test = await this.api.ask(
+        `Given the following JSON format:\n{\n  "description": string,\n  "return": string,\n  "generics": Record<string, string>,\n  "parameters": Record<string, string>\n}\n\nGenerate a short and concise textual description for this function description, generics, parameters, and return value in ${GenerativeModel.language}, following the JSON format:\n\n${content}\n\nOnly write the answer (JSON object) and nothing else.`,
+        {
+          format: PaLM.FORMATS.MD
+        }
+      );
+      console.log(test);
+    }
     return undefined;
   }
 }
