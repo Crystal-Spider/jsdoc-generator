@@ -143,7 +143,7 @@ This extension contributes the following settings:
   }
   ```
 - `jsdoc-generator.generativeApiKey`:  
-  Set your own API key for ChatGPT (see https://platform.openai.com/account/api-keys) or Bard (see https://developers.generativeai.google/products/palm).  
+  Set your own API key for ChatGPT (see https://platform.openai.com/account/api-keys).  
   It's required only if you wish to use the automatic generation of descriptions.  
   Note that jsdoc-generator.descriptionPlaceholder will take precedence.
 - `jsdoc-generator.generativeModel`:  
@@ -197,7 +197,7 @@ Some non [everyday types](https://www.typescriptlang.org/docs/handbook/2/everyda
 - Fixed [#12](https://github.com/Nyphet/jsdoc-generator/issues/12), prevent adding `@typedef` when `includeTypes` is false.
 - Fixed [#17](https://github.com/Nyphet/jsdoc-generator/issues/17), JSDoc generation for functions that deconstruct parameters.
 - Implemented [#16](https://github.com/Nyphet/jsdoc-generator/issues/16), added alignment options.
-- Implemented [#10](https://github.com/Nyphet/jsdoc-generator/issues/10), integration of ChatGPT and Bard to automatically generate descriptions.
+- Implemented [#10](https://github.com/Nyphet/jsdoc-generator/issues/10), integration of ChatGPT to automatically generate descriptions.
 - Finally implemented the command to generate JSDoc for all suitable files in the current workspace (recursive).
 - Added command in folder contextual menu to generate JSDoc for all TS and JS files in the folder (recursive).
 - Added command in file contextual menu to generate JSDoc for that file.

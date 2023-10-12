@@ -44,10 +44,10 @@ abstract class GenerativeModel<T> {
    *
    * @protected
    * @readonly
-   * @type {("gpt-3.5-turbo" | "gpt-4" | "bard")}
+   * @type {("gpt-3.5-turbo" | "gpt-4")}
    */
   protected get model() {
-    return getConfig('generativeModel', 'bard');
+    return getConfig('generativeModel', 'gpt-3.5-turbo');
   }
 
   /**
@@ -286,92 +286,6 @@ class GenerativeOpenAI extends GenerativeModel<OpenAI> {
 }
 
 /**
- * Generative AI model from PaLM (Google).
- *
- * @class GenerativePaLM
- * @typedef {GenerativePaLM}
- * @extends {GenerativeModel<PaLM>}
- */
-class GenerativePaLM extends GenerativeModel<PaLM> {
-  /**
-   * @inheritdoc
-   * 
-   * @override
-   */
-  protected override init(): PaLM {
-    return new PaLM(this.apiKey);
-  }
-
-  /**
-   * @inheritdoc
-   * 
-   * @override
-   */
-  public override async describeSnippet(content: string, type: NodeType): Promise<string | undefined> {
-    if (this.api) {
-      await this.api.ask(content, {
-        context: 'context',
-        examples: [],
-        format: PaLM.FORMATS.MD
-      });
-    }
-    return undefined;
-  }
-
-  /**
-   * @inheritdoc
-   * 
-   * @override
-   */
-  public override async describeParameters(content: string, type: NodeType, generics: boolean, parameters: SummarizedParameter[]): Promise<string[] | undefined> {
-    if (this.api) {
-      (await this.api.ask(content, {
-        context: 'context',
-        examples: [],
-        format: PaLM.FORMATS.JSON
-      }));
-    }
-    return undefined;
-  }
-
-  /**
-   * @inheritdoc
-   * 
-   * @override
-   */
-  public override async describeReturn(content: string): Promise<string | undefined> {
-    if (this.api) {
-      await this.describe(content, 'function');
-      return await this.api.ask(`Generate a short and concise textual description for this function's return value in ${GenerativeModel.language}:\n${content}`, {
-        context: 'You are generating a short and concise textual description of the return value of a function that will later be used to create a JSDoc.',
-        examples: [
-          ['Generate a short and concise textual description for this function\'s return value in English:\nfunction diff(x: number, y: number) {\n  return x - y;\n}', 'difference between the first and the second number.'],
-          ['Generate a short and concise textual description for this function\'s return value in English:\nfunction sum(...numbers: number[]): number {\n  return numbers.reduce((prev, acc) => prev + acc, 0);\n}', 'sum of all given numbers.'],
-          ['Generate a short and concise textual description for this function\'s return value in English:\nprivate stringify<T>(value: T): string {\n  return `${value}`;\n}', 'string version of the given value.'],
-          ['Generate a short and concise textual description for this function\'s return value in English:\nconst isEmpty = (container: Container) => container.hasElements()', 'whether the container is empty.'],
-          ['Generate a short and concise textual description for this function\'s return value in English:\nexport function wdoiwnjdo(a: string, i: number) { return a[i] < \'c\'; }', 'whether the i-th character in the string comes before `c`.']
-        ],
-        format: PaLM.FORMATS.MD
-      });
-    }
-    return undefined;
-  }
-
-  private async describe(content: string, type: NodeType) {
-    if (this.api) {
-      const test = await this.api.ask(
-        `Given the following JSON format:\n{\n  "description": string,\n  "return": string,\n  "generics": Record<string, string>,\n  "parameters": Record<string, string>\n}\n\nGenerate a short and concise textual description for this function description, generics, parameters, and return value in ${GenerativeModel.language}, following the JSON format:\n\n${content}\n\nOnly write the answer (JSON object) and nothing else.`,
-        {
-          format: PaLM.FORMATS.MD
-        }
-      );
-      console.log(test);
-    }
-    return undefined;
-  }
-}
-
-/**
  * Generative AI functionalities wrapper.  
  * Handles the use of whichever generative model is selected by the user.
  *
@@ -395,10 +309,10 @@ class GenerativeAPI {
    * @private
    * @static
    * @readonly
-   * @type {'gpt-3.5-turbo' | 'gpt-4' | 'bard'}
+   * @type {'gpt-3.5-turbo' | 'gpt-4'}
    */
   private static get model() {
-    return getConfig('generativeModel', 'bard');
+    return getConfig('generativeModel', 'gpt-3.5-turbo');
   }
 
   /**
@@ -410,11 +324,7 @@ class GenerativeAPI {
    */
   public static tryInit(): boolean {
     if (getConfig('generativeApiKey', '')) {
-      if (this.model === 'bard') {
-        GenerativeAPI.generator = new GenerativePaLM();
-      } else {
-        GenerativeAPI.generator = new GenerativeOpenAI();
-      }
+      GenerativeAPI.generator = new GenerativeOpenAI();
     }
     return !!GenerativeAPI.generator;
   }

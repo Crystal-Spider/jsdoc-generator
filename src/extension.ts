@@ -175,9 +175,9 @@ interface Configuration {
   /**
    * Generative AI model.
    *
-   * @type {('gpt-3.5-turbo' | 'gpt-4' | 'bard')}
+   * @type {('gpt-3.5-turbo' | 'gpt-4')}
    */
-  generativeModel: 'gpt-3.5-turbo' | 'gpt-4' | 'bard';
+  generativeModel: 'gpt-3.5-turbo' | 'gpt-4';
   /**
    * Language of the generated descriptions.
    *
