@@ -596,7 +596,8 @@ export class JsdocBuilder {
         line += ` ${this.repeat(+align && getConfig('tagDescriptionColumnStart', 0) - line.length)}${description}`;
       }
     }
-    this.jsdoc.appendText(` *${line}\n`);
+    const formattedLine = line.split('\n').map(part => ` *${part}`).join('\n');
+    this.jsdoc.appendText(`${formattedLine}\n`);
     if (value && wrapper === '{}') {
       // Remove '\' that comes from .appendText() escaping '}'.
       const backslashIndex = this.jsdoc.value.indexOf('\\');
