@@ -471,13 +471,13 @@ export class JsdocBuilder {
     this.jsdoc.appendText(' * ');
     const placeholder = getConfig('descriptionPlaceholder', '');
     if (description) {
-      this.jsdoc.appendText(description);
+      this.jsdoc.appendText(this.sanitize(description));
     } else if (placeholder) {
       this.jsdoc.appendPlaceholder(placeholder);
     } else if (nodeText && type) {
       const autoDescription = await GenerativeAPI.describeSnippet(nodeText, type);
       if (autoDescription) {
-        this.jsdoc.appendText(autoDescription);
+        this.jsdoc.appendText(this.sanitize(autoDescription));
       }
     }
     this.jsdoc.appendText('\n');
@@ -596,7 +596,7 @@ export class JsdocBuilder {
         line += ` ${this.repeat(+align && getConfig('tagDescriptionColumnStart', 0) - line.length)}${description}`;
       }
     }
-    this.jsdoc.appendText(` *${line}\n`);
+    this.jsdoc.appendText(` *${this.sanitize(line)}\n`);
     if (value && wrapper === '{}') {
       // Remove '\' that comes from .appendText() escaping '}'.
       const backslashIndex = this.jsdoc.value.indexOf('\\');
@@ -757,5 +757,16 @@ export class JsdocBuilder {
       return result + sequence;
     }
     return '';
+  }
+
+  /**
+   * Sanitizes possibly multiline values for JSDoc.
+   *
+   * @private
+   * @param {string} value
+   * @returns {string}
+   */
+  private sanitize(value: string): string {
+    return value.replace(/\n+/g, '\n * ');
   }
 }

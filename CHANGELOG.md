@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing new.
 
+## [2.0.1] - 2023/10/25
+
+### Fixed
+
+- [#18](https://github.com/Nyphet/jsdoc-generator/issues/18), multiline values and descriptions not adding asterisks on new lines.
+- API key setting not resetting unless the extension is reloaded.
+
 ## [2.0.0] - 2023/10/12
 
 ### Added
@@ -86,6 +93,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - This [CHANGELOG] file.
 
 [unreleased]: https://github.com/Nyphet/jsdoc-generator
+[2.0.1]: https://github.com/Nyphet/jsdoc-generator/releases/tag/v2.0.1
 [2.0.0]: https://github.com/Nyphet/jsdoc-generator/releases/tag/v2.0.0
 [1.3.0]: https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.3.0
 [1.2.0]: https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.2.0

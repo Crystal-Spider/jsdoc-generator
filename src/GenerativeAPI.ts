@@ -325,6 +325,8 @@ class GenerativeAPI {
   public static tryInit(): boolean {
     if (getConfig('generativeApiKey', '')) {
       GenerativeAPI.generator = new GenerativeOpenAI();
+    } else {
+      GenerativeAPI.generator = undefined;
     }
     return !!GenerativeAPI.generator;
   }
@@ -340,7 +342,7 @@ class GenerativeAPI {
    * @returns {Promise<string | undefined>}
    */
   public static async describeSnippet(content: string, type: NodeType): Promise<string | undefined> {
-    return (GenerativeAPI.canGenerate() && await GenerativeAPI.generator?.describeSnippet(content.trim(), type))?.replace(/\n+/g, '\n * ');
+    return (GenerativeAPI.canGenerate() && await GenerativeAPI.generator?.describeSnippet(content.trim(), type));
   }
 
   /**
