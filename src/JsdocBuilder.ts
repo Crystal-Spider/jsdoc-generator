@@ -146,16 +146,15 @@ export class JsdocBuilder {
    * @returns {Promise<SnippetString>} promise that resolves with the JSDoc.
    */
   public async getPropertyDeclarationJsdoc(node: PropertyDeclaration | VariableDeclaration): Promise<SnippetString> {
-    const modifiers = 'modifiers' in node ? node.modifiers : undefined;
-    const override = this.checkOverride(modifiers);
     const functionAssigned = node.getChildren().find(child => this.isFunctionKind(child.kind));
     const classAssigned = node.getChildren().find(child => child.kind === SyntaxKind.ClassExpression);
     if (getConfig('functionVariablesAsFunctions', true) && functionAssigned) {
-      this.getMethodDeclarationJsdoc(functionAssigned as MethodDeclaration);
+      await this.getMethodDeclarationJsdoc(functionAssigned as MethodDeclaration);
     } else if (classAssigned) {
-      this.getClassLikeDeclarationJsdoc(classAssigned as ClassDeclaration);
+      await this.getClassLikeDeclarationJsdoc(classAssigned as ClassDeclaration);
     } else {
-      await this.buildJsdocHeader(node.getFullText(), 'property', override);
+      const modifiers = 'modifiers' in node ? node.modifiers : undefined;
+      await this.buildJsdocHeader(node.getFullText(), 'property', this.checkOverride(modifiers));
       this.buildJsdocModifiers(modifiers);
       if (this.includeTypes) {
         this.buildJsdocLine('type', {value: this.retrieveType(node)});
