@@ -191,6 +191,15 @@ Some non [everyday types](https://www.typescriptlang.org/docs/handbook/2/everyda
 
 ## Release Notes
 
+### [2.0.2](https://github.com/Nyphet/jsdoc-generator/releases/tag/v2.0.2)
+
+- [#20](https://github.com/Crystal-Spider/jsdoc-generator/issues/20), missing JSDoc terminator.
+
+### [2.0.1](https://github.com/Nyphet/jsdoc-generator/releases/tag/v2.0.1)
+
+- Fixed [#18](https://github.com/Nyphet/jsdoc-generator/issues/18), multiline values and descriptions not adding asterisks on new lines.
+- Fixed API key setting not resetting unless the extension is reloaded.
+
 ### [2.0.0](https://github.com/Nyphet/jsdoc-generator/releases/tag/v2.0.0)
 
 - Fixed [#8](https://github.com/Nyphet/jsdoc-generator/issues/8), corrected and improved template tags.
