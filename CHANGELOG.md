@@ -9,35 +9,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing new.
 
+## [2.1.0] - 2024/04/12
+
+### Changes
+
+- Implemented [#22](https://github.com/Crystal-Spider/jsdoc-generator/issues/22), changing how date tag format is handled.  
+  Replaced `includeDate` and `includeTime` options with `dateFormat`.
+
 ## [2.0.2] - 2024/02/27
 
-### Fixed
+### Fixes
 
 - [#20](https://github.com/Crystal-Spider/jsdoc-generator/issues/20), missing JSDoc terminator.
 
 ## [2.0.1] - 2023/10/25
 
-### Fixed
+### Fixes
 
 - [#18](https://github.com/Nyphet/jsdoc-generator/issues/18), multiline values and descriptions not adding asterisks on new lines.
 - API key setting not resetting unless the extension is reloaded.
 
 ## [2.0.0] - 2023/10/12
 
-### Added
+### Additions
 
 - Implemented [#16](https://github.com/Nyphet/jsdoc-generator/issues/16), added alignment options.
 - Implemented [#10](https://github.com/Nyphet/jsdoc-generator/issues/10), integration of ChatGPT to automatically generate descriptions.
 - Finally implemented the command to generate JSDoc for all suitable files in the current workspace (recursive).
-- Added command in folder contextual menu to generate JSDoc for all TS and JS files in the folder (recursive).
-- Added command in file contextual menu to generate JSDoc for that file.
-- Added progress loader to keep track of the generating JSDocs or interrupt the generation.
+- Additions command in folder contextual menu to generate JSDoc for all TS and JS files in the folder (recursive).
+- Additions command in file contextual menu to generate JSDoc for that file.
+- Additions progress loader to keep track of the generating JSDocs or interrupt the generation.
 
-### Changed
+### Changes
 
 - Now explicitly overridden methods will only add the `@override` and `@inheritdoc` tags.
 
-### Fixed
+### Fixes
 
 - Fixed [#8](https://github.com/Nyphet/jsdoc-generator/issues/8), corrected and improved template tags.
 - Fixed [#12](https://github.com/Nyphet/jsdoc-generator/issues/12), prevent adding `@typedef` when `includeTypes` is false.
@@ -45,22 +52,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.3.0] - 2023/07/21
 
-### Added
+### Additions
 
 - New setting option to create custom tags.
 
 ## [1.2.0] - 2023/02/26
 
-### Added
+### Additions
 
 - Setting to toggle whether to include types (defaults to `true`).
 - Support for JavaScript and JavaScript React.
 
-### Changed
+### Changes
 
 - Template tags now correctly only show the name of the type parameter.
 
-### Fixed
+### Fixes
 
 - Fixed [#5](https://github.com/Nyphet/jsdoc-generator/issues/5).
 - Fixed unnecessary brackets around union or intersection types.  
@@ -68,24 +75,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.1.1] - 2022/04/09
 
-### Added
+### Additions
 
 - Setting to toggle whether to include export tag
 - Setting to toggle whether to include async tag
 
 ## [1.1.0] - 2021/12/03
 
-### Added
+### Additions
 
 - Support for TypeScript React.
 
-### Changed
+### Changes
 
 - A few minor project configuration settings with consequent fixes.
 
 ## [1.0.0] - 2021/07/20
 
-### Added
+### Additions
 
 - 3 commands declarations.
 - Extension configurations.

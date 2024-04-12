@@ -4,7 +4,7 @@
   "description": "Automatic JSDoc generator for TypeScript and JavaScript.",
   "publisher": "crystal-spider",
   "icon": "jsdoc-generator.png",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "engines": {
     "vscode": "^1.57.0"
   },
@@ -65,15 +65,10 @@
           "default": "",
           "description": "Set the value for the author tag.\nEmpty to disable, set to \"author\" to insert \"author\" as placeholder."
         },
-        "jsdoc-generator.includeDate": {
-          "type": "boolean",
-          "default": "false",
-          "description": "When enabled, will include the date tag."
-        },
-        "jsdoc-generator.includeTime": {
-          "type": "boolean",
-          "default": "true",
-          "description": "When both this and jsdoc-generator.includeDate are enabled, will include the current local time in the date tag."
+        "jsdoc-generator.dateFormat": {
+          "type": "string",
+          "default": "",
+          "description": "Fill in with any valid MomentJs format (either explicit or locale) to include the date tag.\nFormats can include time as well.\nLeave empty to disable."
         },
         "jsdoc-generator.includeTypes": {
           "type": "boolean",
@@ -228,6 +223,7 @@
     "eslint-plugin-unused-imports": "^3.0.0",
     "glob": "^7.1.4",
     "mocha": "^10.2.0",
+    "moment": "^2.30.1",
     "openai": "^4.0.0-beta.6",
     "palm-api": "^1.1.0",
     "typescript": "^5.1.6",

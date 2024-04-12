@@ -31,12 +31,11 @@ This extension contributes the following settings:
   Set the value for the author tag.  
   Empty to disable, set to "author" to insert "author" as placeholder.  
   Default: `""`
-- `jsdoc-generator.includeDate`:  
-  When enabled, will include the date tag.  
-  Default: `false`
-- `jsdoc-generator.includeTime`:  
-  When both this and jsdoc-generator.includeDate are enabled, will include the current local time in the date tag.  
-  Default: `true`
+- `jsdoc-generator.dateFormat`:  
+  Fill in with any valid [MomentJs format](https://momentjs.com/) (either explicit or locale) to include the date tag.  
+  Formats can include time as well.  
+  Leave empty to disable.  
+  Default: `""`
 - `jsdoc-generator.includeTypes`:  
   Whether to include types into the generated JSDoc.  
   Default: `true`
@@ -190,6 +189,10 @@ Some non [everyday types](https://www.typescriptlang.org/docs/handbook/2/everyda
 ---
 
 ## Release Notes
+
+### [2.1.0](https://github.com/Nyphet/jsdoc-generator/releases/tag/v2.1.0)
+
+- [#22](https://github.com/Crystal-Spider/jsdoc-generator/issues/22), changing how date tag format is handled.
 
 ### [2.0.2](https://github.com/Nyphet/jsdoc-generator/releases/tag/v2.0.2)
 

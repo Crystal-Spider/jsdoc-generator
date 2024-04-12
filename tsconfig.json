@@ -10,7 +10,8 @@
     "outDir": "out",
 		"strict": true,
 		"sourceMap": true,
-		"noImplicitReturns": true
+		"noImplicitReturns": true,
+    "esModuleInterop": true
 	},
 	"exclude": [
 		".vscode-test",

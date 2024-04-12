@@ -1,3 +1,4 @@
+import moment from 'moment';
 import {getTextOfJSDocComment, Node, SyntaxKind, NodeArray, TypeNode, ExpressionWithTypeArguments, TypeParameterDeclaration, HeritageClause, AccessorDeclaration, ClassDeclaration, ClassLikeDeclaration, ConstructorDeclaration, EnumDeclaration, InterfaceDeclaration, MethodDeclaration, ParameterDeclaration, PropertyDeclaration, TypeAliasDeclaration, VariableDeclaration, ModifierLike, BindingPattern} from 'typescript';
 import {SnippetString} from 'vscode';
 
@@ -506,13 +507,9 @@ export class JsdocBuilder {
    * @private
    */
   private buildDate() {
-    if (getConfig('includeDate', false)) {
-      const date = new Date();
-      let value = date.toLocaleDateString();
-      if (getConfig('includeTime', true)) {
-        value += ` - ${date.toLocaleTimeString()}`;
-      }
-      this.buildJsdocLine('date', {value, wrapper: '', align: false});
+    const format = getConfig('dateFormat', '');
+    if (format) {
+      this.buildJsdocLine('date', {value: moment().format(format), wrapper: '', align: false});
     }
   }
 

@@ -95,17 +95,11 @@ interface Configuration {
    */
   author: string;
   /**
-   * Whether to include the date in JSDocs.
+   * Format of the date tag.
    *
-   * @type {boolean}
+   * @type {string}
    */
-  includeDate: boolean;
-  /**
-   * Whether to include the time in JSDocs.
-   *
-   * @type {boolean}
-   */
-  includeTime: boolean;
+  dateFormat: string;
   /**
    * Whether to include types in JSDocs.
    *
