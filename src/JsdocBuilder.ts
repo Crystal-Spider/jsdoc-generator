@@ -574,25 +574,36 @@ export class JsdocBuilder {
    * @param {boolean} [line.align=true] whether to align `tag`, `value`, `name`, and `description`.
    */
   private buildJsdocLine(tag = '', {value = '', wrapper = '{}', name = '', description = '', align = true}: JSDocLine = {}) {
-    let open = '', close = '', line = '';
+    let open = '', close = '';
     if (wrapper) {
       const middle = wrapper.length / 2;
       open = wrapper.substring(0, middle);
       close = wrapper.substring(middle);
     }
+    this.jsdoc.appendText(' *');
     if (tag) {
-      line += ` @${tag}`;
-      if (value) {
-        line += ` ${this.repeat(+align && getConfig('tagValueColumnStart', 0) - line.length)}${open}${value}${close}`;
+      let line = ` @${tag}`,
+        offset = 0;
+      if (value === '*') {
+        // Add line with `${open}${value}${close}` until open wrapper, add value as placeholder.
+        line = `${line.padEnd(+align && getConfig('tagValueColumnStart', 0))} ${this.sanitize(open)}`;
+        this.jsdoc.appendText(this.sanitize(line));
+        this.jsdoc.appendPlaceholder(value);
+        // Reset, add close wrapper and continue with offset.
+        offset = line.length;
+        line = close;
+      } else if (value) {
+        line = `${line.padEnd(+align && getConfig('tagValueColumnStart', 0))} ${open}${value}${close}`;
       }
       if (name) {
-        line += ` ${this.repeat(+align && getConfig('tagNameColumnStart', 0) - line.length)}${name}`;
+        line = `${line.padEnd(+align && getConfig('tagNameColumnStart', 0) - offset)} ${name}`;
       }
       if (description) {
-        line += ` ${this.repeat(+align && getConfig('tagDescriptionColumnStart', 0) - line.length)}${description}`;
+        line = `${line.padEnd(+align && getConfig('tagDescriptionColumnStart', 0) - offset)} ${description}`;
       }
+      this.jsdoc.appendText(this.sanitize(line));
     }
-    this.jsdoc.appendText(` *${this.sanitize(line)}\n`);
+    this.jsdoc.appendText('\n');
     if (value && wrapper === '{}') {
       // Remove '\' that comes from .appendText() escaping '}'.
       const backslashIndex = this.jsdoc.value.indexOf('\\');
@@ -730,29 +741,6 @@ export class JsdocBuilder {
       kind === SyntaxKind.FunctionExpression ||
       kind === SyntaxKind.FunctionDeclaration
     );
-  }
-
-  /**
-   * Repeats the given pattern for the given times.
-   *
-   * @private
-   * @param {number} times
-   * @param {string} [pattern=' ']
-   * @returns {string}
-   */
-  private repeat(times: number, pattern = ' '): string {
-    if (times >= 1) {
-      let count = times, sequence = pattern, result = '';
-      while (count > 1) {
-        if (count & 1) {
-          result += sequence;
-        }
-        count >>= 1;
-        sequence += sequence;
-      }
-      return result + sequence;
-    }
-    return '';
   }
 
   /**
