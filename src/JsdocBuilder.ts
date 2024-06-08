@@ -574,25 +574,35 @@ export class JsdocBuilder {
    * @param {boolean} [line.align=true] whether to align `tag`, `value`, `name`, and `description`.
    */
   private buildJsdocLine(tag = '', {value = '', wrapper = '{}', name = '', description = '', align = true}: JSDocLine = {}) {
-    let open = '', close = '', line = '';
+    let open = '', close = '', line = '', offset = 0;
     if (wrapper) {
       const middle = wrapper.length / 2;
       open = wrapper.substring(0, middle);
       close = wrapper.substring(middle);
     }
+    this.jsdoc.appendText(' *');
     if (tag) {
       line += ` @${tag}`;
-      if (value) {
+      if (value === '*') {
+        // Add line with `${open}${value}${close}` until open wrapper, add value as placeholder.
+        line += ` ${this.repeat(+align && getConfig('tagValueColumnStart', 0) - line.length)}${this.sanitize(open)}`;
+        this.jsdoc.appendText(this.sanitize(line));
+        this.jsdoc.appendPlaceholder(value);
+        // Reset, add close wrapper and continue with offset.
+        offset = line.length;
+        line = close;
+      } else if (value) {
         line += ` ${this.repeat(+align && getConfig('tagValueColumnStart', 0) - line.length)}${open}${value}${close}`;
       }
       if (name) {
-        line += ` ${this.repeat(+align && getConfig('tagNameColumnStart', 0) - line.length)}${name}`;
+        line += ` ${this.repeat(+align && getConfig('tagNameColumnStart', 0) - line.length - offset)}${name}`;
       }
       if (description) {
-        line += ` ${this.repeat(+align && getConfig('tagDescriptionColumnStart', 0) - line.length)}${description}`;
+        line += ` ${this.repeat(+align && getConfig('tagDescriptionColumnStart', 0) - line.length - offset)}${description}`;
       }
+      this.jsdoc.appendText(this.sanitize(line));
     }
-    this.jsdoc.appendText(` *${this.sanitize(line)}\n`);
+    this.jsdoc.appendText('\n');
     if (value && wrapper === '{}') {
       // Remove '\' that comes from .appendText() escaping '}'.
       const backslashIndex = this.jsdoc.value.indexOf('\\');
