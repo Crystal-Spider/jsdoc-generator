@@ -101,6 +101,18 @@ interface Configuration {
    */
   dateFormat: string;
   /**
+   * Empty line after header.
+   *
+   * @type {string}
+   */
+  emptyLineAfterHeader: boolean;
+  /**
+   * Generate single line comments instead of always multiple lines.
+   *
+   * @type {boolean}
+   */
+  singleLineComments: boolean;
+  /**
    * Whether to include types in JSDocs.
    *
    * @type {boolean}
