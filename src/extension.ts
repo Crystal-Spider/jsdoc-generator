@@ -101,6 +101,12 @@ interface Configuration {
    */
   dateFormat: string;
   /**
+   * Empty line after header.
+   *
+   * @type {string}
+   */
+  emptyLineAfterHeader: boolean;
+  /**
    * Whether to include types in JSDocs.
    *
    * @type {boolean}

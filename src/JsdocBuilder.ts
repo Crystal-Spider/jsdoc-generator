@@ -251,7 +251,9 @@ export class JsdocBuilder {
     }
     this.buildDate();
     this.buildAuthor();
-    this.buildJsdocLine();
+    if (getConfig('emptyLineAfterHeader', true)) {
+      this.buildJsdocLine();
+    }
     this.buildJsdocLine('constructor');
     this.buildJsdocModifiers(node.modifiers);
     await this.buildJsdocParameters(node.getFullText(), node.parameters);
@@ -455,7 +457,9 @@ export class JsdocBuilder {
     }
     this.buildDate();
     this.buildAuthor();
-    this.buildJsdocLine();
+    if (getConfig('emptyLineAfterHeader', true)) {
+      this.buildJsdocLine();
+    }
   }
 
   /**
