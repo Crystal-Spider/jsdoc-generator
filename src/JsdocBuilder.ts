@@ -472,19 +472,19 @@ export class JsdocBuilder {
    * @param {?NodeType} type
    */
   private async buildDescription(nodeText?: string, description?: string, type?: NodeType) {
-    this.jsdoc.appendText(' * ');
     const placeholder = getConfig('descriptionPlaceholder', '');
     if (description) {
-      this.jsdoc.appendText(this.sanitize(description));
+      this.jsdoc.appendText(` * ${this.sanitize(description)}\n`);
     } else if (placeholder) {
+      this.jsdoc.appendText(' * ');
       this.jsdoc.appendPlaceholder(placeholder);
+      this.jsdoc.appendText('\n');
     } else if (nodeText && type) {
       const autoDescription = await GenerativeAPI.describeSnippet(nodeText, type);
       if (autoDescription) {
-        this.jsdoc.appendText(this.sanitize(autoDescription));
+        this.jsdoc.appendText(` * ${this.sanitize(autoDescription)}\n`);
       }
     }
-    this.jsdoc.appendText('\n');
   }
 
   /**
