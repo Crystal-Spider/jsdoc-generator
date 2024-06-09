@@ -75,6 +75,11 @@
           "default": "true",
           "description": "Add empty line after header (description, date, author)."
         },
+        "jsdoc-generator.singleLineComments": {
+          "type": "boolean",
+          "default": "false",
+          "description": "Generate single line comments (/** ... */) instead of always multiple lines."
+        },
         "jsdoc-generator.includeTypes": {
           "type": "boolean",
           "default": "true",
