@@ -251,7 +251,9 @@ export class JsdocBuilder {
     }
     this.buildDate();
     this.buildAuthor();
-    this.buildJsdocLine();
+    if (getConfig('emptyLineAfterHeader', true)) {
+      this.buildJsdocLine();
+    }
     this.buildJsdocLine('constructor');
     this.buildJsdocModifiers(node.modifiers);
     await this.buildJsdocParameters(node.getFullText(), node.parameters);
@@ -455,7 +457,9 @@ export class JsdocBuilder {
     }
     this.buildDate();
     this.buildAuthor();
-    this.buildJsdocLine();
+    if (getConfig('emptyLineAfterHeader', true)) {
+      this.buildJsdocLine();
+    }
   }
 
   /**
@@ -468,19 +472,19 @@ export class JsdocBuilder {
    * @param {?NodeType} type
    */
   private async buildDescription(nodeText?: string, description?: string, type?: NodeType) {
-    this.jsdoc.appendText(' * ');
     const placeholder = getConfig('descriptionPlaceholder', '');
     if (description) {
-      this.jsdoc.appendText(this.sanitize(description));
+      this.jsdoc.appendText(` * ${this.sanitize(description)}\n`);
     } else if (placeholder) {
+      this.jsdoc.appendText(' * ');
       this.jsdoc.appendPlaceholder(placeholder);
+      this.jsdoc.appendText('\n');
     } else if (nodeText && type) {
       const autoDescription = await GenerativeAPI.describeSnippet(nodeText, type);
       if (autoDescription) {
-        this.jsdoc.appendText(this.sanitize(autoDescription));
+        this.jsdoc.appendText(` * ${this.sanitize(autoDescription)}\n`);
       }
     }
-    this.jsdoc.appendText('\n');
   }
 
   /**
@@ -537,6 +541,9 @@ export class JsdocBuilder {
     }
     if (this.jsdoc.value.startsWith('/**\n *\n') && (this.jsdoc.value.match(/\n/g) || []).length > 2) {
       this.jsdoc.value = this.jsdoc.value.substring(0, 4) + this.jsdoc.value.substring(7);
+    }
+    if (getConfig("singleLineComments", false)) {
+      this.jsdoc.value = this.jsdoc.value.replace(/^\/\*\*\n \* ?(.*)\n$/, '/** $1');
     }
     this.jsdoc.appendText(' */\n');
   }
