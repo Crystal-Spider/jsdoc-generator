@@ -4,7 +4,7 @@
   "description": "Automatic JSDoc generator for TypeScript and JavaScript.",
   "publisher": "crystal-spider",
   "icon": "jsdoc-generator.png",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "engines": {
     "vscode": "^1.57.0"
   },
@@ -73,12 +73,12 @@
         "jsdoc-generator.emptyLineAfterHeader": {
           "type": "boolean",
           "default": "true",
-          "description": "Add empty line after header (description, date, author)."
+          "description": "Whether to add an empty line after the header (description, date, author)."
         },
         "jsdoc-generator.singleLineComments": {
           "type": "boolean",
           "default": "false",
-          "description": "Generate single line comments (/** ... */) instead of always multiple lines."
+          "description": "Whether to prefer single line comments (/** ... */) whenever possible."
         },
         "jsdoc-generator.includeTypes": {
           "type": "boolean",

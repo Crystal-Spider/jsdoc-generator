@@ -36,6 +36,12 @@ This extension contributes the following settings:
   Formats can include time as well.  
   Leave empty to disable.  
   Default: `""`
+- `jsdoc-generator.emptyLineAfterHeader`:  
+  Whether to prefer single line comments (`/** ... */`) whenever possible.
+  Default: `true`
+- `jsdoc-generator.singleLineComments`:  
+  Whether to add an empty line after the header (description, date, author).
+  Default: `false`
 - `jsdoc-generator.includeTypes`:  
   Whether to include types into the generated JSDoc.  
   Default: `true`
@@ -189,6 +195,11 @@ Some non [everyday types](https://www.typescriptlang.org/docs/handbook/2/everyda
 ---
 
 ## Release Notes
+
+### [2.2.0](https://github.com/Nyphet/jsdoc-generator/releases/tag/v2.2.0)
+
+- [#23](https://github.com/Crystal-Spider/jsdoc-generator/pull/23), new options to create single line descriptions and to omit the empty line after descriptions.
+- [#24](https://github.com/Crystal-Spider/jsdoc-generator/pull/24), placeholder for unknown type annotations (`any`s).
 
 ### [2.1.0](https://github.com/Nyphet/jsdoc-generator/releases/tag/v2.1.0)
 
