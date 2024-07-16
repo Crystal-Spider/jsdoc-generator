@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing new.
 
+## [2.2.0] - 2024/07/16
+
+### Additions
+
+- [#23](https://github.com/Crystal-Spider/jsdoc-generator/pull/23), new options to create single line descriptions and to omit the empty line after descriptions.
+- [#24](https://github.com/Crystal-Spider/jsdoc-generator/pull/24), placeholder for unknown type annotations (`any`s).
+
 ## [2.1.0] - 2024/04/12
 
 ### Changes
@@ -26,15 +33,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixes
 
-- [#18](https://github.com/Nyphet/jsdoc-generator/issues/18), multiline values and descriptions not adding asterisks on new lines.
+- [#18](https://github.com/Crystal-Spider/jsdoc-generator/issues/18), multiline values and descriptions not adding asterisks on new lines.
 - API key setting not resetting unless the extension is reloaded.
 
 ## [2.0.0] - 2023/10/12
 
 ### Additions
 
-- Implemented [#16](https://github.com/Nyphet/jsdoc-generator/issues/16), added alignment options.
-- Implemented [#10](https://github.com/Nyphet/jsdoc-generator/issues/10), integration of ChatGPT to automatically generate descriptions.
+- Implemented [#16](https://github.com/Crystal-Spider/jsdoc-generator/issues/16), added alignment options.
+- Implemented [#10](https://github.com/Crystal-Spider/jsdoc-generator/issues/10), integration of ChatGPT to automatically generate descriptions.
 - Finally implemented the command to generate JSDoc for all suitable files in the current workspace (recursive).
 - Additions command in folder contextual menu to generate JSDoc for all TS and JS files in the folder (recursive).
 - Additions command in file contextual menu to generate JSDoc for that file.
@@ -46,9 +53,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixes
 
-- Fixed [#8](https://github.com/Nyphet/jsdoc-generator/issues/8), corrected and improved template tags.
-- Fixed [#12](https://github.com/Nyphet/jsdoc-generator/issues/12), prevent adding `@typedef` when `includeTypes` is false.
-- Fixed [#17](https://github.com/Nyphet/jsdoc-generator/issues/17), JSDoc generation for functions that deconstruct parameters.
+- Fixed [#8](https://github.com/Crystal-Spider/jsdoc-generator/issues/8), corrected and improved template tags.
+- Fixed [#12](https://github.com/Crystal-Spider/jsdoc-generator/issues/12), prevent adding `@typedef` when `includeTypes` is false.
+- Fixed [#17](https://github.com/Crystal-Spider/jsdoc-generator/issues/17), JSDoc generation for functions that deconstruct parameters.
 
 ## [1.3.0] - 2023/07/21
 
@@ -69,7 +76,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixes
 
-- Fixed [#5](https://github.com/Nyphet/jsdoc-generator/issues/5).
+- Fixed [#5](https://github.com/Crystal-Spider/jsdoc-generator/issues/5).
 - Fixed unnecessary brackets around union or intersection types.  
   For example, `Type<T & U>` before became `(Type<T & U>)`, now it correctly stays as `Type<T & U>`.
 
@@ -105,15 +112,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Few basic unit tests.
 - This [CHANGELOG] file.
 
-[unreleased]: https://github.com/Nyphet/jsdoc-generator
-[2.1.0]: https://github.com/Nyphet/jsdoc-generator/releases/tag/v2.1.0
-[2.0.2]: https://github.com/Nyphet/jsdoc-generator/releases/tag/v2.0.2
-[2.0.1]: https://github.com/Nyphet/jsdoc-generator/releases/tag/v2.0.1
-[2.0.0]: https://github.com/Nyphet/jsdoc-generator/releases/tag/v2.0.0
-[1.3.0]: https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.3.0
-[1.2.0]: https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.2.0
-[1.1.1]: https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.1.1
-[1.1.0]: https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.1.0
-[1.0.0]: https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.0.0
-[readme]: https://github.com/Nyphet/jsdoc-generator
-[changelog]: https://github.com/Nyphet/jsdoc-generator/blob/main/CHANGELOG.md
+[unreleased]: https://github.com/Crystal-Spider/jsdoc-generator
+[2.2.0]: https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.2.0
+[2.1.0]: https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.1.0
+[2.0.2]: https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.0.2
+[2.0.1]: https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.0.1
+[2.0.0]: https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.0.0
+[1.3.0]: https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v1.3.0
+[1.2.0]: https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v1.2.0
+[1.1.1]: https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v1.1.1
+[1.1.0]: https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v1.1.0
+[1.0.0]: https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v1.0.0
+[readme]: https://github.com/Crystal-Spider/jsdoc-generator
+[changelog]: https://github.com/Crystal-Spider/jsdoc-generator/blob/main/CHANGELOG.md

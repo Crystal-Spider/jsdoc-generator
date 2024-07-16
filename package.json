@@ -201,7 +201,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Nyphet/jsdoc-generator.git"
+    "url": "https://github.com/Crystal-Spider/jsdoc-generator.git"
   },
   "scripts": {
     "package": "vsce package",

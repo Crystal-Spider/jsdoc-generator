@@ -37,10 +37,10 @@ This extension contributes the following settings:
   Leave empty to disable.  
   Default: `""`
 - `jsdoc-generator.emptyLineAfterHeader`:  
-  Whether to prefer single line comments (`/** ... */`) whenever possible.
+  Whether to prefer single line comments (`/** ... */`) whenever possible.  
   Default: `true`
 - `jsdoc-generator.singleLineComments`:  
-  Whether to add an empty line after the header (description, date, author).
+  Whether to add an empty line after the header (description, date, author).  
   Default: `false`
 - `jsdoc-generator.includeTypes`:  
   Whether to include types into the generated JSDoc.  
@@ -196,53 +196,53 @@ Some non [everyday types](https://www.typescriptlang.org/docs/handbook/2/everyda
 
 ## Release Notes
 
-### [2.2.0](https://github.com/Nyphet/jsdoc-generator/releases/tag/v2.2.0)
+### [2.2.0](https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.2.0)
 
 - [#23](https://github.com/Crystal-Spider/jsdoc-generator/pull/23), new options to create single line descriptions and to omit the empty line after descriptions.
 - [#24](https://github.com/Crystal-Spider/jsdoc-generator/pull/24), placeholder for unknown type annotations (`any`s).
 
-### [2.1.0](https://github.com/Nyphet/jsdoc-generator/releases/tag/v2.1.0)
+### [2.1.0](https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.1.0)
 
 - [#22](https://github.com/Crystal-Spider/jsdoc-generator/issues/22), changing how date tag format is handled.
 
-### [2.0.2](https://github.com/Nyphet/jsdoc-generator/releases/tag/v2.0.2)
+### [2.0.2](https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.0.2)
 
 - [#20](https://github.com/Crystal-Spider/jsdoc-generator/issues/20), missing JSDoc terminator.
 
-### [2.0.1](https://github.com/Nyphet/jsdoc-generator/releases/tag/v2.0.1)
+### [2.0.1](https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.0.1)
 
-- Fixed [#18](https://github.com/Nyphet/jsdoc-generator/issues/18), multiline values and descriptions not adding asterisks on new lines.
+- Fixed [#18](https://github.com/Crystal-Spider/jsdoc-generator/issues/18), multiline values and descriptions not adding asterisks on new lines.
 - Fixed API key setting not resetting unless the extension is reloaded.
 
-### [2.0.0](https://github.com/Nyphet/jsdoc-generator/releases/tag/v2.0.0)
+### [2.0.0](https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.0.0)
 
-- Fixed [#8](https://github.com/Nyphet/jsdoc-generator/issues/8), corrected and improved template tags.
-- Fixed [#12](https://github.com/Nyphet/jsdoc-generator/issues/12), prevent adding `@typedef` when `includeTypes` is false.
-- Fixed [#17](https://github.com/Nyphet/jsdoc-generator/issues/17), JSDoc generation for functions that deconstruct parameters.
-- Implemented [#16](https://github.com/Nyphet/jsdoc-generator/issues/16), added alignment options.
-- Implemented [#10](https://github.com/Nyphet/jsdoc-generator/issues/10), integration of ChatGPT to automatically generate descriptions.
+- Fixed [#8](https://github.com/Crystal-Spider/jsdoc-generator/issues/8), corrected and improved template tags.
+- Fixed [#12](https://github.com/Crystal-Spider/jsdoc-generator/issues/12), prevent adding `@typedef` when `includeTypes` is false.
+- Fixed [#17](https://github.com/Crystal-Spider/jsdoc-generator/issues/17), JSDoc generation for functions that deconstruct parameters.
+- Implemented [#16](https://github.com/Crystal-Spider/jsdoc-generator/issues/16), added alignment options.
+- Implemented [#10](https://github.com/Crystal-Spider/jsdoc-generator/issues/10), integration of ChatGPT to automatically generate descriptions.
 - Finally implemented the command to generate JSDoc for all suitable files in the current workspace (recursive).
 - Added command in folder contextual menu to generate JSDoc for all TS and JS files in the folder (recursive).
 - Added command in file contextual menu to generate JSDoc for that file.
 - Added progress loader to keep track of the generating JSDocs or interrupt the generation.
 - Now explicitly overridden methods will only add the `@override` and `@inheritdoc` tags.
 
-### [1.3.0](https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.3.0)
+### [1.3.0](https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v1.3.0)
 
 Added a new setting option to create custom tags.
 
-### [1.2.0](https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.2.0)
+### [1.2.0](https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v1.2.0)
 
 Added a new setting option to disable type inference and added support for JavaScript.
 
-### [1.1.1](https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.1.1)
+### [1.1.1](https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v1.1.1)
 
 Added two setting options.
 
-### [1.1.0](https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.1.0)
+### [1.1.0](https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v1.1.0)
 
 Added support for Typescript React.
 
-### [1.0.0](https://github.com/Nyphet/jsdoc-generator/releases/tag/v1.0.0)
+### [1.0.0](https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v1.0.0)
 
 Initial release of JSDoc Generator.
