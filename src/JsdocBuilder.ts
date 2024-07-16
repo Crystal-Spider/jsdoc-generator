@@ -542,7 +542,7 @@ export class JsdocBuilder {
     if (this.jsdoc.value.startsWith('/**\n *\n') && (this.jsdoc.value.match(/\n/g) || []).length > 2) {
       this.jsdoc.value = this.jsdoc.value.substring(0, 4) + this.jsdoc.value.substring(7);
     }
-    if (getConfig("singleLineComments", false)) {
+    if (getConfig('singleLineComments', false)) {
       this.jsdoc.value = this.jsdoc.value.replace(/^\/\*\*\n \* ?(.*)\n$/, '/** $1');
     }
     this.jsdoc.appendText(' */\n');
