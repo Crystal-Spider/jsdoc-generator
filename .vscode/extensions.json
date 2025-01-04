@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "connor4312.esbuild-problem-matchers",
+    "ms-vscode.extension-test-runner",
+    "mhutchie.git-graph",
+    "github.vscode-pull-request-github",
+    "crystal-spider.jsdoc-generator",
+    "esbenp.prettier-vscode"
+  ]
+}

@@ -1,15 +1,15 @@
 .vscode
 .vscode-test
+.vscode-test.mjs
 
 node_modules
 out/
 src/
 
-.eslintignore
-.eslintrc.js
 .gitignore
-
-package-lock.json
+eslint.config.mjs
+esbuild.js
 tsconfig.json
 
 **/*.ts
+**/*.map

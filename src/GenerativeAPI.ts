@@ -175,7 +175,7 @@ class GenerativeOpenAI extends GenerativeModel<OpenAI> {
         try {
           return JSON.parse(args).description;
         } catch (error) {
-          // Return undefined below.
+          console.error(error);
         }
       }
     }
@@ -227,7 +227,7 @@ class GenerativeOpenAI extends GenerativeModel<OpenAI> {
           const {descriptions} = JSON.parse(args);
           return descriptions ? parameters.map(param => descriptions[param.name] ?? '') : [];
         } catch (error) {
-          // Return undefined below.
+          console.error(error);
         }
       }
     }
@@ -277,7 +277,7 @@ class GenerativeOpenAI extends GenerativeModel<OpenAI> {
         try {
           return JSON.parse(args).description;
         } catch (error) {
-          // Return undefined below.
+          console.error(error);
         }
       }
     }

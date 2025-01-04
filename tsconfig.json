@@ -16,7 +16,6 @@
 	"exclude": [
 		".vscode-test",
 		"node_modules",
-		"dist",
 		"out"
 	]
 }
