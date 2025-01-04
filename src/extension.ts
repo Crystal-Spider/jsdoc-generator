@@ -55,6 +55,13 @@ type Language = 'English'
   | 'Greek';
 
 /**
+ * TypeScript node type.
+ *
+ * @typedef {NodeType}
+ */
+type NodeType = 'function' | 'class' | 'interface' | 'type' | 'enum' | 'property' | 'accessor' | 'constructor';
+
+/**
  * JSDoc custom tag.
  *
  * @interface CustomTag
@@ -73,6 +80,12 @@ interface CustomTag {
    * @type {?string}
    */
   placeholder?: string;
+  /**
+   * Node types for which the tag applies.
+   *
+   * @type {?NodeType[]}
+   */
+  whitelist?: NodeType[];
 }
 
 /**
@@ -413,4 +426,4 @@ function getConfig<K extends keyof Configuration>(property: K, defaultValue: Con
   return vscode.workspace.getConfiguration().get(`jsdoc-generator.${property}`, defaultValue);
 }
 
-export {SUPPORTED_LANGUAGES, activate, deactivate, getConfig, SummarizedParameter};
+export {SUPPORTED_LANGUAGES, activate, deactivate, getConfig, SummarizedParameter, NodeType};

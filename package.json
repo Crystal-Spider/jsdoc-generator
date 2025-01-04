@@ -122,12 +122,31 @@
             "properties": {
               "tag": {
                 "type": "string",
-                "description": "Tag name"
+                "description": "Tag name."
               },
               "placeholder": {
                 "type": "string",
-                "description": "Placeholder text",
+                "description": "Placeholder text.",
                 "default": ""
+              },
+              "whitelist": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "function",
+                    "class",
+                    "interface",
+                    "type",
+                    "enum",
+                    "property",
+                    "accessor",
+                    "constructor"
+                  ],
+                  "description": "Node type for which the tag will be added."
+                },
+                "default": [],
+                "description": "Optional list of node types for which the tag will be added.\nEmpty or unset to add to all node types."
               }
             }
           },
@@ -161,7 +180,7 @@
             "gpt-4"
           ],
           "default": "gpt-3.5-turbo",
-          "description": "Generative AI model to use to generate JSDoc decriptions.\nEnable the model with an API key.\nNote that jsdoc-generator.descriptionPlaceholder will take precedence."
+          "description": "Generative AI model to use to generate JSDoc decriptions.\nEnable the model with an API key."
         },
         "jsdoc-generator.generativeLanguage": {
           "type": "string",

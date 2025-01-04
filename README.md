@@ -87,13 +87,14 @@ This extension contributes the following settings:
    * Description placeholder.
    *
    * @param {number} n
-   * @example Example placeholder.
    * @returns {string}
+   * @example Example placeholder.
    */
   function foo(n: number): string {
     return `${n}`;
   }
   ```
+  It's also possible to specify a `whitelist` property for each custom tag. This property determines whether the custom tag can be added to the current node type. For example, when `"whitelist": ["class", "interface"]`, a custom tag would be added only to JSDoc for classes and interfaces.
 - `jsdoc-generator.tagValueColumnStart`:  
   Starting point of the column containing the tag value (if any, e.g. type).  
   0 to make it adaptive (default, no alignment), a positive number to fix the starting point.  

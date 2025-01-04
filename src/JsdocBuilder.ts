@@ -139,7 +139,7 @@ export class JsdocBuilder {
     }
     await this.buildTypeParameters(node.getFullText(), nodeType, node.typeParameters);
     this.buildJsdocHeritage(node.heritageClauses);
-    this.buildCustomTags();
+    this.buildCustomTags(nodeType);
     this.buildJsdocEnd();
     return this.jsdoc;
   }
@@ -166,7 +166,7 @@ export class JsdocBuilder {
       if (this.includeTypes) {
         this.buildJsdocLine('type', {value: this.retrieveType(node)});
       }
-      this.buildCustomTags();
+      this.buildCustomTags('property');
       this.buildJsdocEnd();
     }
     return this.jsdoc;
@@ -198,7 +198,7 @@ export class JsdocBuilder {
         this.buildJsdocLine('type', {value: this.retrieveType(node)});
       }
     }
-    this.buildCustomTags();
+    this.buildCustomTags('accessor');
     this.buildJsdocEnd();
     return this.jsdoc;
   }
@@ -215,7 +215,7 @@ export class JsdocBuilder {
     await this.buildJsdocHeader(node.getFullText(), 'enum');
     this.buildJsdocModifiers(node.modifiers);
     this.buildJsdocLine('enum', {value: this.includeTypes ? 'number' : ''});
-    this.buildCustomTags();
+    this.buildCustomTags('enum');
     this.buildJsdocEnd();
     return this.jsdoc;
   }
@@ -237,7 +237,7 @@ export class JsdocBuilder {
     if (getConfig('includeReturn', true)) {
       await this.buildJsdocReturn(node);
     }
-    this.buildCustomTags();
+    this.buildCustomTags('function');
     this.buildJsdocEnd();
     return this.jsdoc;
   }
@@ -265,7 +265,7 @@ export class JsdocBuilder {
     this.buildJsdocLine('constructor');
     this.buildJsdocModifiers(node.modifiers);
     await this.buildJsdocParameters(node.getFullText(), node.parameters);
-    this.buildCustomTags();
+    this.buildCustomTags('constructor');
     this.buildJsdocEnd();
     return this.jsdoc;
   }
@@ -285,7 +285,7 @@ export class JsdocBuilder {
       this.buildJsdocLine('typedef', {value: node.name.getText()});
     }
     await this.buildTypeParameters(node.getFullText(), 'type', node.typeParameters);
-    this.buildCustomTags();
+    this.buildCustomTags('type');
     this.buildJsdocEnd();
     return this.jsdoc;
   }
@@ -483,15 +483,10 @@ export class JsdocBuilder {
     const placeholder = getConfig('descriptionPlaceholder', '');
     if (description) {
       this.jsdoc.appendText(` * ${this.sanitize(description)}\n`);
-    } else if (placeholder) {
+    } else {
       this.jsdoc.appendText(' * ');
-      this.jsdoc.appendPlaceholder(placeholder);
+      this.jsdoc.appendPlaceholder(this.sanitize((nodeText && type && await GenerativeAPI.describeSnippet(nodeText, type)) || placeholder));
       this.jsdoc.appendText('\n');
-    } else if (nodeText && type) {
-      const autoDescription = await GenerativeAPI.describeSnippet(nodeText, type);
-      if (autoDescription) {
-        this.jsdoc.appendText(` * ${this.sanitize(autoDescription)}\n`);
-      }
     }
   }
 
@@ -528,13 +523,16 @@ export class JsdocBuilder {
   /**
    * Builds custom tags.
    *
+   * @param {NodeType} nodeType node type to which the custom tags would be added.
    * @private
    */
-  private buildCustomTags() {
+  private buildCustomTags(nodeType: NodeType) {
     const customTags = getConfig('customTags', []);
     for (const customTag of customTags) {
-      const {tag, placeholder = ''} = customTag;
-      this.buildJsdocLine(tag, {value: placeholder, wrapper: '', placeholder: true});
+      const {tag, placeholder = '', whitelist = []} = customTag;
+      if (whitelist.length === 0 || whitelist.includes(nodeType)) {
+        this.buildJsdocLine(tag, {value: placeholder, wrapper: '', placeholder: true});
+      }
     }
   }
 
@@ -587,7 +585,7 @@ export class JsdocBuilder {
    * @param {string} [line.name=''] an extra value to add to the line.
    * @param {string} [line.description=''] description value to add to the line.
    * @param {boolean} [line.align=true] whether to align `tag`, `value`, `name`, and `description`.
-   * @param {boolean} [line.placeholder=true] whether to force the value to be a placeholder.
+   * @param {boolean} [line.placeholder=true] whether to force `value` to be a placeholder.
    */
   private buildJsdocLine(tag = '', {value = '', wrapper = '{}', name = '', description = '', align = true, placeholder = false}: JSDocLine = {}) {
     let open = '', close = '';
@@ -598,14 +596,13 @@ export class JsdocBuilder {
     }
     this.jsdoc.appendText(' *');
     if (tag) {
-      let line = ` @${tag}`,
-        offset = 0;
+      let line = ` @${tag}`, offset = 0;
       if (value === '*' || placeholder) {
-        // Add line with `${open}${value}${close}` until open wrapper, add value as placeholder.
+        // Add line with alignment and `${open}${value}${close}` until open wrapper, then add value as placeholder.
         line = `${line.padEnd(+align && getConfig('tagValueColumnStart', 0))} ${this.sanitize(open)}`;
         this.jsdoc.appendText(this.sanitize(line));
         this.jsdoc.appendPlaceholder(value);
-        // Reset, add close wrapper and continue with offset.
+        // Reset, add close wrapper, and continue with offset.
         offset = line.length;
         line = close;
       } else if (value) {
@@ -614,16 +611,20 @@ export class JsdocBuilder {
       if (name) {
         line = `${line.padEnd(+align && getConfig('tagNameColumnStart', 0) - offset)} ${name}`;
       }
-      if (description) {
-        line = `${line.padEnd(+align && getConfig('tagDescriptionColumnStart', 0) - offset)} ${description}`;
+      if (description || name || tag === 'returns') {
+        // Add line until empty space, then add description as placeholder.
+        line = `${line.padEnd(+align && getConfig('tagDescriptionColumnStart', 0) - offset)} `;
+        this.jsdoc.appendText(this.sanitize(line));
+        this.jsdoc.appendPlaceholder(description || '');
+      } else {
+        this.jsdoc.appendText(this.sanitize(line));
       }
-      this.jsdoc.appendText(this.sanitize(line));
     }
     this.jsdoc.appendText('\n');
     if (value && wrapper === '{}') {
       // Remove '\' that comes from .appendText() escaping '}'.
-      const backslashIndex = this.jsdoc.value.indexOf('\\');
-      this.jsdoc.value = this.jsdoc.value.substring(0, backslashIndex) + this.jsdoc.value.substring(backslashIndex + 1);
+      const index = this.jsdoc.value.indexOf('\\');
+      this.jsdoc.value = this.jsdoc.value.substring(0, index) + this.jsdoc.value.substring(index + 1);
     }
   }
 

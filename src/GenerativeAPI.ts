@@ -1,14 +1,7 @@
 import {OpenAI} from 'openai';
 import PaLM from 'palm-api';
 
-import {SummarizedParameter, getConfig} from './extension';
-
-/**
- * TypeScript node type.
- *
- * @typedef {NodeType}
- */
-type NodeType = 'function' | 'class' | 'interface' | 'type' | 'enum' | 'property';
+import {SummarizedParameter, NodeType, getConfig} from './extension';
 
 /**
  * Generative AI model.
