@@ -37,7 +37,7 @@ abstract class GenerativeModel<T> {
    *
    * @protected
    * @readonly
-   * @type {("gpt-3.5-turbo" | "gpt-4")}
+   * @type {Model}
    */
   protected get model() {
     return getConfig('generativeModel', 'gpt-3.5-turbo');
@@ -302,7 +302,7 @@ class GenerativeAPI {
    * @private
    * @static
    * @readonly
-   * @type {'gpt-3.5-turbo' | 'gpt-4'}
+   * @type {Model}
    */
   private static get model() {
     return getConfig('generativeModel', 'gpt-3.5-turbo');

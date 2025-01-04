@@ -176,8 +176,14 @@
         "jsdoc-generator.generativeModel": {
           "type": "string",
           "enum": [
-            "gpt-3.5-turbo",
-            "gpt-4"
+            "o1",
+            "o1-mini",
+            "gpt-4o",
+            "gpt-4o-mini",
+            "chatgpt-4o-latest",
+            "gpt-4-turbo",
+            "gpt-4",
+            "gpt-3.5-turbo"
           ],
           "default": "gpt-3.5-turbo",
           "description": "Generative AI model to use to generate JSDoc decriptions.\nEnable the model with an API key."
