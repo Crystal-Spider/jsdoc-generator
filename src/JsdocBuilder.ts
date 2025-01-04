@@ -228,7 +228,9 @@ export class JsdocBuilder {
     this.buildJsdocModifiers(node.modifiers);
     await this.buildTypeParameters(node.getFullText(), 'function', node.typeParameters);
     await this.buildJsdocParameters(node.getFullText(), node.parameters);
-    await this.buildJsdocReturn(node);
+    if (getConfig('includeReturn', true)) {
+      await this.buildJsdocReturn(node);
+    }
     this.buildCustomTags();
     this.buildJsdocEnd();
     return this.jsdoc;

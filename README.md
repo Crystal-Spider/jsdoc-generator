@@ -66,6 +66,10 @@ This extension contributes the following settings:
   When enabled, will include the async tag.  
   Disable to exclude it from the generated JSDoc.  
   Default: `true`
+- `jsdoc-generator.includeReturn`:  
+  When enabled, will include the return tag.  
+  Disable to exclude it from the generated JSDoc.  
+  Default: `true`
 - `jsdoc-generator.customTags`:  
   When configured, will add the specified custom tags.  
   For example this:

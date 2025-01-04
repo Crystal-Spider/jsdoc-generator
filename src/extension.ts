@@ -149,6 +149,12 @@ interface Configuration {
    */
   includeAsync: boolean;
   /**
+   * Whether to include the return tag in JSDocs.
+   *
+   * @type {boolean}
+   */
+  includeReturn: boolean;
+  /**
    * JSDoc custom tags.
    *
    * @type {CustomTag[]}

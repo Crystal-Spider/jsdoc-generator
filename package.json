@@ -110,6 +110,11 @@
           "default": "true",
           "description": "Whether to include the async tag or not."
         },
+        "jsdoc-generator.includeReturn": {
+          "type": "boolean",
+          "default": "true",
+          "description": "Whether to include the return tag or not."
+        },
         "jsdoc-generator.customTags": {
           "type": "array",
           "items": {
