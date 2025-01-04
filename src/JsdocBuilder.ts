@@ -62,6 +62,12 @@ interface JSDocLine {
    * @type {?boolean}
    */
   align?: boolean;
+  /**
+   * Whether to force the value to be a placeholder.
+   *
+   * @type {?boolean}
+   */
+  placeholder?: boolean;
 }
 
 /**
@@ -528,7 +534,7 @@ export class JsdocBuilder {
     const customTags = getConfig('customTags', []);
     for (const customTag of customTags) {
       const {tag, placeholder = ''} = customTag;
-      this.buildJsdocLine(tag, {value: placeholder, wrapper: ''});
+      this.buildJsdocLine(tag, {value: placeholder, wrapper: '', placeholder: true});
     }
   }
 
@@ -581,8 +587,9 @@ export class JsdocBuilder {
    * @param {string} [line.name=''] an extra value to add to the line.
    * @param {string} [line.description=''] description value to add to the line.
    * @param {boolean} [line.align=true] whether to align `tag`, `value`, `name`, and `description`.
+   * @param {boolean} [line.placeholder=true] whether to force the value to be a placeholder.
    */
-  private buildJsdocLine(tag = '', {value = '', wrapper = '{}', name = '', description = '', align = true}: JSDocLine = {}) {
+  private buildJsdocLine(tag = '', {value = '', wrapper = '{}', name = '', description = '', align = true, placeholder = false}: JSDocLine = {}) {
     let open = '', close = '';
     if (wrapper) {
       const middle = wrapper.length / 2;
@@ -593,7 +600,7 @@ export class JsdocBuilder {
     if (tag) {
       let line = ` @${tag}`,
         offset = 0;
-      if (value === '*') {
+      if (value === '*' || placeholder) {
         // Add line with `${open}${value}${close}` until open wrapper, add value as placeholder.
         line = `${line.padEnd(+align && getConfig('tagValueColumnStart', 0))} ${this.sanitize(open)}`;
         this.jsdoc.appendText(this.sanitize(line));
