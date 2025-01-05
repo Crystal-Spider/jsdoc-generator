@@ -231,12 +231,11 @@
     "url": "https://github.com/Crystal-Spider/jsdoc-generator.git"
   },
   "scripts": {
-    "vscode:prepublish": "npm run package",
+    "package": "npm run check && npm run eslint:fix && node esbuild.js --production",
     "compile": "npm run check && npm run eslint:fix && node esbuild.js",
     "watch": "npm-run-all -p watch:*",
     "watch:esbuild": "node esbuild.js --watch",
     "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
-    "package": "npm run check && npm run eslint:fix && node esbuild.js --production",
     "compile-tests": "tsc -p .",
     "pretest": "npm run compile-tests && npm run compile",
     "test": "vscode-test",
