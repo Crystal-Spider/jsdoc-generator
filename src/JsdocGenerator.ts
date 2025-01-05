@@ -23,6 +23,16 @@ type Scope = 'folder' | 'the workspace';
 const supportedFilesGlob = '**/*.{js,ts,jsx,tsx}';
 
 /**
+ * Mock Node for file-level JSDocs.
+ *
+ * @type {Node}
+ */
+const fileNode = {
+  kind: 0,
+  getStart: () => 0
+} as Node;
+
+/**
  * JSDoc Generator.
  *
  * @export
@@ -192,11 +202,12 @@ export class JsdocGenerator {
     if (this.isLanguageSupported(textEditor.document)) {
       const caret = textEditor.selection.start;
       const tsFile = this.retrieveTsFile(textEditor.document, caret);
+      const file = caret.line === 0 && caret.character === 0;
       const {supportedNode} = tsFile;
       if (supportedNode) {
-        await this.writeJsdoc(supportedNode, tsFile, new TextFile(textEditor), token).catch(
-          reason => { window.showErrorMessage(`Unable to generate JSDoc at position (Ln ${caret.line}, Col ${caret.character}) because of ${reason}`); }
-        );
+        await this.writeJsdoc(supportedNode, tsFile, new TextFile(textEditor), token, file).catch(reason => window.showErrorMessage(`Unable to generate JSDoc at position (Ln ${caret.line}, Col ${caret.character}) because of ${reason}`));
+      } else if (file) {
+        this.writeJsdoc(fileNode, tsFile, new TextFile(textEditor), token, true).catch(reason => window.showErrorMessage(`Unable to generate file-level JSDoc because of ${reason}`));
       } else {
         window.showErrorMessage(`Unable to generate JSDoc at position (Ln ${caret.line}, Col ${caret.character}).`);
       }
@@ -258,20 +269,22 @@ export class JsdocGenerator {
    * @param {TsFile} tsFile object {@link TsFile} associated with the current file.
    * @param {TextFile<T>} textFile
    * @param {CancellationToken} token
+   * @param {boolean} [file=false] whether the JSDoc scope is file-wise.
    * @returns {Promise<boolean>} promise that resolves with a value indicating if the snippet could be inserted.
    */
-  private async writeJsdoc<T extends TextEditor | WorkspaceEdit>(node: Node, tsFile: TsFile, textFile: TextFile<T>, token: CancellationToken): Promise<boolean> {
+  private async writeJsdoc<T extends TextEditor | WorkspaceEdit>(node: Node, tsFile: TsFile, textFile: TextFile<T>, token: CancellationToken, file = false): Promise<boolean> {
     const jsdocLocation = this.getJsdocLocation(tsFile.sourceFile as SourceFile, node);
     // Cancellation check
     if (token.isCancellationRequested) {
       return Promise.resolve(false);
     }
-    const jsdoc = await this.buildJsdoc(node, tsFile);
+    const fileLevel = file && (jsdocLocation.line === 0 && jsdocLocation.character === 0) || node.getStart(tsFile.sourceFile as SourceFile) !== node.getStart(tsFile.sourceFile as SourceFile, true);
+    const jsdoc = await (fileLevel ? this.buildJsdoc(fileNode, tsFile, true) : this.buildJsdoc(node, tsFile));
     // Cancellation check
     if (token.isCancellationRequested) {
       return Promise.resolve(false);
     }
-    return this.insertJsdoc(jsdoc, jsdocLocation, textFile);
+    return this.insertJsdoc(jsdoc, fileLevel ? {line: 0, character: 0} : jsdocLocation, textFile);
   }
 
   /**
@@ -287,48 +300,48 @@ export class JsdocGenerator {
   }
 
   /**
-   * Instantiates a {@link JsdocBuilder} object. Then, depending on the node kind,
-   * calls the appropriate JSDoc building method.
+   * Instantiates a {@link JsdocBuilder} object. Then, depending on the node kind, calls the appropriate JSDoc building method.
    *
    * @private
    * @async
    * @param {Node} node
    * @param {TsFile} tsFile
+   * @param {boolean} [file=false] whether the JSDoc scope is file-wise.
    * @returns {Promise<SnippetString>} promise that resolves with the JSDoc built.
    */
-  private async buildJsdoc(node: Node, tsFile: TsFile) {
+  private async buildJsdoc(node: Node, tsFile: TsFile, file = false) {
     const jsdocBuilder = new JsdocBuilder(tsFile);
     switch (node.kind) {
       case SyntaxKind.PropertySignature:
       case SyntaxKind.PropertyDeclaration:
-        return await jsdocBuilder.getPropertyDeclarationJsdoc(node as PropertyDeclaration);
+        return jsdocBuilder.getPropertyDeclarationJsdoc(node as PropertyDeclaration);
       case SyntaxKind.Constructor:
-        return await jsdocBuilder.getConstructorJsdoc(node as ConstructorDeclaration);
+        return jsdocBuilder.getConstructorJsdoc(node as ConstructorDeclaration);
       case SyntaxKind.GetAccessor:
       case SyntaxKind.SetAccessor:
-        return await jsdocBuilder.getAccessorDeclarationJsdoc(node as AccessorDeclaration);
+        return jsdocBuilder.getAccessorDeclarationJsdoc(node as AccessorDeclaration);
       case SyntaxKind.MethodSignature:
       case SyntaxKind.MethodDeclaration:
       case SyntaxKind.CallSignature:
       case SyntaxKind.FunctionExpression:
       case SyntaxKind.ArrowFunction:
       case SyntaxKind.FunctionDeclaration:
-        return await jsdocBuilder.getMethodDeclarationJsdoc(node as MethodDeclaration);
+        return jsdocBuilder.getMethodDeclarationJsdoc(node as MethodDeclaration);
       case SyntaxKind.ClassDeclaration:
-        return await jsdocBuilder.getClassLikeDeclarationJsdoc(node as ClassDeclaration);
+        return jsdocBuilder.getClassLikeDeclarationJsdoc(node as ClassDeclaration);
       case SyntaxKind.InterfaceDeclaration:
-        return await jsdocBuilder.getClassLikeDeclarationJsdoc(node as InterfaceDeclaration);
+        return jsdocBuilder.getClassLikeDeclarationJsdoc(node as InterfaceDeclaration);
       case SyntaxKind.TypeAliasDeclaration:
-        return await jsdocBuilder.getTypeAliasJsdoc(node as TypeAliasDeclaration);
+        return jsdocBuilder.getTypeAliasJsdoc(node as TypeAliasDeclaration);
       case SyntaxKind.EnumDeclaration:
-        return await jsdocBuilder.getEnumDeclarationJsdoc(node as EnumDeclaration);
+        return jsdocBuilder.getEnumDeclarationJsdoc(node as EnumDeclaration);
       case SyntaxKind.VariableStatement:
-        return await jsdocBuilder.getPropertyDeclarationJsdoc(((node as VariableStatement).declarationList as VariableDeclarationList).declarations[0]);
+        return jsdocBuilder.getPropertyDeclarationJsdoc(((node as VariableStatement).declarationList as VariableDeclarationList).declarations[0]);
       case SyntaxKind.VariableDeclarationList:
-        return await jsdocBuilder.getPropertyDeclarationJsdoc((node as VariableDeclarationList).declarations[0]);
+        return jsdocBuilder.getPropertyDeclarationJsdoc((node as VariableDeclarationList).declarations[0]);
       case SyntaxKind.EnumMember:
       default:
-        return await jsdocBuilder.emptyJsdoc();
+        return file ? jsdocBuilder.fileJsdoc() : jsdocBuilder.emptyJsdoc();
     }
   }
 

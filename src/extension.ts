@@ -59,7 +59,7 @@ type Language = 'English'
  *
  * @typedef {NodeType}
  */
-type NodeType = 'function' | 'class' | 'interface' | 'type' | 'enum' | 'property' | 'accessor' | 'constructor';
+type NodeType = 'function' | 'class' | 'interface' | 'type' | 'enum' | 'property' | 'accessor' | 'constructor' | 'file';
 
 /**
  * Available AI model.

@@ -112,6 +112,23 @@ export class JsdocBuilder {
   }
 
   /**
+   * Creates a file-level JSDoc.
+   *
+   * @public
+   * @async
+   * @returns {Promise<SnippetString>}
+   */
+  public async fileJsdoc(): Promise<SnippetString> {
+    this.jsdoc.appendText('/**\n');
+    this.buildJsdocLine('file', {description: ''});
+    this.buildDate();
+    this.buildAuthor();
+    this.buildCustomTags('file');
+    this.buildJsdocEnd();
+    return this.jsdoc;
+  }
+
+  /**
    * @constructor
    * @param {TsFile} tsFile
    */
@@ -611,7 +628,7 @@ export class JsdocBuilder {
       if (name) {
         line = `${line.padEnd(+align && getConfig('tagNameColumnStart', 0) - offset)} ${name}`;
       }
-      if (description || name || tag === 'returns') {
+      if (description || name || tag === 'returns' || tag === 'file') {
         // Add line until empty space, then add description as placeholder.
         line = `${line.padEnd(+align && getConfig('tagDescriptionColumnStart', 0) - offset)} `;
         this.jsdoc.appendText(this.sanitize(line));
