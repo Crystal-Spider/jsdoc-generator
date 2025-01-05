@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Draft to support both Copilot and Gemini.
 
-## [2.3.0] - 2024/01/05
+## [2.3.0] - 2025/01/05
 
 ### Fixes
 
