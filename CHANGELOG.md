@@ -7,7 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Nothing new.
+- Draft to support both Copilot and Gemini.
+
+## [2.3.0] - 2024/01/05
+
+### Fixes
+
+- [#29](https://github.com/Crystal-Spider/jsdoc-generator/issues/29), impossible to create file-level comments.
+
+### Changes
+
+- Updated many dev dependencies and related code.\nNote that jsdoc-generator.descriptionPlaceholder will take precedence.
+- Option `jsdoc-generator.generativeModel` now takes precedence over `jsdoc-generator.descriptionPlaceholder`.
+- Now all AI generated comments are placeholders.
+- Now tags that are supposed to have a description, even when no description is generated, an empty placeholder is inserted for better keyboard navigation.
+
+### Additions
+
+- Implemented [#26](https://github.com/Crystal-Spider/jsdoc-generator/issues/26), option to toggle generation of @returns tags.
+- Implemented [#27](https://github.com/Crystal-Spider/jsdoc-generator/issues/27), make any custom tag placeholder an actual placeholder.
+- Added a whitelist property to custom tags to narrow which node types will have the custom tag added in their JSDoc.
+- Added several new OpenAI models to choose from to generate AI descriptions.
+- Slightly improved AI generated text.
 
 ## [2.2.0] - 2024/07/16
 
@@ -113,6 +134,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - This [CHANGELOG] file.
 
 [unreleased]: https://github.com/Crystal-Spider/jsdoc-generator
+[2.3.0]: https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.3.0
 [2.2.0]: https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.2.0
 [2.1.0]: https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.1.0
 [2.0.2]: https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.0.2

@@ -1,5 +1,6 @@
+import {GoogleGenerativeAI, GenerativeModel as Gemini} from '@google/generative-ai';
 import {OpenAI} from 'openai';
-import PaLM from 'palm-api';
+import {LanguageModelChat as Copilot} from 'vscode';
 
 import {SummarizedParameter, NodeType, getConfig} from './extension';
 
@@ -298,6 +299,114 @@ class GenerativeOpenAI extends GenerativeModel<OpenAI> {
 }
 
 /**
+ * Generative AI model from Google.
+ * 
+ * @class GenerativeGemini
+ * @typedef {GenerativeGemini}
+ * @extends {GenerativeModel<Gemini>}
+ */
+class GenerativeGemini extends GenerativeModel<Gemini> {
+  /**
+   * @inheritdoc
+   * 
+   * @override
+   */
+  protected init(): Gemini {
+    return new GoogleGenerativeAI(this.apiKey).getGenerativeModel({model: this.model});
+  }
+
+  /**
+   * @inheritdoc
+   * 
+   * @override
+   */
+  public async describeSnippet(content: string, type: NodeType): Promise<string | undefined> {
+    if (this.api) {
+      /**
+       * Getting the model to generate content (check out structured output).
+       * 
+       * const res = await this.api.generateContent('');
+       * res.response...
+       */
+    }
+    throw new Error('Method not implemented.');
+  }
+
+  /**
+   * @inheritdoc
+   * 
+   * @override
+   */
+  public async describeParameters(content: string, type: NodeType, generics: boolean, parameters: SummarizedParameter[]): Promise<string[] | undefined> {
+    throw new Error('Method not implemented.');
+  }
+
+  /**
+   * @inheritdoc
+   * 
+   * @override
+   */
+  public async describeReturn(content: string): Promise<string | undefined> {
+    throw new Error('Method not implemented.');
+  }
+}
+
+/**
+ * Generative AI model from Copilot.
+ * 
+ * @class GenerativeCopilot
+ * @typedef {GenerativeCopilot}
+ * @extends {GenerativeModel<Copilot>}
+ */
+class GenerativeCopilot extends GenerativeModel<Copilot> {
+  /**
+   * @inheritdoc
+   * 
+   * @override
+   */
+  protected override init(): Copilot {
+    /**
+     * Init model with access from within VSC:
+     * 
+     * let [model] = await lm.selectChatModels({vendor: 'copilot', family: 'gpt-4o'});
+     * model.sendRequest([], {}, undefined);
+     * (ExtensionContext context).languageModelAccessInformation.canSendRequest();
+     * 
+     * Init model with access from API key:
+     * Probably need to use JS fetch to call the endpoint.
+     */
+    throw new Error('Method not implemented.');
+  }
+
+  /**
+   * @inheritdoc
+   * 
+   * @override
+   */
+  public override describeSnippet(content: string, type: NodeType): Promise<string | undefined> {
+    throw new Error('Method not implemented.');
+  }
+
+  /**
+   * @inheritdoc
+   * 
+   * @override
+   */
+  public override describeParameters(content: string, type: NodeType, generics: boolean, parameters: SummarizedParameter[]): Promise<string[] | undefined> {
+    throw new Error('Method not implemented.');
+  }
+
+  /**
+   * @inheritdoc
+   * 
+   * @override
+   */
+  public override describeReturn(content: string): Promise<string | undefined> {
+    throw new Error('Method not implemented.');
+  }
+}
+
+/**
  * Generative AI functionalities wrapper.  
  * Handles the use of whichever generative model is selected by the user.
  *
@@ -313,7 +422,18 @@ class GenerativeAPI {
    * @static
    * @type {?GenerativeModel<OpenAI | PaLM>}
    */
-  private static generator?: GenerativeModel<OpenAI | PaLM>;
+  private static generator?: GenerativeModel<OpenAI | Gemini | Copilot>;
+
+  /**
+   * Model kind.
+   *
+   * @protected
+   * @readonly
+   * @type {Model}
+   */
+  protected get model() {
+    return getConfig('generativeModel', 'gpt-3.5-turbo');
+  }
 
   /**
    * Checks if the {@link GenerativeModel} instance is loaded and, if not, attempts to load it.
