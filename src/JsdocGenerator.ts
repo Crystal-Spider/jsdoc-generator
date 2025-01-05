@@ -29,7 +29,7 @@ const supportedFilesGlob = '**/*.{js,ts,jsx,tsx}';
  */
 const fileNode = {
   kind: 0,
-  getStart: () => 0
+  getStart: (_, includeJsDocComment) => +!!includeJsDocComment
 } as Node;
 
 /**
@@ -205,9 +205,9 @@ export class JsdocGenerator {
       const file = caret.line === 0 && caret.character === 0;
       const {supportedNode} = tsFile;
       if (supportedNode) {
-        await this.writeJsdoc(supportedNode, tsFile, new TextFile(textEditor), token, file).catch(reason => window.showErrorMessage(`Unable to generate JSDoc at position (Ln ${caret.line}, Col ${caret.character}) because of ${reason}`));
+        await this.writeJsdoc(supportedNode, tsFile, new TextFile(textEditor), token, file).catch(reason => { window.showErrorMessage(`Unable to generate JSDoc at position (Ln ${caret.line}, Col ${caret.character}) because of ${reason}`); });
       } else if (file) {
-        this.writeJsdoc(fileNode, tsFile, new TextFile(textEditor), token, true).catch(reason => window.showErrorMessage(`Unable to generate file-level JSDoc because of ${reason}`));
+        this.writeJsdoc(fileNode, tsFile, new TextFile(textEditor), token, true).catch(reason => { window.showErrorMessage(`Unable to generate file-level JSDoc because of ${reason}`); });
       } else {
         window.showErrorMessage(`Unable to generate JSDoc at position (Ln ${caret.line}, Col ${caret.character}).`);
       }
@@ -278,7 +278,7 @@ export class JsdocGenerator {
     if (token.isCancellationRequested) {
       return Promise.resolve(false);
     }
-    const fileLevel = file && (jsdocLocation.line === 0 && jsdocLocation.character === 0) || node.getStart(tsFile.sourceFile as SourceFile) !== node.getStart(tsFile.sourceFile as SourceFile, true);
+    const fileLevel = file && node.getStart(tsFile.sourceFile as SourceFile) !== node.getStart(tsFile.sourceFile as SourceFile, true);
     const jsdoc = await (fileLevel ? this.buildJsdoc(fileNode, tsFile, true) : this.buildJsdoc(node, tsFile));
     // Cancellation check
     if (token.isCancellationRequested) {

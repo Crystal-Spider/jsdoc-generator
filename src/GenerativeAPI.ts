@@ -134,25 +134,32 @@ class GenerativeOpenAI extends GenerativeModel<OpenAI> {
     if (this.api) {
       const args = (await this.api.chat.completions.create({
         model: this.model,
-        functions: [
+        tools: [
           {
-            name: 'generate_jsdoc',
-            description: `Given the ${type} textual (no tags) description in ${GenerativeModel.language}, generates its JSDoc`,
-            parameters: {
-              type: 'object',
-              properties: {
-                description: {
-                  type: 'string',
-                  description: `The ${type} description in ${GenerativeModel.language}, without tags and no ${type !== 'function' && type !== 'enum' ? 'attributes, methods, or' : ''}parameters or type parameters description. Each sentence on a new line.`
-                }
-              },
-              required: ['description']
+            type: 'function',
+            function: {
+              name: 'generate_jsdoc',
+              description: `Given the ${type} textual description (no tags) in ${GenerativeModel.language}, generates its JSDoc`,
+              parameters: {
+                type: 'object',
+                properties: {
+                  description: {
+                    type: 'string',
+                    // eslint-disable-next-line max-len
+                    description: `The ${type} description in ${GenerativeModel.language}, without tags and no ${type !== 'function' && type !== 'enum' ? 'attributes, methods, or ' : ''}parameters or type parameters description. The description must be very short and high-level. Each sentence on a new line, if more than one are necessary, on a new line.`
+                  }
+                },
+                required: ['description']
+              }
             }
           }
         ],
         // eslint-disable-next-line @typescript-eslint/naming-convention, camelcase
-        function_call: {
-          name: 'generate_jsdoc'
+        tool_choice: {
+          type: 'function',
+          function: {
+            name: 'generate_jsdoc'
+          }
         },
         messages: [
           {
@@ -163,7 +170,7 @@ class GenerativeOpenAI extends GenerativeModel<OpenAI> {
             content: `Generate the JSDoc for this ${type} in ${GenerativeModel.language}:\n${content}`
           }
         ]
-      })).choices[0].message.function_call?.arguments;
+      })).choices[0].message.tool_calls?.[0].function.arguments;
       if (args) {
         try {
           return JSON.parse(args).description;
@@ -184,26 +191,32 @@ class GenerativeOpenAI extends GenerativeModel<OpenAI> {
     if (this.api) {
       const args = (await this.api.chat.completions.create({
         model: this.model,
-        functions: [
+        tools: [
           {
-            name: 'generate_jsdoc',
-            description: `Given the ${generics ? 'type ' : ''} parameters textual descriptions in ${GenerativeModel.language}, generates its JSDoc`,
-            parameters: {
-              type: 'object',
-              properties: {
-                descriptions: {
-                  type: 'object',
-                  description: `A record of <${generics ? 'type ' : ''} parameter name, description in ${GenerativeModel.language}> pairs`,
-                  properties: parameters.reduce((prev, curr) => ({...prev, [curr.name]: {type: 'string', description: `Textual description in ${GenerativeModel.language} for the ${curr.name} ${generics ? 'type ' : ''} parameter`} }), {})
-                }
-              },
-              required: ['descriptions']
+            type: 'function',
+            function: {
+              name: 'generate_jsdoc',
+              description: `Given the ${generics ? 'type ' : ''} parameters textual descriptions in ${GenerativeModel.language}, generates its JSDoc`,
+              parameters: {
+                type: 'object',
+                properties: {
+                  descriptions: {
+                    type: 'object',
+                    description: `A record of <${generics ? 'type ' : ''} parameter name, description in ${GenerativeModel.language}> pairs. The descriptions must be very short and high-level.`,
+                    properties: parameters.reduce((prev, curr) => ({...prev, [curr.name]: {type: 'string', description: `Textual description in ${GenerativeModel.language} for the ${curr.name} ${generics ? 'type ' : ''} parameter.`} }), {})
+                  }
+                },
+                required: ['descriptions']
+              }
             }
           }
         ],
         // eslint-disable-next-line @typescript-eslint/naming-convention, camelcase
-        function_call: {
-          name: 'generate_jsdoc'
+        tool_choice: {
+          type: 'function',
+          function: {
+            name: 'generate_jsdoc'
+          }
         },
         messages: [
           {
@@ -214,7 +227,7 @@ class GenerativeOpenAI extends GenerativeModel<OpenAI> {
             content: `Generate the JSDoc for this ${type} in ${GenerativeModel.language}:\n${content}`
           }
         ]
-      })).choices[0].message.function_call?.arguments;
+      })).choices[0].message.tool_calls?.[0].function.arguments;
       if (args) {
         try {
           const {descriptions} = JSON.parse(args);
@@ -236,25 +249,31 @@ class GenerativeOpenAI extends GenerativeModel<OpenAI> {
     if (this.api) {
       const args = (await this.api.chat.completions.create({
         model: this.model,
-        functions: [
+        tools: [
           {
-            name: 'generate_jsdoc',
-            description: `Given the function return value textual description in ${GenerativeModel.language}, generates its JSDoc`,
-            parameters: {
-              type: 'object',
-              properties: {
-                description: {
-                  type: 'string',
-                  description: `The return value description in ${GenerativeModel.language}`
-                }
-              },
-              required: ['description']
+            type: 'function',
+            function: {
+              name: 'generate_jsdoc',
+              description: `Given the function return value textual description in ${GenerativeModel.language}, generates its JSDoc`,
+              parameters: {
+                type: 'object',
+                properties: {
+                  description: {
+                    type: 'string',
+                    description: `The return value description in ${GenerativeModel.language}. The description must be very short and high-level.`
+                  }
+                },
+                required: ['description']
+              }
             }
           }
         ],
         // eslint-disable-next-line @typescript-eslint/naming-convention, camelcase
-        function_call: {
-          name: 'generate_jsdoc'
+        tool_choice: {
+          type: 'function',
+          function: {
+            name: 'generate_jsdoc'
+          }
         },
         messages: [
           {
@@ -265,7 +284,7 @@ class GenerativeOpenAI extends GenerativeModel<OpenAI> {
             content: `Generate the JSDoc for this function in ${GenerativeModel.language}:\n${content}`
           }
         ]
-      })).choices[0].message.function_call?.arguments;
+      })).choices[0].message.tool_calls?.[0].function.arguments;
       if (args) {
         try {
           return JSON.parse(args).description;
@@ -295,18 +314,6 @@ class GenerativeAPI {
    * @type {?GenerativeModel<OpenAI | PaLM>}
    */
   private static generator?: GenerativeModel<OpenAI | PaLM>;
-
-  /**
-   * Selected model.
-   *
-   * @private
-   * @static
-   * @readonly
-   * @type {Model}
-   */
-  private static get model() {
-    return getConfig('generativeModel', 'gpt-3.5-turbo');
-  }
 
   /**
    * Checks if the {@link GenerativeModel} instance is loaded and, if not, attempts to load it.
