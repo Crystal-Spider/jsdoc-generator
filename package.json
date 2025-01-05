@@ -6,7 +6,7 @@
   "icon": "jsdoc-generator.png",
   "version": "2.3.0",
   "engines": {
-    "vscode": "^1.57.0"
+    "vscode": "^1.96.0"
   },
   "categories": [
     "Snippets",
@@ -231,6 +231,7 @@
     "url": "https://github.com/Crystal-Spider/jsdoc-generator.git"
   },
   "scripts": {
+    "publish": "vsce publish",
     "package": "npm run check && npm run eslint:fix && node esbuild.js --production",
     "compile": "npm run check && npm run eslint:fix && node esbuild.js",
     "watch": "npm-run-all -p watch:*",

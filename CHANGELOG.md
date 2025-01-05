@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Option `jsdoc-generator.generativeModel` now takes precedence over `jsdoc-generator.descriptionPlaceholder`.
 - Now all AI generated comments are placeholders.
 - Now tags that are supposed to have a description, even when no description is generated, an empty placeholder is inserted for better keyboard navigation.
+- VSCode required version is now `1.96.0`.
 
 ### Additions
 
