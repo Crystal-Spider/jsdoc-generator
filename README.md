@@ -201,6 +201,26 @@ Some non [everyday types](https://www.typescriptlang.org/docs/handbook/2/everyda
 
 ## Release Notes
 
+### [2.3.1](https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.3.1) - 2025/01/09
+
+- Error messages appear when JSDoc generation fails for the current file.
+- Fixed progress dialog when generating JSDocs for a file.
+- [[#30](https://github.com/Crystal-Spider/jsdoc-generator/issues/30)], commands to generate JSDocs for files, folders, or workspace inserting broken placeholders.
+
+### [2.3.0](https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.3.0) - 2025/01/05
+
+- Fixed [#29](https://github.com/Crystal-Spider/jsdoc-generator/issues/29), impossible to create file-level comments.
+- Updated many dev dependencies and related code.\nNote that jsdoc-generator.descriptionPlaceholder will take precedence.
+- Option `jsdoc-generator.generativeModel` now takes precedence over `jsdoc-generator.descriptionPlaceholder`.
+- Now all AI generated comments are placeholders.
+- Now tags that are supposed to have a description, even when no description is generated, an empty placeholder is inserted for better keyboard navigation.
+- VSCode required version is now `1.96.0`.
+- Implemented [#26](https://github.com/Crystal-Spider/jsdoc-generator/issues/26), option to toggle generation of @returns tags.
+- Implemented [#27](https://github.com/Crystal-Spider/jsdoc-generator/issues/27), make any custom tag placeholder an actual placeholder.
+- Added a whitelist property to custom tags to narrow which node types will have the custom tag added in their JSDoc.
+- Added several new OpenAI models to choose from to generate AI descriptions.
+- Slightly improved AI generated text.
+
 ### [2.2.0](https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.2.0)
 
 - [#23](https://github.com/Crystal-Spider/jsdoc-generator/pull/23), new options to create single line descriptions and to omit the empty line after descriptions.

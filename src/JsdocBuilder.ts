@@ -640,8 +640,7 @@ export class JsdocBuilder {
     this.jsdoc.appendText('\n');
     if (value && wrapper === '{}') {
       // Remove '\' that comes from .appendText() escaping '}'.
-      const index = this.jsdoc.value.indexOf('\\');
-      this.jsdoc.value = this.jsdoc.value.substring(0, index) + this.jsdoc.value.substring(index + 1);
+      this.jsdoc.value = this.jsdoc.value.replace(/\\}/g, '}');
     }
   }
 

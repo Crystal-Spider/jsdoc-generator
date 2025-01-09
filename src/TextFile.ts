@@ -70,7 +70,7 @@ export class TextFile<T extends TextEditor | WorkspaceEdit> {
     if ('insertSnippet' in this.instance) {
       return this.instance.insertSnippet(snippet, position);
     }
-    this.instance.insert(this.uri, position, snippet.value);
+    this.instance.insert(this.uri, position, snippet.value.replace(/\${[0-9]+:(.*?)}/g, (_, value) => value));
     return Promise.resolve(true);
   }
 }

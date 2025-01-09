@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Draft to support both Copilot and Gemini.
 
+## [2.3.1] - 2025/01/09
+
+### Fixes
+
+- Error messages appear when JSDoc generation fails for a file.
+- Fixed progress dialog when generating JSDocs for a file.
+- [[#30](https://github.com/Crystal-Spider/jsdoc-generator/issues/30)], commands to generate JSDocs for files, folders, or workspace inserting broken placeholders.
+
 ## [2.3.0] - 2025/01/05
 
 ### Fixes
@@ -135,6 +143,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - This [CHANGELOG] file.
 
 [unreleased]: https://github.com/Crystal-Spider/jsdoc-generator
+[2.3.1]: https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.3.1
 [2.3.0]: https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.3.0
 [2.2.0]: https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.2.0
 [2.1.0]: https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.1.0

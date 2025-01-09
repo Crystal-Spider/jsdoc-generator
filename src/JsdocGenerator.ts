@@ -158,23 +158,27 @@ export class JsdocGenerator {
       const tsFile = this.retrieveTsFile(textDocument);
       const {sourceFile} = tsFile;
       if (sourceFile) {
-        // Cancellation check
-        if (token.isCancellationRequested) {
-          return Promise.resolve();
-        }
-        const jsdocNumber = await this.writeFileJsdoc(tsFile, sourceFile, textFile, progress, token);
-        // Cancellation check
-        if (token.isCancellationRequested) {
-          return Promise.resolve();
-        }
-        let success = jsdocNumber > 0;
-        if (textFile.workspaceEdit) {
-          success = success && await workspace.applyEdit(textFile.workspaceEdit);
-        }
-        if (success) {
-          window.showInformationMessage(`Correctly generated ${this.getPluralized(jsdocNumber, 'JSDoc')}!`);
-        } else {
-          window.showWarningMessage('No JSDoc was generated.');
+        try {
+          // Cancellation check
+          if (token.isCancellationRequested) {
+            return Promise.resolve();
+          }
+          const jsdocNumber = await this.writeFileJsdoc(tsFile, sourceFile, textFile, progress, token);
+          // Cancellation check
+          if (token.isCancellationRequested) {
+            return Promise.resolve();
+          }
+          let success = jsdocNumber > 0;
+          if (textFile.workspaceEdit) {
+            success = success && await workspace.applyEdit(textFile.workspaceEdit);
+          }
+          if (success) {
+            window.showInformationMessage(`Correctly generated ${this.getPluralized(jsdocNumber, 'JSDoc')}!`);
+          } else {
+            window.showWarningMessage('No JSDoc was generated.');
+          }
+        } catch (error) {
+          window.showErrorMessage(`Unable to generate JSDoc for the current file: ${error}`);
         }
       } else {
         window.showErrorMessage('Unable to generate JSDoc for the current file.');
@@ -374,9 +378,10 @@ export class JsdocGenerator {
    */
   private async writeFileJsdoc<T extends TextEditor | WorkspaceEdit>(tsFile: TsFile, sourceFile: SourceFile, textFile: TextFile<T>, progress: Progress, token: CancellationToken): Promise<number> {
     let jsdocNumber = 0;
+    const statements = sourceFile.statements.filter(statement => tsFile.isNodeSupported(statement));
     // Iterated bottom up to avoid shifting of start position of nodes.
-    for (let c = sourceFile.statements.length - 1; c >= 0; c--) {
-      const statement = sourceFile.statements[c];
+    for (let c = statements.length - 1; c >= 0; c--) {
+      const statement = statements[c];
       if (tsFile.isNodeSupported(statement)) {
         if (statement.kind === SyntaxKind.ClassExpression || statement.kind === SyntaxKind.ClassDeclaration || statement.kind === SyntaxKind.InterfaceDeclaration) {
           const {members} = statement as ClassDeclaration;
@@ -392,7 +397,7 @@ export class JsdocGenerator {
             }
             progress.report({
               message: `Generating JSDoc for ${tsFile.sourceFile?.fileName} file...`,
-              increment: 100 / sourceFile.statements.length / members.length
+              increment: 100 / statements.length / members.length
             });
           }
         }
@@ -407,7 +412,7 @@ export class JsdocGenerator {
         }
         progress.report({
           message: `Generating JSDoc for ${tsFile.sourceFile?.fileName} file...`,
-          increment: 100 / sourceFile.statements.length
+          increment: 100 / statements.length
         });
       }
     }
