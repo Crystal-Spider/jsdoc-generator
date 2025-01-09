@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Error messages appear when JSDoc generation fails for a file.
 - Fixed progress dialog when generating JSDocs for a file.
-- [[#30](https://github.com/Crystal-Spider/jsdoc-generator/issues/30)], commands to generate JSDocs for files, folders, or workspace inserting broken placeholders.
+- [#30](https://github.com/Crystal-Spider/jsdoc-generator/issues/30), commands to generate JSDocs for files, folders, or workspace inserting broken placeholders.
 
 ## [2.3.0] - 2025/01/05
 
