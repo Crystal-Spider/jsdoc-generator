@@ -232,7 +232,6 @@
   },
   "scripts": {
     "publish": "vsce publish",
-    "packageeee": "vsce package",
     "package": "npm run check && npm run eslint:fix && node esbuild.js --production",
     "compile": "npm run check && npm run eslint:fix && node esbuild.js",
     "watch": "npm-run-all -p watch:*",
