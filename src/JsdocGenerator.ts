@@ -1,5 +1,5 @@
 import {LanguageService, createLanguageService, createDocumentRegistry, SourceFile, sys, Node, LineAndCharacter, getLineAndCharacterOfPosition, SyntaxKind, PropertyDeclaration, ConstructorDeclaration, AccessorDeclaration, MethodDeclaration, ClassDeclaration, InterfaceDeclaration, EnumDeclaration, VariableDeclarationList, TypeAliasDeclaration, VariableStatement} from 'typescript';
-import {TextDocument, TextEditor, window, workspace, SnippetString, Position, WorkspaceEdit, Uri, RelativePattern, CancellationToken} from 'vscode';
+import {TextDocument, TextEditor, window, workspace, SnippetString, Position, WorkspaceEdit, Uri, RelativePattern, CancellationToken, Range} from 'vscode';
 
 import {SUPPORTED_LANGUAGES} from './extension';
 import {JsdocBuilder} from './JsdocBuilder';
@@ -206,7 +206,7 @@ export class JsdocGenerator {
     if (this.isLanguageSupported(textEditor.document)) {
       const caret = textEditor.selection.start;
       const tsFile = this.retrieveTsFile(textEditor.document, caret);
-      const file = caret.line === 0 && caret.character === 0;
+      const file = !textEditor.document.getText(new Range(0, 0, caret.line, caret.character)).trim();
       const {supportedNode} = tsFile;
       if (supportedNode) {
         await this.writeJsdoc(supportedNode, tsFile, new TextFile(textEditor), token, file).catch(reason => { window.showErrorMessage(`Unable to generate JSDoc at position (Ln ${caret.line}, Col ${caret.character}) because of ${reason}`); });

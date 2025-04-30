@@ -201,6 +201,10 @@ Some non [everyday types](https://www.typescriptlang.org/docs/handbook/2/everyda
 
 ## Release Notes
 
+### [2.3.3](https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.3.3) - 2025/04/30
+
+- [#32](https://github.com/Crystal-Spider/jsdoc-generator/issues/32), file-level JSDoc generation on lines other than the first.
+
 ### [2.3.2](https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.3.2) - 2025/04/07
 
 - Updated a few dependencies.

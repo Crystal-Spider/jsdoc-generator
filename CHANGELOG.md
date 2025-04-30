@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Draft to support both Copilot and Gemini.
 
+## [2.3.3] - 2025/04/30
+
+### Fixes
+
+- [#32](https://github.com/Crystal-Spider/jsdoc-generator/issues/32), file-level JSDoc generation on lines other than the first.
+
 ## [2.3.2] - 2025/04/07
 
 ### Fixes
@@ -149,6 +155,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - This [CHANGELOG] file.
 
 [unreleased]: https://github.com/Crystal-Spider/jsdoc-generator
+[2.3.3]: https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.3.3
 [2.3.2]: https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.3.2
 [2.3.1]: https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.3.1
 [2.3.0]: https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.3.0
