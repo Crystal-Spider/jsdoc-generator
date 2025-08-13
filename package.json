@@ -4,7 +4,7 @@
   "description": "Automatic JSDoc generator for TypeScript and JavaScript.",
   "publisher": "crystal-spider",
   "icon": "jsdoc-generator.png",
-  "version": "2.3.3",
+  "version": "2.3.4",
   "engines": {
     "vscode": "^1.96.0"
   },
