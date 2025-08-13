@@ -66,7 +66,7 @@ type NodeType = 'function' | 'class' | 'interface' | 'type' | 'enum' | 'property
  *
  * @typedef {Model}
  */
-type Model = 'gpt-4o' | 'gpt-4o-mini' | 'gpt-4-turbo' | 'gpt-4' | 'gpt-3.5-turbo';
+type Model = 'gpt-5' | 'gpt-5-mini' | 'gpt-5-nano' | 'gpt-4.1' | 'gpt-4.1-mini' | 'gpt-4.1-nano' | 'gpt-4o' | 'gpt-4o-mini' | 'gpt-o3' | 'gpt-o3-mini';
 
 /**
  * JSDoc custom tag.

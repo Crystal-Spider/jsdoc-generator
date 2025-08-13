@@ -201,6 +201,10 @@ Some non [everyday types](https://www.typescriptlang.org/docs/handbook/2/everyda
 
 ## Release Notes
 
+### [2.3.4](https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.3.4) - 2025/08/13
+
+- Updated GPT model list.
+
 ### [2.3.3](https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.3.3) - 2025/04/30
 
 - [#32](https://github.com/Crystal-Spider/jsdoc-generator/issues/32), file-level JSDoc generation on lines other than the first.

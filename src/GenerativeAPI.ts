@@ -41,7 +41,7 @@ abstract class GenerativeModel<T> {
    * @type {Model}
    */
   protected get model() {
-    return getConfig('generativeModel', 'gpt-3.5-turbo');
+    return getConfig('generativeModel', 'gpt-5');
   }
 
   /**
@@ -432,7 +432,7 @@ class GenerativeAPI {
    * @type {Model}
    */
   protected get model() {
-    return getConfig('generativeModel', 'gpt-3.5-turbo');
+    return getConfig('generativeModel', 'gpt-5');
   }
 
   /**

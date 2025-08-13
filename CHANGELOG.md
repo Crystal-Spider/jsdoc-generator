@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Draft to support both Copilot and Gemini.
 
+## [2.3.4] - 2025/08/13
+
+### Changes
+
+- Updated GPT model list.
+
 ## [2.3.3] - 2025/04/30
 
 ### Fixes
@@ -155,6 +161,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - This [CHANGELOG] file.
 
 [unreleased]: https://github.com/Crystal-Spider/jsdoc-generator
+[2.3.4]: https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.3.4
 [2.3.3]: https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.3.3
 [2.3.2]: https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.3.2
 [2.3.1]: https://github.com/Crystal-Spider/jsdoc-generator/releases/tag/v2.3.1
