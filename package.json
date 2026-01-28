@@ -168,6 +168,11 @@
           "default": 0,
           "description": "Starting point of the column containing the tag description (if any, e.g. AI-generated).\n0 to make it adaptive (default, no alignment), a positive number to fix the starting point.\nNote that if the tag previous values take over the specified starting point, the column will be shifted."
         },
+        "jsdoc-generator.generativeEndpoint": {
+          "type": "string",
+          "default": "",
+          "description": "Set your own OpenAI server endpoint for generative AI.\nIt's required only if you wish to use the automatic generation of descriptions."
+        },
         "jsdoc-generator.generativeApiKey": {
           "type": "string",
           "default": "",
@@ -176,6 +181,7 @@
         "jsdoc-generator.generativeModel": {
           "type": "string",
           "enum": [
+            "custom",
             "gpt-5",
             "gpt-5-mini",
             "gpt-5-nano",
@@ -188,7 +194,12 @@
             "gpt-o3-mini"
           ],
           "default": "gpt-5",
-          "description": "Generative AI model to use to generate JSDoc decriptions.\nCurrently, only OpenAI models are supported.\nEnable the model with an API key."
+          "description": "Generative AI model to use to generate JSDoc descriptions.\nFor more models, please select 'custom'.\nEnable the model with an API key."
+        },
+        "jsdoc-generator.generativeModelCustom": {
+          "type": "string",
+          "default": "",
+          "description": "Custom generative AI model to use to generate JSDoc descriptions. Only Enabled while generativeModel select 'custom'."
         },
         "jsdoc-generator.generativeLanguage": {
           "type": "string",

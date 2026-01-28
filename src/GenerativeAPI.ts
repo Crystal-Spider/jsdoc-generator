@@ -34,6 +34,17 @@ abstract class GenerativeModel<T> {
   }
 
   /**
+   * AI endpoint.
+   *
+   * @protected
+   * @readonly
+   * @type {string}
+   */
+  protected get baseURL() {
+    return getConfig('generativeEndpoint', '://api.openai.com/v1');
+  }
+
+  /**
    * Model kind.
    *
    * @protected
@@ -41,7 +52,9 @@ abstract class GenerativeModel<T> {
    * @type {Model}
    */
   protected get model() {
-    return getConfig('generativeModel', 'gpt-5');
+    const model = getConfig('generativeModel', 'gpt-5');
+    if (model === 'custom') { return getConfig('generativeModelCustom', 'gpt-5'); }
+    return model;
   }
 
   /**
@@ -123,7 +136,7 @@ class GenerativeOpenAI extends GenerativeModel<OpenAI> {
    * @override
    */
   protected override init(): OpenAI {
-    return new OpenAI({apiKey: this.apiKey});
+    return new OpenAI({baseURL: this.baseURL, apiKey: this.apiKey});
   }
 
   /**
@@ -432,7 +445,9 @@ class GenerativeAPI {
    * @type {Model}
    */
   protected get model() {
-    return getConfig('generativeModel', 'gpt-5');
+    const model = getConfig('generativeModel', 'gpt-5');
+    if (model === 'custom') { return getConfig('generativeModelCustom', 'gpt-5'); }
+    return model;
   }
 
   /**

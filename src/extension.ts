@@ -66,7 +66,7 @@ type NodeType = 'function' | 'class' | 'interface' | 'type' | 'enum' | 'property
  *
  * @typedef {Model}
  */
-type Model = 'gpt-5' | 'gpt-5-mini' | 'gpt-5-nano' | 'gpt-4.1' | 'gpt-4.1-mini' | 'gpt-4.1-nano' | 'gpt-4o' | 'gpt-4o-mini' | 'gpt-o3' | 'gpt-o3-mini';
+type Model = string;
 
 /**
  * JSDoc custom tag.
@@ -199,6 +199,12 @@ interface Configuration {
    */
   tagDescriptionColumnStart: number;
   /**
+   * Generative AI Endpoint.
+   *
+   * @type {string}
+   */
+  generativeEndpoint: string;
+  /**
    * Generative AI API key.
    *
    * @type {string}
@@ -210,6 +216,12 @@ interface Configuration {
    * @type {Model}
    */
   generativeModel: Model;
+  /**
+   * Generative AI model.
+   *
+   * @type {Model}
+   */
+  generativeModelCustom: Model;
   /**
    * Language of the generated descriptions.
    *
