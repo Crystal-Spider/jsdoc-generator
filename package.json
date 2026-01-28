@@ -194,12 +194,12 @@
             "gpt-o3-mini"
           ],
           "default": "gpt-5",
-          "description": "Generative AI model to use to generate JSDoc decriptions.\nFor more models, please select 'custom'.\nEnable the model with an API key."
+          "description": "Generative AI model to use to generate JSDoc descriptions.\nFor more models, please select 'custom'.\nEnable the model with an API key."
         },
         "jsdoc-generator.generativeModelCustom": {
           "type": "string",
           "default": "",
-          "description": "Custom generative AI model to use to generate JSDoc decriptions. Only Enabled while generativeModel select 'custom'."
+          "description": "Custom generative AI model to use to generate JSDoc descriptions. Only Enabled while generativeModel select 'custom'."
         },
         "jsdoc-generator.generativeLanguage": {
           "type": "string",
